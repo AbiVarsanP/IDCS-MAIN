@@ -290,4 +290,62 @@
         </div>
     </div>
 </div>
+
+<!-- Bonafide Applications Section -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Bonafide Applications</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>ID</th>
+                            <th>TITLE</th>
+                            <th>MENTOR</th>
+                            <th>ADVISOR</th>
+                            <th>HOD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if BF %}
+                        {% for i in BF %}
+                        <tr>
+                            <td class="serial">{{ forloop.counter }}.</td>
+                            <td> #BF{{i.id}} </td>
+                            <td> <span class="name">{{i.purpose}}</span> </td>
+                            {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
+                            <form action="{% url 'proof_bonafide' i.id %}" enctype="multipart/form-data" method="POST">
+                                {% csrf_token %}
+                                <td><input class="form-group w-50" type="file" name="comp" required id="comp"></td>
+                                <td>-</td>
+                                <td> <button type="submit" class="btn btn-outline-success">Upload</button></td>
+                            </form>
+                            {% else %}
+                            <td>
+                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No Bonafide applications submitted yet.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
 {% endblock %}

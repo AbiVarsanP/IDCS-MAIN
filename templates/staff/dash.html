@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav %}
+<li class="active">
+    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+</li>
+<li>
+    <a href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+</li>
+<li>
+    <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+</li>
+<li>
+    <a href="{% url 'staff_gatepass_view' %}"><i class="ti-shift-right-alt menu-icon"></i>Gatepass </a>
+</li>
+{% endblock %}
+
+{% block root %}
+<div class="row">
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-1">
+                        <i class="ti-file"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Leave
+                                <div class="stat-heading">
+                                    <a href="{% url 'od' %}" class="btn btn-link btn-sm  flat-color-1">Apply &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-2">
+                        <i class="ti-files"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">OD
+                                <div class="stat-heading">
+                                    <button type="button" class="btn btn-link btn-sm  flat-color-2">Apply &nbsp;<i class="fa fa-arrow-right"></i></button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- //bonafide card -->
+    <!-- <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-3">
+                        <i class="ti-folder"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Bonafied
+                                <div class="stat-heading">
+                                    <button type="button" class="btn btn-link btn-sm  flat-color-3">Apply &nbsp;<i class="fa fa-arrow-right"></i></button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+   
+</div>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav %}
+<li class="">
+    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+</li>
+<li class="">
+    <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+</li>
+<li class="">
+    <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+</li>
+<li class="">
+    <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
+</li>
+
+<li class="active">
+    <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
+</li>
+
+{% endblock %}
+
+
+{% block root %}
+
+
+{% if s_rating %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Feedback Table</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>Name</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in s_rating %}
+                        <tr>
+                            <td>#{{i.user.username}}</td>
+
+                            <td> Mr/Mrs. {{i.name}} </td>
+                            <td> <a href="{% url 'student_feedback_form' i.id 'gen' %}">Give Feedback</a> </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+{% else %}
+<p>Feedback is Disabled</p>
+{% endif %}
+
+{% if spf_staff %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Feedback Table</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>Name</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in spf_staff %}
+                        <tr>
+                            <td>#{{i.user.username}}</td>
+
+                            <td> Mr/Mrs. {{i.name}} </td>
+                            <td> <a href="{% url 'student_feedback_form' i.id 'spf' %}">Give Feedback</a> </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% if cs_rating %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Completed Feedback</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in cs_rating %}
+                        <tr>
+                            <td>#{{i.user.username}}</td>
+
+                            <td> Mr/Mrs. {{i.name}} </td>
+                            <td>
+                                <span class="badge badge-Approved">Completed</span>
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

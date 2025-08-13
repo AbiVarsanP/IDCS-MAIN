@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav %}
+<li class="active">
+    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+</li>
+
+<li class="">
+    <a href="{% url 'student_feedback' %}"><i class="menu-icon ti ti-comments"></i>Feedback</a>
+</li>
+
+
+{% endblock %}
+
+{% block root %}
+<div class="row">
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-1">
+                        <i class="ti-file"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Leave
+                                <div class="stat-heading">
+                                    <a href="{% url 'leave' %}" class="btn btn-link btn-sm  flat-color-1">Apply &nbsp;<i
+                                            class="fa fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-2">
+                        <i class="ti-files"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">OD
+                                <div class="stat-heading">
+                                    <a href="{% url 'od' %}" class="btn btn-link btn-sm  flat-color-2">Apply &nbsp;<i
+                                            class="fa fa-arrow-right"></i></a>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- //Bonafied card -->
+    <!-- <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-3">
+                        <i class="ti-folder"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Bonafied
+                                <div class="stat-heading">
+                                    <button type="button" class="btn btn-link btn-sm  flat-color-3">Apply &nbsp;<i
+                                            class="fa fa-arrow-right"></i></button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-4">
+                        <i class="ti-shift-right-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Gate Pass
+                                <div class="stat-heading">
+                                    <a href="{% url 'gatepass' %}" class="btn btn-link btn-sm  flat-color-4">Apply
+                                        &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title"><b>Status</b></strong>
+                <strong class="card-title">OD's</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>ID</th>
+                            <th>TITLE</th>
+                            <th>MENTOR</th>
+                            <th>ADVISOR</th>
+                            <th>HOD</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if OD%}
+                        {% for i in OD %}
+                        <tr>
+                            <td class="serial">1.</td>
+
+                            <td> #OD{{i.id}} </td>
+                            <td> <span class="name">{{i.sub}}</span> </td>
+
+                            {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
+                            <form action="{% url 'proof_od' i.id %}" enctype="multipart/form-data" method="POST">
+                                {% csrf_token %}
+                                <td><input class="form-group w-50" type="file" name="comp" required id="comp"></td>
+                                <td>-</td>
+                                <td> <button type="submit" class="btn btn-outline-success">Upload</button></td>
+                            </form>
+                            {% else %}
+                            <td>
+                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                        </tr>
+                        {% endif %}
+
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Leaves's</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>ID</th>
+                            <th>TITLE</th>
+                            <th>MENTOR</th>
+                            <th>ADVISOR</th>
+                            <th>HOD</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if LE%}
+                        {% for i in LE %}
+                        <tr>
+                            <td class="serial">1.</td>
+
+                            <td> #LE{{i.id}} </td>
+                            <td> <span class="name">{{i.sub}}</span> </td>
+
+                            <td>
+                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
+                            </td>
+                           
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                        </tr>
+                        {% endif %}
+
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">GATE PAS's</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>ID</th>
+                            <th>TITLE</th>
+                            <th>MENTOR</th>
+                            <th>ADVISOR</th>
+                            <th>HOD</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if GP%}
+                        {% for i in GP %}
+                        <tr>
+                            <td class="serial">1.</td>
+
+                            <td> #OD{{i.id}} </td>
+                            <td> <span class="name">{{i.sub}}</span> </td>
+
+                            {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
+                            <form action="{% url 'proof_leave' i.id %}" enctype="multipart/form-data" method="POST">
+                                {% csrf_token %}
+                                <td><input class="form-group w-50" type="file" name="comp" required id="comp"></td>
+                                <td>-</td>
+                                <td> <button type="submit" class="btn btn-outline-success">Upload</button></td>
+                            </form>
+                            {% else %}
+                            <td>
+                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                        </tr>
+                        {% endif %}
+
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+{% endblock %}

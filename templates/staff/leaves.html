@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav %}
+<li class="">
+    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+</li>
+<li class="">
+    <a href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+</li>
+<li class ="active">
+    <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+</li>
+<li class ="">
+    <a href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
+</li>
+{% endblock %}
+{% block root %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+
+<style>
+    th {
+        text-align: center !important;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Class ODS</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">ID</th>
+                            <th>NAME</th>
+                            <th>SUB</th>
+                            <th>FROM-TO</th>
+                            <th>VIEW</th>
+                            <th>OPTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if aods%}
+                        {% for i in aods %}
+                        <tr>
+
+                            <td class="serial">
+                                {% if i.proof %}
+                                    <a href="{{ i.proof.url }}">#OD{{ i.id }}</a>
+                                {% else %}
+                                    #OD{{ i.id }}
+                                {% endif %}
+                            </td>
+                            <td> {{i.user.name}} </td>
+                            <td>
+                                {{i.sub}}
+                            </td>
+                            <td>
+                                {{i.start}} - {{i.end}}
+                            </td>
+
+                            <td>
+                                <button 
+                                    class="btn btn-sm btn-primary" 
+                                    data-body="{{ i.body }}" 
+                                    {% if i.proof %}
+                                        data-url="{{ i.proof.url }}"
+                                    {% else %}
+                                        data-url=""
+                                    {% endif %}
+                                >
+                                    <small>#LE{{ i.id }}</small>
+                                </button>
+
+                            </td>
+
+                            <td>
+                                
+                                {% if i.Mstatus == "Approved" %}
+                                {% if i.Astatus == "Approved" %}
+                                <button class="btn btn-success ">{{i.Astatus}}</button>
+
+                                {% elif i.Astatus == "Rejected" %}
+                                <button class="btn btn-danger ">{{i.Astatus}}</button>
+
+                                {% else %}
+                                <form action="{% url 'staff_action_leave' i.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <select name="sts" id="" class="form-control">
+                                            <option value="Approved" default>Approve</option>
+                                            <option value="Rejected">Reject</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-success">submit</button>
+                                    </div>
+                                </form>
+                                {% endif %}
+                                {% elif i.Mstatus == 'Rejected' %}
+                                <p><small>Rejected by mentor</small></p>
+                                {% else %}
+                                <button class="btn btn-outline-warning" disabled>Waiting for Mentor Status</button>
+                                {% endif %}
+                                
+                            </td>
+                        {% endfor %}
+                        {% else %}
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        {% endif %}
+
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Menties Leave's</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">ID</th>
+                            <th>NAME</th>
+                            <th>SUB</th>
+                            <th>FROM-TO</th>
+                            <th>VIEW</th>
+                            <th>OPTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if mods%}
+                        {% for i in mods %}
+                        <tr>
+
+                            <td class="serial"> <a href="{{i.proof.url}}">#LE{{i.id}}</a> </td>
+                            <td> {{i.user.name}} </td>
+                            <td>
+                                {{i.sub}}
+                            </td>
+                            <td>
+                                {{i.start}} - {{i.end}}
+                            </td>
+
+                            <td>
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
+                                    data-sub="{{i.sub}}" data-name="{{i.user.name}}"
+                                    data-body="{{i.body}}" data-url="{{i.proof.url}}"><small>#LE{{i.id}}</small></button>
+                            </td>
+
+                            <td>
+
+                                {% if i.Mstatus == "Approved" %}
+                                <button class="btn btn-success ">{{i.Mstatus}}</button>
+
+                                {% elif i.Mstatus == "Rejected" %}
+                                <button class="btn btn-danger ">{{i.Mstatus}}</button>
+
+                                {% else %}
+                                <form action="{% url 'staff_action_leave' i.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <select name="sts" id="" class="form-control">
+                                            <option value="Approved" default>Approve</option>
+                                            <option value="Rejected">Reject</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-success">submit</button>
+
+                                    </div>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                        </tr>
+                        {% endif %}
+
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $('#detail').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget)
+        var recipient = button.data('sub') 
+        var name = button.data('name') 
+        var content = button.data('body') 
+        var url = button.data('url') 
+        var modal = $(this)
+        modal.find('.modal-title').html(`<b>${recipient}</b>  <small>-by ${name}</small>`)
+        modal.find('.modal-body').text(content)
+        modal.find('.modal-footer').html(
+            `
+            <div class="btn-group">
+            <a href="${url}" downloade class="btn btn-outline-success">Downlode File</a>
+            <a href="${url}" target="_blank"  class="btn btn-outline-warning">View File</a>
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+            `
+        )
+    })
+</script>
+
+{% endblock %}

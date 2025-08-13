@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block nav %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"
+    integrity="sha512-7U4rRB8aGAHGVad3u2jiC7GA5/1YhQcQjxKeaVms/bT66i3LVBMRcBI9KwABNWnxOSwulkuSXxZLGuyfvo7V1A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<li class="active">
+    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+</li>
+<li>
+    <a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+</li>
+<li>
+    <a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+</li>
+<li>
+    <a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a>
+</li>
+
+<li>
+    <a href="{% url 'hod_feedback_view' %}"><i class="menu-icon ti ti-comments"></i>Feedback </a>
+</li>
+{% endblock %}
+{% block root %}
+
+<style>
+    .checked {
+        color: orange;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-1">
+                        <i class="ti-file"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Leave
+                                <div class="stat-heading">
+                                    <a href="" class="btn btn-link btn-sm  flat-color-1">Apply &nbsp;<i
+                                            class="fa fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-2">
+                        <i class="ti-files"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">OD
+                                <div class="stat-heading">
+                                    <button type="button" class="btn btn-link btn-sm  flat-color-2">Apply &nbsp;<i
+                                            class="fa fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div class="card bg-flat-color-7">
+            <div class="card-body">
+                <div class="stat-widget-one">
+                    <div class="stat-icon dib"><i class="ti-face-smile flat-color-{{my_rating.0}} border-success"></i></div>
+                    <div class="stat-content dib">
+                        <div class="stat-text">My Ratings</div>
+                        <div class="stat-digit">
+                            <span class="count float-left">{{my_rating.0}}</span>
+                        <span><small><small>/4</small></small> : </span>
+                        {% for i in "x"|ljust:4 %}
+                        {% if forloop.counter0 < my_rating.0 %} <span class="fa fa-star flat-color-{{my_rating.0}}"></span>
+                            {% else %}
+                            <span class="fa fa-star"></span>
+                            {% endif %}
+                            {% endfor %}
+                            <small>( <span class="count">{{my_rating.1}}</span> )</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Staff Ratings</strong>
+            </div>
+            <div class="card-body">
+                <div class="table-stats order-table ov-h">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="serial">Name</th>
+
+                                <th>Stars</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for n,p in ratings.items %}
+                            <tr>
+                                <td><small>Mr/Mrs</small> {{n}}</td>
+                                <td>
+                                    {% for i in "x"|ljust:4 %}
+                                    {% if forloop.counter0 < p.0 %} <span class="fa fa-star checked"></span>
+                                        {% else %}
+                                        <span class="fa fa-star"></span>
+                                        {% endif %}
+                                        {% endfor %}
+                                        ({{p.1}})
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Recent Logs</strong>
+            </div>
+            <div class="card-body">
+                <div class="table-stats order-table ov-h">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="serial">Student Name</th>
+                                <th>Staff Name</th>
+                                <th>Average</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in rating_log %}
+                            <tr>
+                                <td>{{i.student.name}}</td>
+                                <td><small>Mr/Mrs </small>{{i.staff.name}}</td>
+                                <td>
+                                    {% for j in "y"|ljust:4 %}
+                                    {% if forloop.counter0 < i.avg %} <span class="fa fa-star checked"></span>
+                                        {% else %}
+                                        <span class="fa fa-star"></span>
+                                        {% endif %}
+                                        {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+</script>
+
+
+</script>
+
+{% endblock %}

@@ -7,7 +7,18 @@
 </li>
 
 <li class="">
-    <a href="{% url 'student_feedback' %}"><i class="menu-icon ti ti-comments"></i>Feedback</a>
+    <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+</li>
+<li class ="">
+    <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+</li>
+<li class ="">
+    <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
+</li>
+
+
+<li class ="">
+    <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
 </li>
 
 
@@ -60,8 +71,8 @@
         </div>
     </div>
 
-    <!-- //Bonafied card -->
-    <!-- <div class="col-lg-3 col-md-3">
+    <!-- //Bonafide card -->
+    <div class="col-lg-3 col-md-3">
         <div class="card">
             <div class="card-body">
                 <div class="stat-widget-five">
@@ -72,9 +83,8 @@
                         <div class="text-left dib">
                             <div class="stat-text">Bonafied
                                 <div class="stat-heading">
-                                    <button type="button" class="btn btn-link btn-sm  flat-color-3">Apply &nbsp;<i
-                                            class="fa fa-arrow-right"></i></button>
-
+                                <a href="{% url 'od' %}" class="btn btn-link btn-sm  flat-color-2">Apply &nbsp;<i
+                                            class="fa fa-arrow-right"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +92,7 @@
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
     <div class="col-lg-3 col-md-3">
         <div class="card">
             <div class="card-body">

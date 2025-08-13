@@ -11,6 +11,7 @@
 <li>
     <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
 </li>
+
 <li>
     <a href="{% url 'staff_gatepass_view' %}"><i class="ti-shift-right-alt menu-icon"></i>Gatepass </a>
 </li>
@@ -29,7 +30,7 @@
                         <div class="text-left dib">
                             <div class="stat-text">Leave
                                 <div class="stat-heading">
-                                    <a href="{% url 'od' %}" class="btn btn-link btn-sm  flat-color-1">Apply &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                    <a href="{% url 'leave' %}" class="btn btn-link btn-sm  flat-color-1">Apply &nbsp;<i class="fa fa-arrow-right"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -50,7 +51,7 @@
                         <div class="text-left dib">
                             <div class="stat-text">OD
                                 <div class="stat-heading">
-                                    <button type="button" class="btn btn-link btn-sm  flat-color-2">Apply &nbsp;<i class="fa fa-arrow-right"></i></button>
+                                    <a href="{% url 'od' %}" class="btn btn-link btn-sm  flat-color-2">Apply &nbsp;<i class="fa fa-arrow-right"></i></a>
 
                                 </div>
                             </div>

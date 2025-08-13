@@ -49,6 +49,16 @@ urlpatterns+=[
 
 # Placement
 
+# Bonafide
+urlpatterns += [
+    path('bonafide/', bonafide, name='bonafide'),
+    path('staff/bonafides/check', staff_bonafide_view, name='staff_bonafide_view'),
+    path('hod/bonafides/check', hod_bonafide_view, name='hod_bonafide_view'),
+    path('staff/bonafides/action/<int:id>', staff_action_bonafide, name='staff_action_bonafide'),
+    path('bonafide/upload_proof_bonafide/<int:id>', upload_proof_bonafide, name='proof_bonafide'),
+]
+
+
 
 
 

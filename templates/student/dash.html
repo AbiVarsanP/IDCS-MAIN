@@ -140,7 +140,7 @@
                         {% if OD%}
                         {% for i in OD %}
                         <tr>
-                            <td class="serial">1.</td>
+                            <td class="serial">{{ forloop.counter }}.</td>
 
                             <td> #OD{{i.id}} </td>
                             <td> <span class="name">{{i.sub}}</span> </td>
@@ -201,7 +201,7 @@
                         {% if LE%}
                         {% for i in LE %}
                         <tr>
-                            <td class="serial">1.</td>
+                            <td class="serial">{{ forloop.counter }}.</td>
 
                             <td> #LE{{i.id}} </td>
                             <td> <span class="name">{{i.sub}}</span> </td>
@@ -253,7 +253,7 @@
                         {% if BF %}
                         {% for i in BF %}
                         <tr>
-                            <td class="serial">1.</td>
+                            <td class="serial">{{ forloop.counter }}.</td>
                             <td> #BF{{i.id}} </td>
                             <td> <span class="name">{{i.sub}}</span> </td>
                             <td>
@@ -301,7 +301,7 @@
                         {% if GP%}
                         {% for i in GP %}
                         <tr>
-                            <td class="serial">1.</td>
+                            <td class="serial">{{ forloop.counter }}.</td>
 
                             <td> #OD{{i.id}} </td>
                             <td> <span class="name">{{i.sub}}</span> </td>

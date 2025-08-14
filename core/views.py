@@ -14,13 +14,30 @@ import qrcode
 
 
 @login_required
+def hod_bonafide_view(request):
+    context = set_config(request)
+    context['bonafide_forms'] = BONAFIDE.objects.none()
+    if 'duser' in context:
+        try:
+            hod_staff = Staff.objects.get(user=context['duser'].user)
+            forms = BONAFIDE.objects.filter(
+                models.Q(user__mentor=hod_staff) |
+                models.Q(user__advisor=hod_staff) |
+                models.Q(user__hod=hod_staff)
+            ).distinct()
+            if forms.exists():
+                context['bonafide_forms'] = forms
+        except Staff.DoesNotExist:
+            pass
+    return render(request, "hod/bonafide.html", context)
 def dash(request):
     context = set_config(request)
+    if 'duser' not in context:
+        return redirect('login')
     if not request.user.is_staff:
         context['BF'] = BONAFIDE.objects.filter(user=context['duser'].id)
         return render(request, 'student/dash.html', context=context)
     elif context['duser'].position == 0:
-
         context['allratings'] = IndividualStaffRating.objects.all()
         hod = HOD.objects.get(user=context['duser'])
         staff_list = [i for i in hod.staffs.all()]
@@ -33,7 +50,6 @@ def dash(request):
                 rating_logs.append(i)
         context['my_rating'] = ratings[context['duser'].name]
         context['rating_log'] = rating_logs[:len(ratings)]
-
         # Bonafide forms for which the logged-in HOD is mentor, advisor, or HOD
         try:
             hod_staff = Staff.objects.get(user=context['duser'].user)
@@ -44,7 +60,6 @@ def dash(request):
             ).distinct()
         except Staff.DoesNotExist:
             context['bonafides'] = BONAFIDE.objects.none()
-
         return render(request, "hod/dash.html", context)
     else:
         context['aods'] = [i for i in OD.objects.all(

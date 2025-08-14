@@ -35,6 +35,7 @@ urlpatterns += [
     path("hfeed/toogle/<int:id>",hod_feedback_toggle,name='hod_feedback_toggle'),
     path("hfeed/hod_spot_feedback",hod_spot_feedback,name='hod_spot_feedback'),
     path("hfeed/spottoogle/<int:id>",hod_spot_feedback_toggle,name='hod_spot_feedback_toggle'),
+    path("hbonafide/", hod_bonafide_view, name="hod_bonafide_view"),
     
 ]
 

@@ -3,15 +3,16 @@ from django.contrib.auth.models import User
 
 def set_config(request):
     context = {}
-    user = User.objects.get(username = request.user)
+    if not request.user.is_authenticated:
+        return context
+    user = User.objects.get(username=request.user.username)
     if user.is_staff:
-        context['duser'] = Staff.objects.get(user = request.user)      
+        context['duser'] = Staff.objects.get(user=request.user)
     else:
-        context['duser'] = Student.objects.get(user = request.user) 
+        context['duser'] = Student.objects.get(user=request.user)
         context['OD'] = OD.objects.filter(user=context['duser'].id)
         context['LE'] = LEAVE.objects.filter(user=context['duser'].id)
         context['GP'] = GATEPASS.objects.filter(user=context['duser'].id)
-    
     return context
 
 def get_post(request,val,**kwargs):

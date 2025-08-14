@@ -137,41 +137,32 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if OD%}
-                        {% for i in OD %}
-                        <tr>
-                            <td class="serial">1.</td>
-
-                            <td> #OD{{i.id}} </td>
-                            <td> <span class="name">{{i.sub}}</span> </td>
-
-                            {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
-                            <form action="{% url 'proof_od' i.id %}" enctype="multipart/form-data" method="POST">
-                                {% csrf_token %}
-                                <td><input class="form-group w-50" type="file" name="comp" required id="comp"></td>
-                                <td>-</td>
-                                <td> <button type="submit" class="btn btn-outline-success">Upload</button></td>
-                            </form>
-                            {% else %}
-                            <td>
-                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
-                            </td>
-
-                            <td>
-                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
-                            </td>
-                            {% endif %}
-                        </tr>
-                        {% endfor %}
+                        {% if OD %}
+                            {% for i in OD %}
+                            <tr>
+                                <td class="serial">{{ forloop.counter }}.</td>
+                                <td>#OD{{ i.id }}</td>
+                                <td><span class="name">{{ i.sub }}</span></td>
+                            
+                                {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
+                                <form action="{% url 'proof_od' i.id %}" enctype="multipart/form-data" method="POST">
+                                    {% csrf_token %}
+                                    <td><input class="form-group w-50" type="file" name="comp" required id="comp"></td>
+                                    <td>-</td>
+                                    <td><button type="submit" class="btn btn-outline-success">Upload</button></td>
+                                </form>
+                                {% else %}
+                                <td><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></td>
+                                <td><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></td>
+                                <td><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
                         {% else %}
-                        <tr>
-                        </tr>
+                            <tr><td colspan="6">No OD records found</td></tr>
                         {% endif %}
+                        </tbody>
 
-                    </tbody>
                 </table>
             </div> <!-- /.table-stats -->
         </div>
@@ -201,22 +192,12 @@
                         {% if LE%}
                         {% for i in LE %}
                         <tr>
-                            <td class="serial">1.</td>
-
-                            <td> #LE{{i.id}} </td>
-                            <td> <span class="name">{{i.sub}}</span> </td>
-
-                            <td>
-                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
-                            </td>
-
-                            <td>
-                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
-                            </td>
-                           
+                            <td class="serial">{{ forloop.counter }}.</td>
+                            <td>#LE{{ i.id }}</td>
+                            <td><span class="name">{{ i.sub }}</span></td>
+                            <td><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></td>
+                            <td><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></td>
+                            <td><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></td>
                         </tr>
                         {% endfor %}
                         {% else %}
@@ -234,7 +215,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">GATE PAS's</strong>
+                <strong class="card-title">GATE PASS's</strong>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">

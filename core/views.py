@@ -14,12 +14,30 @@ import qrcode
 
 
 @login_required
+def hod_bonafide_view(request):
+    context = set_config(request)
+    context['bonafide_forms'] = BONAFIDE.objects.none()
+    if 'duser' in context:
+        try:
+            hod_staff = Staff.objects.get(user=context['duser'].user)
+            forms = BONAFIDE.objects.filter(
+                models.Q(user__mentor=hod_staff) |
+                models.Q(user__advisor=hod_staff) |
+                models.Q(user__hod=hod_staff)
+            ).distinct()
+            if forms.exists():
+                context['bonafide_forms'] = forms
+        except Staff.DoesNotExist:
+            pass
+    return render(request, "hod/bonafide_hod.html", context)
 def dash(request):
     context = set_config(request)
+    if 'duser' not in context:
+        return redirect('login')
     if not request.user.is_staff:
+        context['BF'] = BONAFIDE.objects.filter(user=context['duser'].id)
         return render(request, 'student/dash.html', context=context)
     elif context['duser'].position == 0:
-
         context['allratings'] = IndividualStaffRating.objects.all()
         hod = HOD.objects.get(user=context['duser'])
         staff_list = [i for i in hod.staffs.all()]
@@ -31,7 +49,17 @@ def dash(request):
             if i.staff.department == context['duser'].department:
                 rating_logs.append(i)
         context['my_rating'] = ratings[context['duser'].name]
-        context['rating_log'] = rating_logs[:len(ratings)] 
+        context['rating_log'] = rating_logs[:len(ratings)]
+        # Bonafide forms for which the logged-in HOD is mentor, advisor, or HOD
+        try:
+            hod_staff = Staff.objects.get(user=context['duser'].user)
+            context['bonafides'] = BONAFIDE.objects.filter(
+                models.Q(user__mentor=hod_staff) |
+                models.Q(user__advisor=hod_staff) |
+                models.Q(user__hod=hod_staff)
+            ).distinct()
+        except Staff.DoesNotExist:
+            context['bonafides'] = BONAFIDE.objects.none()
         return render(request, "hod/dash.html", context)
     else:
         context['aods'] = [i for i in OD.objects.all(
@@ -476,4 +504,60 @@ def student_feedback_form(request, id,typ):
 
 
 # EDC
+
+# Bonafide View
+@login_required
+def bonafide_view(request):
+    context = set_config(request)
+    if request.POST:
+        sub = get_post(request, 'sub')
+        body = get_post(request, 'reason')
+        date = get_post(request, 'date')
+        time = get_post(request, 'time')
+        proff = request.FILES.get('proof')
+        obj = BONAFIDE(user=context['duser'], sub=sub, body=body, date=date, time=time, proof=proff)
+        obj.save()
+        return redirect("dash")
+    return render(request, 'student/bonafide_form.html', context=context)
+
+# Staff Bonafides View
+@login_required
+def staff_bonafides(request):
+    context = set_config(request)
+    # Show bonafide requests for students who are mentees of the logged-in staff user
+    staff = Staff.objects.get(user=request.user)
+    # Bonafide forms for which the logged-in staff is the mentor
+    context['mentee_bonafides'] = BONAFIDE.objects.filter(user__mentor=staff)
+    # Bonafide forms for which the logged-in staff is the advisor (class forms)
+    context['class_bonafides'] = BONAFIDE.objects.filter(user__advisor=staff)
+    return render(request, 'staff/bonafides.html', context)
+
+@login_required
+def staff_action_bonafide(request, id):
+    if request.POST:
+        bonafide = BONAFIDE.objects.get(id=id)
+        # Mentor action
+        if str(bonafide.user.mentor.user.username) == str(request.user):
+            bonafide.Mstatus = get_post(request, 'sts')
+            if bonafide.Mstatus == STATUS[2][0]:
+                bonafide.Astatus = STATUS[2][0]
+                bonafide.Hstatus = STATUS[2][0]
+            bonafide.save()
+        # Advisor action
+        if str(bonafide.user.advisor.user.username) == str(request.user):
+            bonafide.Astatus = get_post(request, 'sts')
+            if bonafide.Astatus == STATUS[2][0]:
+                bonafide.Hstatus = STATUS[2][0]
+            bonafide.save()
+        # HOD action
+        if str(bonafide.user.hod.user.username) == str(request.user):
+            action_status = get_post(request, 'sts')
+            if action_status == STATUS[2][0]:  # 'Rejected'
+                bonafide.Hstatus = STATUS[2][0]
+            else:
+                bonafide.Hstatus = STATUS[1][0]  # 'Approved'
+            bonafide.Astatus = STATUS[1][0]  # Always set Advisor to 'Approved' for HOD action
+            bonafide.save()
+            return redirect("hod_bonafide_view")
+        return redirect("staff_bonafides")
 

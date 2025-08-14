@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <ul class="list-group mb-4">
+            <li class="list-group-item"><a href="{% url 'dash' %}">Dashboard</a></li>
+            <li class="list-group-item"><a href="{% url 'hod_od_view' %}">OD's</a></li>
+            <li class="list-group-item"><a href="{% url 'hod_bonafide_view' %}">Bonafide</a></li>
+            <li class="list-group-item"><a href="{% url 'hod_leave_view' %}">Leave's</a></li>
+            <li class="list-group-item"><a href="{% url 'hod_gatepass_view' %}">Gatepass</a></li>
+            <li class="list-group-item"><a href="{% url 'hod_feedback_view' %}">Feedback</a></li>
+        </ul>
+    </div>
+    <div class="col-md-9">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <b>Bonafide Applications</b>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for b in bonafide_forms %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ b.user.name }}</td>
+                            <td>{{ b.sub }}</td>
+                            <td>{{ b.date }}</td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
+                            </td>
+                            <td>
+                                {% if b.body %}
+                                    <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
+                                    <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
+                                      <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                          <div class="modal-header">
+                                            <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Reason for Bonafide</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                              <span aria-hidden="true">&times;</span>
+                                            </button>
+                                          </div>
+                                          <div class="modal-body">
+                                            {{ b.body }}
+                                            {% if b.proof %}
+                                              <hr>
+                                              <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                                            {% endif %}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
+                                <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                    {% csrf_token %}
+                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7">No bonafide forms.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container mt-4">
+    <h2>Bonafide Forms Approval</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Form ID</th>
+                <th>Student Name</th>
+                <th>Date Submitted</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {# Loop through bonafide forms #}
+            {% for form in bonafide_forms %}
+            <tr>
+                <td>{{ form.id }}</td>
+                <td>{{ form.student_name }}</td>
+                <td>{{ form.date_submitted }}</td>
+                <td>{{ form.status }}</td>
+                <td>
+                    <a href="{% url 'approve_bonafide' form.id %}" class="btn btn-success btn-sm">Approve</a>
+                    <a href="{% url 'reject_bonafide' form.id %}" class="btn btn-danger btn-sm">Reject</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No bonafide forms found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

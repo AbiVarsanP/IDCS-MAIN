@@ -162,8 +162,8 @@
                                         {% csrf_token %}
                                         <div class="input-group">
                                             <select name="sts" class="form-control">
-                                                <option value="Approved" default>Approve</option>
-                                                <option value="Rejected">Reject</option>
+                                                <option value="Approved" {% if i.Hstatus == "Approved" %}selected{% endif %}>Approve</option>
+                                                <option value="Rejected" {% if i.Hstatus == "Rejected" %}selected{% endif %}>Reject</option>
                                             </select>
                                             <button type="submit" class="btn btn-success">Submit</button>
                                         </div>
@@ -181,6 +181,8 @@
         </div>
     </div>
 </div>
+
+
 
 <!-- Modal -->
 <div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">

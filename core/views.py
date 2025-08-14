@@ -296,9 +296,15 @@ def staff_action_gatepass(request, id):
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
         if str(od.user.hod.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            od.Astatus = STATUS[1][0]
-            od.Hstatus = STATUS[1][0]
+            action_status = get_post(request, 'sts')
+            if action_status == STATUS[1][0]:  # 'Approved'
+                od.Mstatus = STATUS[1][0]
+                od.Astatus = STATUS[1][0]
+                od.Hstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                od.Mstatus = STATUS[2][0]
+                od.Astatus = STATUS[2][0]
+                od.Hstatus = STATUS[2][0]
             od.save()
             print(od.Astatus)
             return redirect("hod_gatepass_view")

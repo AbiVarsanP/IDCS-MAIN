@@ -236,27 +236,22 @@ class SpotFeedback(models.Model):
     def get_cls(self):
         return [SECTION[self.section],YEAR[self.year-1]]
     
-
     def get_absolute_url(self):
         return reverse('student_feedback_form', args=[str(self.staff.id),'spf'])
 
-# Bonafide Model
-class Bonafide(models.Model):
-    user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='bonafide_student')
-    purpose = models.CharField(max_length=150)
-    start = models.DateTimeField(verbose_name="From-Date")
-    end = models.DateTimeField(verbose_name="To-Date", null=True, blank=True)
+class BONAFIDE(models.Model):
+    user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='b_student')
+    sub = models.CharField(max_length=150)
+    body = models.TextField()
+    date = models.DateField(verbose_name="Date")
     proof = models.FileField(upload_to='bonafide/proof', blank=True)
     certificate = models.FileField(upload_to='bonafide/proof/certificate', blank=True)
+    # Status
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     created = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         ordering = ['-id']
-
     def __str__(self) -> str:
-        return f"{self.user.name} Bonafide Application"
-
-
+        return f"{self.user.name} {self.sub}"

@@ -10,6 +10,7 @@ urlpatterns = [
     path("gatepass/",gatepass,name='gatepass'),
     path("feedback",student_feedback,name='student_feedback'),
     path("feedbackform/<int:id>/<str:typ>",student_feedback_form,name='student_feedback_form'),
+    path('bonafide/', bonafide_view, name='bonafide'),
 ]
 
 # staff
@@ -21,6 +22,8 @@ urlpatterns += [
     path("leaves/action/<int:id>",staff_action_leave,name='staff_action_leave'),
     path("gatepasss/check",staff_gatepass_view,name='staff_gatepass_view'),
     path("gatepass/action/<int:id>",staff_action_gatepass,name='staff_action_gatepass'),
+    path("bonafide/action/<int:id>", staff_action_bonafide, name="staff_action_bonafide"),
+    path("bonafides/", staff_bonafides, name="staff_bonafides"),
 ]
 # hod
 
@@ -48,16 +51,6 @@ urlpatterns+=[
 # R & D
 
 # Placement
-
-# Bonafide
-urlpatterns += [
-    path('bonafide/', bonafide, name='bonafide'),
-    path('staff/bonafides/check', staff_bonafide_view, name='staff_bonafide_view'),
-    path('hod/bonafides/check', hod_bonafide_view, name='hod_bonafide_view'),
-    path('staff/bonafides/action/<int:id>', staff_action_bonafide, name='staff_action_bonafide'),
-    path('bonafide/upload_proof_bonafide/<int:id>', upload_proof_bonafide, name='proof_bonafide'),
-]
-
 
 
 

@@ -244,6 +244,7 @@ class BONAFIDE(models.Model):
     sub = models.CharField(max_length=150)
     body = models.TextField()
     date = models.DateField(verbose_name="Date")
+    time = models.TimeField(verbose_name="Time", null=True, blank=True)
     proof = models.FileField(upload_to='bonafide/proof', blank=True)
     certificate = models.FileField(upload_to='bonafide/proof/certificate', blank=True)
     # Status

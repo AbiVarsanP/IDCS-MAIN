@@ -6,7 +6,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"
     integrity="sha512-7U4rRB8aGAHGVad3u2jiC7GA5/1YhQcQjxKeaVms/bT66i3LVBMRcBI9KwABNWnxOSwulkuSXxZLGuyfvo7V1A=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body d-flex align-items-center">
+                <div class="mr-3">
+                    {% if duser.profile %}
+                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                    {% else %}
+                        <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>Staff ID:</strong> {{ duser.user.username }}<br>
+                    <strong>Name:</strong> {{ duser.name }}<br>
+                    <strong>User:</strong> HOD
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <li class="">
     <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
 </li>

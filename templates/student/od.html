@@ -2,23 +2,45 @@
 {% load static %}
 
 {% block nav %}
-<li class="">
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body d-flex align-items-center">
+                <div class="mr-3">
+                    {% if duser.profile %}
+                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                    {% else %}
+                        <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>Reg.No:</strong> {{ duser.user.username }}<br>
+                    <strong>Name:</strong> {{ duser.name }}<br>
+                    <strong>User:</strong> Student
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<li class="active">
     <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
 </li>
-<li class="active">
+
+<li class="">
     <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
 </li>
 <li class ="">
     <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
 </li>
 <li class ="">
+    <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+</li>
+<li class ="">
     <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
 </li>
-
 <li class ="">
     <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
 </li>
-
 {% endblock %}
 
 {% block root %}

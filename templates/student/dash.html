@@ -161,7 +161,7 @@
                         {% if OD%}
                         {% for i in OD %}
                         <tr>
-                            <td class="serial">1.</td>
+                            <td class="serial">{{ forloop.counter }}.</td>
 
                             <td> #OD{{i.id}} </td>
                             <td> <span class="name">{{i.sub}}</span> </td>
@@ -221,7 +221,7 @@
                         {% if LE%}
                         {% for i in LE %}
                         <tr>
-                            <td class="serial">1.</td>
+                            <td class="serial">{{ forloop.counter }}.</td>
 
                             <td> #LE{{i.id}} </td>
                             <td> <span class="name">{{i.sub}}</span> </td>

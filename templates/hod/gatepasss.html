@@ -2,11 +2,34 @@
 {% load static %}
 
 {% block nav %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body d-flex align-items-center">
+                <div class="mr-3">
+                    {% if duser.profile %}
+                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                    {% else %}
+                        <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>Staff ID:</strong> {{ duser.user.username }}<br>
+                    <strong>Name:</strong> {{ duser.name }}<br>
+                    <strong>User:</strong> HOD
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <li class="">
     <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
 </li>
 <li class="">
     <a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+</li>
+<li>
+    <a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
 </li>
 <li>
     <a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
@@ -35,7 +58,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">Menties OD's</strong>
+                <strong class="card-title">Menties Gatepass</strong>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">
@@ -104,7 +127,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">OD's</strong>
+                <strong class="card-title">Department students Gatepass</strong>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">

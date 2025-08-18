@@ -133,8 +133,11 @@
                     <div class="user-area dropdown float-right">
                         <a href="#" class="dropdown-toggle active" data-toggle="dropdown" aria-haspopup="true"
                             aria-expanded="false">
-                            <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}"
-                                alt="Profile">
+                            {% if duser.profile %}
+                                <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}" alt="Profile">
+                            {% else %}
+                                <img class="user-avatar rounded-circle" height="40px" src="/static/default_profile.png" alt="Default Profile">
+                            {% endif %}
                         </a>
 
                         <div class="user-menu dropdown-menu">

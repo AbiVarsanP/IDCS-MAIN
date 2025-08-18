@@ -29,7 +29,7 @@ def hod_bonafide_view(request):
                 context['bonafide_forms'] = forms
         except Staff.DoesNotExist:
             pass
-    return render(request, "hod/bonafide.html", context)
+    return render(request, "hod/bonafide_hod.html", context)
 def dash(request):
     context = set_config(request)
     if 'duser' not in context:
@@ -227,9 +227,15 @@ def staff_action_od(request, id):
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
         if str(od.user.hod.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            od.Astatus = STATUS[1][0]
-            od.Hstatus = STATUS[1][0]
+            action_status = get_post(request, 'sts')
+            if action_status == STATUS[1][0]:  # 'Approved'
+                od.Mstatus = STATUS[1][0]
+                od.Astatus = STATUS[1][0]
+                od.Hstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                od.Mstatus = STATUS[2][0]
+                od.Astatus = STATUS[2][0]
+                od.Hstatus = STATUS[2][0]
             od.save()
             print(od.Astatus)
             return redirect("hod_od_view")
@@ -258,9 +264,15 @@ def staff_action_leave(request, id):
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
         if str(od.user.hod.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            od.Astatus = STATUS[1][0]
-            od.Hstatus = STATUS[1][0]
+            action_status = get_post(request, 'sts')
+            if action_status == STATUS[1][0]:  # 'Approved'
+                od.Mstatus = STATUS[1][0]
+                od.Astatus = STATUS[1][0]
+                od.Hstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                od.Mstatus = STATUS[2][0]
+                od.Astatus = STATUS[2][0]
+                od.Hstatus = STATUS[2][0]
             od.save()
             print(od.Astatus)
             return redirect("hod_leave_view")
@@ -290,9 +302,15 @@ def staff_action_gatepass(request, id):
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
         if str(od.user.hod.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            od.Astatus = STATUS[1][0]
-            od.Hstatus = STATUS[1][0]
+            action_status = get_post(request, 'sts')
+            if action_status == STATUS[1][0]:  # 'Approved'
+                od.Mstatus = STATUS[1][0]
+                od.Astatus = STATUS[1][0]
+                od.Hstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                od.Mstatus = STATUS[2][0]
+                od.Astatus = STATUS[2][0]
+                od.Hstatus = STATUS[2][0]
             od.save()
             print(od.Astatus)
             return redirect("hod_gatepass_view")
@@ -513,8 +531,9 @@ def bonafide_view(request):
         sub = get_post(request, 'sub')
         body = get_post(request, 'reason')
         date = get_post(request, 'date')
+        time = get_post(request, 'time')
         proff = request.FILES.get('proof')
-        obj = BONAFIDE(user=context['duser'], sub=sub, body=body, date=date, proof=proff)
+        obj = BONAFIDE(user=context['duser'], sub=sub, body=body, date=date, time=time, proof=proff)
         obj.save()
         return redirect("dash")
     return render(request, 'student/bonafide_form.html', context=context)
@@ -550,9 +569,12 @@ def staff_action_bonafide(request, id):
             bonafide.save()
         # HOD action
         if str(bonafide.user.hod.user.username) == str(request.user):
-            bonafide.Astatus = get_post(request, 'sts')
-            bonafide.Astatus = STATUS[1][0]
-            bonafide.Hstatus = STATUS[1][0]
+            action_status = get_post(request, 'sts')
+            if action_status == STATUS[2][0]:  # 'Rejected'
+                bonafide.Hstatus = STATUS[2][0]
+            else:
+                bonafide.Hstatus = STATUS[1][0]  # 'Approved'
+            bonafide.Astatus = STATUS[1][0]  # Always set Advisor to 'Approved' for HOD action
             bonafide.save()
             return redirect("hod_bonafide_view")
         return redirect("staff_bonafides")

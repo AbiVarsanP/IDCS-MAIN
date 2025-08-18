@@ -2,6 +2,26 @@
 {% load static %}
 
 {% block nav %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body d-flex align-items-center">
+                <div class="mr-3">
+                    {% if duser.profile %}
+                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                    {% else %}
+                        <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>Staff ID:</strong> {{ duser.user.username }}<br>
+                    <strong>Name:</strong> {{ duser.name }}<br>
+                    <strong>User:</strong> Staff
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <li class="">
     <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
 </li>
@@ -11,7 +31,9 @@
 <li>
     <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
 </li>
-
+<li>
+    <a href="{% url 'staff_bonafides' %}" ><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+</li>
 <li class ="">
     <a href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
 </li>
@@ -42,11 +64,17 @@
             <div class="table-stats order-table ov-h">
                 <table class="table ">
                     <thead>
-                        <tr>
-                            <th class="serial">ID</th>
-                            <th>NAME</th>
-                            <th>SUB</th>
-                            <th>FROM-TO</th>
+                            <td>
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
+                                    data-sub="{{i.sub}}" data-name="{{i.user.name}}"
+                                    data-body="{{i.body}}" data-url="{{i.proof.url}}"><small>#OD{{i.id}}</small></button>
+                                {% if i.proof %}
+                                    <a href="{{i.proof.url}}" target="_blank" class="btn btn-outline-warning btn-sm">View File</a>
+                                {% endif %}
+                                {% if i.certificate %}
+                                    <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
+                                {% endif %}
+                            </td>
                             <th>VIEW</th>
                             <th>OPTION</th>
                         </tr>
@@ -69,6 +97,12 @@
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"
                                     data-body="{{i.body}}" data-url="{{i.proof.url}}"><small>#OD{{i.id}}</small></button>
+                                    {% if i.proof %}
+                                        <a href="{{i.proof.url}}" target="_blank" class="btn btn-outline-warning btn-sm">View File</a>
+                                    {% endif %}
+                                    {% if i.certificate %}
+                                        <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
+                                    {% endif %}
                             </td>
 
                             <td>
@@ -152,7 +186,9 @@
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"
                                     data-body="{{i.body}}" data-url="{{i.proof.url}}"><small>#OD{{i.id}}</small></button>
-
+                                {% if i.certificate %}
+                                    <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
+                                {% endif %}
                             </td>
 
                             <td>

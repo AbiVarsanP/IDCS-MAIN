@@ -54,7 +54,6 @@
         color: orange;
     }
 </style>
-
 <div class="row">
     <div class="col-lg-3 col-md-3">
         <div class="card">
@@ -65,9 +64,9 @@
                     </div>
                     <div class="stat-content">
                         <div class="text-left dib">
-                            <div class="stat-text">Leave
+                            <div class="stat-text">OD's
                                 <div class="stat-heading">
-                                    <a href="" class="btn btn-link btn-sm  flat-color-1">Apply &nbsp;<i
+                                    <a href="{% url 'hod_od_view' %}" class="btn btn-link btn-sm  flat-color-1">View &nbsp;<i
                                             class="fa fa-arrow-right"></i></a>
                                 </div>
                             </div>
@@ -87,10 +86,11 @@
                     </div>
                     <div class="stat-content">
                         <div class="text-left dib">
-                            <div class="stat-text">OD
+                            <div class="stat-text">Leave's
                                 <div class="stat-heading">
-                                    <button type="button" class="btn btn-link btn-sm  flat-color-2">Apply &nbsp;<i
-                                            class="fa fa-arrow-right"></i></button>
+                                    <a href="{% url 'hod_leave_view' %}" class="btn btn-link btn-sm  flat-color-2">View &nbsp;<i
+                                            class="fa fa-arrow-right"></i></a>
+
                                 </div>
                             </div>
                         </div>
@@ -99,30 +99,53 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-6 col-md-6">
-        <div class="card bg-flat-color-7">
+    
+
+    <!-- //Bonafide card -->
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
             <div class="card-body">
-                <div class="stat-widget-one">
-                    <div class="stat-icon dib"><i class="ti-face-smile flat-color-{{my_rating.0}} border-success"></i></div>
-                    <div class="stat-content dib">
-                        <div class="stat-text">My Ratings</div>
-                        <div class="stat-digit">
-                            <span class="count float-left">{{my_rating.0}}</span>
-                        <span><small><small>/4</small></small> : </span>
-                        {% for i in "x"|ljust:4 %}
-                        {% if forloop.counter0 < my_rating.0 %} <span class="fa fa-star flat-color-{{my_rating.0}}"></span>
-                            {% else %}
-                            <span class="fa fa-star"></span>
-                            {% endif %}
-                            {% endfor %}
-                            <small>( <span class="count">{{my_rating.1}}</span> )</small>
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-3">
+                        <i class="menu-icon fa fa-certificate"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Bonafied
+                                <div class="stat-heading">
+                                <a href="{% url 'hod_bonafide_view' %}" class="btn btn-link btn-sm  flat-color-2">View &nbsp;<i
+                                            class="fa fa-arrow-right"></i></a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-4">
+                        <i class="ti-shift-right-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Gate Pass
+                                <div class="stat-heading">
+                                    <a href="{% url 'hod_gatepass_view' %}" class="btn btn-link btn-sm  flat-color-4">Apply
+                                        &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 </div>
 

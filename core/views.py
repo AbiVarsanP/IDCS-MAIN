@@ -11,9 +11,8 @@ from django.core.files import File
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.utils.dateparse import parse_datetime   
-from .models import GATEPASS, Student,OD
-
+from django.utils.dateparse import parse_datetime   # ✅ must be here
+from .models import GATEPASS, Student
 
 import qrcode
 # GENERAL
@@ -99,30 +98,28 @@ def logout_user(request):
 
 # HOD MODULE
 @login_required
+
+
 def od(request):
+    context = set_config(request)
     if request.method == "POST":
-        from_date_str = request.POST.get("from_date")
-        to_date_str = request.POST.get("to_date")
+        sub = get_post(request, 'sub')
+        body = get_post(request, 'reason')
+        start = get_post(request, 'start')
+        end = get_post(request, 'end')
+        proff = request.FILES.get('proof')
 
-        # Ensure strings
-        if from_date_str and to_date_str:
-            from_date = parse_datetime(from_date_str)
-            to_date = parse_datetime(to_date_str)
-        else:
-            from_date, to_date = None, None
+        # Convert browser datetime string → Python datetime
+        start = parse_datetime(start)
+        end = parse_datetime(end)
 
-        # Save to model (assuming OD model exists)
-        od = OD.objects.create(
-            student=request.user,
-            subject=request.POST.get("sub"),
-            reason=request.POST.get("reason"),
-            from_date=from_date,
-            to_date=to_date,
-            proof=request.FILES.get("proof"),
-        )
+        obj = OD(user=context['duser'], sub=sub, body=body,
+                 start=start, end=end, proof=proff)
+        obj.save()
+
         return redirect("dash")
 
-    return render(request, "student/od.html")
+    return render(request, 'student/od.html', context=context)
 
 
 @login_required

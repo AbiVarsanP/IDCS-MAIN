@@ -113,11 +113,22 @@ def od(request):
 def leave(request):
     context = set_config(request)
     if request.POST:
+        from django.utils import timezone
+        from datetime import datetime
         sub = get_post(request, 'sub')
         body = get_post(request, 'reason')
-        f = get_post(request, "from")
-        t = get_post(request, 'to')
+        f_raw = get_post(request, "from")
+        t_raw = get_post(request, 'to')
         proff = request.FILES.get('proof')
+        # Parse datetime fields, fallback to now if missing
+        try:
+            f = datetime.strptime(f_raw, "%Y-%m-%dT%H:%M") if f_raw else timezone.now()
+        except Exception:
+            f = timezone.now()
+        try:
+            t = datetime.strptime(t_raw, "%Y-%m-%dT%H:%M") if t_raw else timezone.now()
+        except Exception:
+            t = timezone.now()
         obj = LEAVE(user=context['duser'], sub=sub,
                     body=body, start=f, end=t, proof=proff)
         obj.save()

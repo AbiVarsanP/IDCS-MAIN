@@ -9,6 +9,12 @@ from django.contrib.messages import error, success, warning
 from io import BytesIO
 from django.core.files import File
 from django.conf import settings
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.utils.dateparse import parse_datetime   
+from .models import GATEPASS, Student,OD
+
+
 import qrcode
 # GENERAL
 
@@ -94,20 +100,30 @@ def logout_user(request):
 # HOD MODULE
 @login_required
 def od(request):
-    context = set_config(request)
-    if request.POST:
-        sub = get_post(request, 'sub')
-        body = get_post(request, 'reason')
-        f = get_post(request, "from")
-        t = get_post(request, 'to')
-        proff = request.FILES.get('proof')
-        obj = OD(user=context['duser'], sub=sub,
-                 body=body, start=f, end=t, proof=proff)
-        obj.save()
+    if request.method == "POST":
+        from_date_str = request.POST.get("from_date")
+        to_date_str = request.POST.get("to_date")
 
+        # Ensure strings
+        if from_date_str and to_date_str:
+            from_date = parse_datetime(from_date_str)
+            to_date = parse_datetime(to_date_str)
+        else:
+            from_date, to_date = None, None
+
+        # Save to model (assuming OD model exists)
+        od = OD.objects.create(
+            student=request.user,
+            subject=request.POST.get("sub"),
+            reason=request.POST.get("reason"),
+            from_date=from_date,
+            to_date=to_date,
+            proof=request.FILES.get("proof"),
+        )
         return redirect("dash")
 
-    return render(request, 'student/od.html', context=context)
+    return render(request, "student/od.html")
+
 
 @login_required
 def leave(request):
@@ -140,11 +156,16 @@ def leave(request):
 @login_required
 def gatepass(request):
     context = set_config(request)
-    if request.POST:
+    if request.method == "POST":
         sub = get_post(request, 'sub')
-        f = get_post(request, "from")
-        t = get_post(request, 'to')
-        obj = GATEPASS(user=context['duser'], sub=sub, start=f, end=t)
+        start = get_post(request, 'start')
+        end = get_post(request, 'end')
+
+        # Parse datetime
+        start = parse_datetime(start)
+        end = parse_datetime(end)
+
+        obj = GATEPASS(user=context['duser'], sub=sub, start=start, end=end)
         obj.save()
 
         return redirect("dash")

@@ -68,6 +68,31 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery-match-height@0.7.2/dist/jquery.matchHeight.min.js"></script>
     <script src="{% static 'assets/js/main.js' %}"></script>
 
+    <script>
+        const form = document.querySelector("form");
+        const inputs = form.querySelectorAll("input[type=text], input[type=number], input[type=password]");
+
+        inputs.forEach((input, index) => {
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+              // If not last input → go to next
+              if (index < inputs.length - 1) {
+                e.preventDefault(); // block form submit
+                inputs[index + 1].focus();
+              } else {
+                // If last input (password) → submit immediately
+                e.preventDefault(); // stop any default double behavior
+                form.submit();      // force submit once
+              }
+            }
+          });
+        });
+    </script>
+
+
+
+
+
 </body>
 
 </html>

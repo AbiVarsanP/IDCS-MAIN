@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% comment %} This template is deprecated. Please use gatepass_base.html. {% endcomment %}
 {% block nav %}
 
 <li class="active">
@@ -24,4 +23,20 @@
 
 
 {% endblock %}
-{% extends 'student/gatepass_base.html' %}
+{% block root %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <a href="{% url 'gatepass' %}?action=apply" class="btn btn-primary btn-block">Apply for Gatepass</a>
+    </div>
+    <div class="col-md-6">
+        <a href="{% url 'gatepass' %}?action=status" class="btn btn-info btn-block">View Gatepass Status</a>
+    </div>
+</div>
+<div id="gatepass-content">
+    {% if action == 'apply' or not action %}
+        {% include 'student/gatepass_apply.html' %}
+    {% elif action == 'status' %}
+        {% include 'student/gatepass_status.html' %}
+    {% endif %}
+</div>
+{% endblock %}

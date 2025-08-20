@@ -25,27 +25,14 @@ AI&DS - B :
 
 ########################################################################################################################################################################################################################################################
 
-working file
-1. View button for students
+Pending works :
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+1. Preview button for students
+2. Attendance
+3. Assignments
+4. Exam Schedules
+5. Timetable
+6. Teaching content
+7. Billing
+8. Announcements
+9. Result Announcements

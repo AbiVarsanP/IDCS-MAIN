@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-5">
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header bg-primary text-white">
+					<h4 class="mb-0">My Profile</h4>
+				</div>
+				<div class="card-body">
+					<div class="row mb-4">
+						<div class="col-md-4 text-center">
+							{% if duser.profile %}
+								<img src="{{ duser.profile.url }}" class="img-fluid rounded-circle mb-2" style="max-width: 150px;" alt="Profile Picture">
+							{% else %}
+								<img src="/static/default_profile.png" class="img-fluid rounded-circle mb-2" style="max-width: 150px;" alt="Default Profile">
+							{% endif %}
+						</div>
+						<div class="col-md-8">
+							<h5>{{ duser.name }}</h5>
+							<p class="mb-1"><strong>Roll No:</strong> {{ duser.roll }}</p>
+							<p class="mb-1"><strong>Email:</strong> {{ duser.user.email }}</p>
+							<p class="mb-1"><strong>Department:</strong> {{ duser.get_department_display }}</p>
+							<p class="mb-1"><strong>Semester:</strong> {{ duser.get_semester_display }}</p>
+							<p class="mb-1"><strong>Year:</strong> {{ duser.get_year_display }}</p>
+							<p class="mb-1"><strong>Section:</strong> {{ duser.get_section_display }}</p>
+						</div>
+					</div>
+					<hr>
+					<div class="row">
+						<div class="col-md-6">
+							<p><strong>Date of Birth:</strong> {{ duser.dob }}</p>
+							<p><strong>Age:</strong> {{ duser.age }}</p>
+							<p><strong>Mobile:</strong> {{ duser.mobile }}</p>
+							<p><strong>Parent Mobile:</strong> {{ duser.parent_mobile }}</p>
+						</div>
+						<div class="col-md-6">
+							<p><strong>Address:</strong><br>{{ duser.address }}</p>
+							<p><strong>Advisor:</strong> {% if duser.advisor %}{{ duser.advisor.name }}{% else %}-{% endif %}</p>
+							<p><strong>Mentor:</strong> {% if duser.mentor %}{{ duser.mentor.name }}{% else %}-{% endif %}</p>
+							<p><strong>HOD:</strong> {% if duser.hod %}{{ duser.hod.name }}{% else %}-{% endif %}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

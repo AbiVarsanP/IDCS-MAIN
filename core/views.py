@@ -13,9 +13,13 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils.dateparse import parse_datetime   # ✅ must be here
 from .models import GATEPASS, Student
-
 import qrcode
-# GENERAL
+
+# Student Profile View
+@login_required
+def student_profile(request):
+    context = set_config(request)
+    return render(request, 'student/profile.html', context)
 
 
 @login_required
@@ -67,13 +71,32 @@ def dash(request):
             context['bonafides'] = BONAFIDE.objects.none()
         return render(request, "hod/dash.html", context)
     else:
-        context['aods'] = [i for i in OD.objects.all(
-        ) if i.user.advisor.id == context['duser'].id]
-        context['mods'] = [i for i in OD.objects.all(
-        ) if i.user.mentor.id == context['duser'].id]
-        context['hods'] = [i for i in OD.objects.all() if i.user.hod.id ==
-                           context['duser'].id]
+        from django.utils import timezone
+        from datetime import timedelta
+        now = timezone.now()
+        one_day_ago = now - timedelta(days=1)
+        staff = context['duser']
+        context['recent_od'] = OD.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff),
+            created__gte=one_day_ago
+        ).order_by('-created')[:5]
+        context['recent_leave'] = LEAVE.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff),
+            created__gte=one_day_ago
+        ).order_by('-created')[:5]
+        context['recent_gatepass'] = GATEPASS.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff),
+            created__gte=one_day_ago
+        ).order_by('-created')[:5]
+        context['recent_bonafide'] = BONAFIDE.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff),
+            created__gte=one_day_ago
+        ).order_by('-created')[:5]
+        context['aods'] = [i for i in OD.objects.all() if i.user.advisor.id == context['duser'].id]
+        context['mods'] = [i for i in OD.objects.all() if i.user.mentor.id == context['duser'].id]
+        context['hods'] = [i for i in OD.objects.all() if i.user.hod.id == context['duser'].id]
         return render(request, "staff/dash.html", context)
+
 
 
 def login_user(request):

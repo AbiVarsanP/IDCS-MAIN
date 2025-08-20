@@ -1,0 +1,68 @@
+
+<div class="card">
+    <div class="card-header">
+        <h4>Your Gatepass Applications</h4>
+    </div>
+    <div class="card-body">
+        {% if gatepasses %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Mentor Status</th>
+                    <th>Advisor Status</th>
+                    <th>HOD Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gp in gatepasses %}
+                <tr>
+                    <td>{{ gp.sub }}</td>
+                    <td>{{ gp.start }}</td>
+                    <td>{{ gp.end }}</td>
+                    <td>
+                        {% if gp.Mstatus == 'Pending' %}
+                            <span class="badge badge-warning">On Hold with Mentor</span>
+                        {% elif gp.Mstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif gp.Mstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if gp.Astatus == 'Pending' %}
+                            <span class="badge badge-warning">On Hold with Advisor</span>
+                        {% elif gp.Astatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif gp.Astatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if gp.Hstatus == 'Pending' %}
+                            <span class="badge badge-warning">On Hold with HOD</span>
+                        {% elif gp.Hstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif gp.Hstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if gp.Mstatus == 'Approved' and gp.Astatus == 'Approved' and gp.Hstatus == 'Approved' %}
+                            <a href="#" class="btn btn-success btn-sm">Open Gatepass</a>
+                        {% else %}
+                            <span class="text-muted">Waiting for Approval</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No gatepass applications found.</p>
+        {% endif %}
+    </div>
+</div>

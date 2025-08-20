@@ -1,0 +1,60 @@
+
+<form enctype="multipart/form-data" method="post" class="">
+    {% csrf_token %}
+    <div class="form-group">
+        <div class="input-group">
+            <div class="input-group-addon"><i class="fa fa-user"></i></div>
+            <input type="text" disabled id="username" name="username" placeholder="Username" value="{{user.username}}" class="form-control">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">Mentor</div>
+                    <input type="text" id="mentor" name="mentor" value="Mrs {{duser.mentor.name}}" disabled class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">Advisor</div>
+                    <input type="text" id="advisor" name="advisor" value="Mrs {{duser.advisor.name}}" disabled class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-addon">HOD</div>
+                    <input type="text" id="hod" name="hod" value="DR {{duser.hod.name}}" disabled class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="input-group">
+            <input type="text" required id="sub" name="sub" placeholder="Subject" class="form-control">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="start">From</label>
+                <input type="datetime-local" name="start" id="start" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="end">To</label>
+                <input type="datetime-local" name="end" id="end" class="form-control" required>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="btn-group col-lg-12" style="width: 100%;">
+        <button type="submit" class="btn btn-success col-lg-8">Submit</button>
+        <button type="reset" class="btn btn-outline-danger col-lg-4">Reset</button>
+    </div>
+</form>

@@ -176,21 +176,22 @@ def leave(request):
 @login_required
 def gatepass(request):
     context = set_config(request)
+    action = request.GET.get('action', 'apply')
+    context['action'] = action
     if request.method == "POST":
         sub = get_post(request, 'sub')
         start = get_post(request, 'start')
         end = get_post(request, 'end')
-
         # Parse datetime
         start = parse_datetime(start)
         end = parse_datetime(end)
-
         obj = GATEPASS(user=context['duser'], sub=sub, start=start, end=end)
         obj.save()
-
-        return redirect("dash")
-
-    return render(request, 'student/gatepass.html', context=context)
+        return redirect("gatepass")
+    if action == 'status':
+        # Show all gatepasses for this student
+        context['gatepasses'] = GATEPASS.objects.filter(user=context['duser']).order_by('-id')
+    return render(request, 'student/gatepass_base.html', context=context)
 
 @login_required
 def staff_od_view(request):

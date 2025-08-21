@@ -582,11 +582,31 @@ def bonafide_view(request):
     context = set_config(request)
     if request.POST:
         sub = get_post(request, 'sub')
-        body = get_post(request, 'reason')
         date = get_post(request, 'date')
-        time = get_post(request, 'time')
         proff = request.FILES.get('proof')
-        obj = BONAFIDE(user=context['duser'], sub=sub, body=body, date=date, time=time, proof=proff)
+        # Compose body from all relevant fields
+        body_parts = []
+        def add_body(label, key):
+            val = get_post(request, key)
+            if val:
+                body_parts.append(f"{label}: {val}")
+        add_body('Father\'s Name', 'fathers_name')
+        add_body('Branch', 'branch')
+        add_body('Year', 'year')
+        add_body('Community', 'community')
+        add_body('Other Community', 'other_community')
+        add_body('Scholar Type', 'scholar_type')
+        add_body('College Bus', 'college_bus')
+        add_body('Boarding Point', 'boarding_point')
+        add_body('Bus Type', 'bus_type')
+        add_body('Bus Fare', 'bus_fare')
+        add_body('First Graduate', 'first_graduate')
+        add_body('Gov/Management', 'gov_mgmt')
+        # Add other_purpose if present and selected
+        if get_post(request, 'purpose') == 'Other':
+            add_body('Other Purpose', 'other_purpose')
+        body = " | ".join(body_parts)
+        obj = BONAFIDE(user=context['duser'], sub=sub, body=body, date=date, proof=proff)
         obj.save()
         return redirect("dash")
     return render(request, 'student/bonafide_form.html', context=context)

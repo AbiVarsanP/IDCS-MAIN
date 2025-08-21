@@ -155,8 +155,10 @@
         <div class="profile-row">
             <div class="info-box"><div class="info-label">Section</div><div class="info-value">{{ duser.get_section_display }}</div></div>
             <div class="info-box"><div class="info-label">Advisor</div><div class="info-value">{% if duser.advisor %}{{ duser.advisor.name }}{% else %}-{% endif %}</div></div>
+            <div class="info-box"><div class="info-label">A-Advisor</div><div class="info-value">{% if duser.a_advisor %}{{ duser.a_advisor.name }}{% else %}-{% endif %}</div></div>
             <div class="info-box"><div class="info-label">Mentor</div><div class="info-value">{% if duser.mentor %}{{ duser.mentor.name }}{% else %}-{% endif %}</div></div>
             <div class="info-box"><div class="info-label">HOD</div><div class="info-value">{% if duser.hod %}{{ duser.hod.name }}{% else %}-{% endif %}</div></div>
+            <div class="info-box"><div class="info-label">AHOD</div><div class="info-value">{% if duser.ahod %}{{ duser.ahod.user.name }}{% else %}-{% endif %}</div></div>
         </div>
     </div>
 </div>

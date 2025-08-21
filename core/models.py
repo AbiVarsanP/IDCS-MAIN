@@ -3,6 +3,23 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from .constants import *
 
+class AHOD(models.Model):
+    user = models.ForeignKey('Staff', on_delete=models.CASCADE)
+    get_feedback = models.BooleanField(default=False)
+    get_spot_feedback = models.BooleanField(default=False)
+    department = models.PositiveIntegerField(choices=SDEPT, default=2, null=True)
+    staffs = models.ManyToManyField('Staff', related_name='ahod_my_staffs', blank=True)
+    students = models.ManyToManyField('Student', related_name='ahod_students', blank=True)
+    assign_feedback = models.ManyToManyField('Staff', related_name='ahod_assign_feed', blank=True)
+    spot_feedback = models.ManyToManyField('SpotFeedback', blank=True)
+
+    def __str__(self) -> str:
+        return f"AHOD: {self.user.name} - {self.user.department}"
+from django.db import models
+from django.contrib.auth.models import User
+from django.urls import reverse
+from .constants import *
+
 
 class Student(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='student')
@@ -20,9 +37,11 @@ class Student(models.Model):
     dob = models.DateField(blank=True,null=True)
     age = models.PositiveIntegerField(blank=True,null=True)
 
-    advisor = models.ForeignKey('Staff',blank=True,on_delete=models.DO_NOTHING,related_name='Advisor',null=True)
-    mentor = models.ForeignKey('Staff',blank=True,on_delete=models.DO_NOTHING,related_name='Mentor',null=True)
-    hod = models.ForeignKey('Staff',blank=True,on_delete=models.DO_NOTHING,related_name='HOD',null=True)
+    advisor = models.ForeignKey('Staff', blank=True, on_delete=models.DO_NOTHING, related_name='Advisor', null=True)
+    a_advisor = models.ForeignKey('Staff', blank=True, on_delete=models.DO_NOTHING, related_name='A_Advisor', null=True)
+    mentor = models.ForeignKey('Staff', blank=True, on_delete=models.DO_NOTHING, related_name='Mentor', null=True)
+    hod = models.ForeignKey('Staff', blank=True, on_delete=models.DO_NOTHING, related_name='HOD', null=True)
+    ahod = models.ForeignKey('AHOD', blank=True, on_delete=models.DO_NOTHING, related_name='AHOD', null=True)
     
     teaching_staffs = models.ManyToManyField('Staff',blank=True)
     feedback_for = models.ManyToManyField('IndividualStaffRating',related_name='for_staff_rating',blank=True)

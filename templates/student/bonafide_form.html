@@ -68,6 +68,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     purposeSelect.addEventListener('change', toggleOtherPurpose);
     toggleOtherPurpose();
+
+    // Scholar type logic
+    var scholarRadios = document.getElementsByName('scholar_type');
+    var busTypeRow = document.querySelector('.form-row .form-group label[for="college_bus_type"]').closest('.form-row');
+    var busFareGroup = document.getElementById('bus_fare').closest('.form-group');
+    function toggleBusFields() {
+        var selected = document.querySelector('input[name="scholar_type"]:checked').value;
+        if (selected === 'Hostel') {
+            busTypeRow.style.display = 'none';
+            busFareGroup.style.display = 'none';
+        } else {
+            busTypeRow.style.display = '';
+            busFareGroup.style.display = '';
+        }
+    }
+    scholarRadios.forEach(function(radio) {
+        radio.addEventListener('change', toggleBusFields);
+    });
+    toggleBusFields();
 });
 </script>
                         {% csrf_token %}

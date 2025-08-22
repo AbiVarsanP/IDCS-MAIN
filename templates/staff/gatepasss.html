@@ -50,33 +50,24 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>Submitted At</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if aods%}
                         {% for i in aods %}
                         <tr>
-
                             <td class="serial"> <a href="">#GP{{i.id}}</a> </td>
                             <td> {{i.user.name}} </td>
+                            <td>{{i.sub}}</td>
+                            <td>{{i.start}} - {{i.end}}</td>
+                            <td>{{ i.created|date:"d M Y H:i" }}</td>
                             <td>
-                                {{i.sub}}
-                            </td>
-                            <td>
-                                {{i.start}} - {{i.end}}
-
-                            </td>
-
-                            <td>
-                                
                                 {% if i.Mstatus == "Approved" %}
                                 {% if i.Astatus == "Approved" %}
                                 <button class="btn btn-success ">{{i.Astatus}}</button>
-
                                 {% elif i.Astatus == "Rejected" %}
                                 <button class="btn btn-danger ">{{i.Astatus}}</button>
-
                                 {% else %}
                                 <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
                                     {% csrf_token %}
@@ -94,17 +85,13 @@
                                 {% else %}
                                 <button class="btn btn-outline-warning" disabled>Waiting for Mentor Status</button>
                                 {% endif %}
-                                
                             </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No records found</td>
+                        </tr>
                         {% endfor %}
-                        {% else %}
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        {% endif %}
-
                     </tbody>
                 </table>
             </div> <!-- /.table-stats -->
@@ -116,7 +103,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">Menties Gatepass</strong>
+                <strong class="card-title">Mentees Gatepass</strong>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">
@@ -126,34 +113,23 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
-                            
+                            <th>Submitted At</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if mods%}
                         {% for i in mods %}
                         <tr>
-
                             <td class="serial"> <a href="">#GP{{i.id}}</a> </td>
                             <td> {{i.user.name}} </td>
+                            <td>{{i.sub}}</td>
+                            <td>{{i.start}} - {{i.end}}</td>
+                            <td>{{ i.created|date:"d M Y H:i" }}</td>
                             <td>
-                                {{i.sub}}
-                            </td>
-                            <td>
-                                {{i.start}} - {{i.end}}
-                            </td>
-
-                           
-
-                            <td>
-
                                 {% if i.Mstatus == "Approved" %}
                                 <button class="btn btn-success ">{{i.Mstatus}}</button>
-
                                 {% elif i.Mstatus == "Rejected" %}
                                 <button class="btn btn-danger ">{{i.Mstatus}}</button>
-
                                 {% else %}
                                 <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
                                     {% csrf_token %}
@@ -163,18 +139,16 @@
                                             <option value="Rejected">Reject</option>
                                         </select>
                                         <button type="submit" class="btn btn-success">submit</button>
-
                                     </div>
                                 </form>
                                 {% endif %}
                             </td>
                         </tr>
-                        {% endfor %}
-                        {% else %}
+                        {% empty %}
                         <tr>
+                            <td colspan="6" class="text-center">No records found</td>
                         </tr>
-                        {% endif %}
-
+                        {% endfor %}
                     </tbody>
                 </table>
             </div> <!-- /.table-stats -->

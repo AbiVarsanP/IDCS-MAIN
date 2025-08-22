@@ -3,7 +3,7 @@
 
 {% block nav %}
 
-<li class="active">
+<li>
     <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
 </li>
 <li>
@@ -13,7 +13,7 @@
     <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
 </li>
 
-<li>
+<li class="active">
     <a href="{% url 'staff_bonafides' %}" ><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
 </li>
 <li>
@@ -41,82 +41,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        {% for b in class_bonafides %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ b.user.name }}</td>
-                                <td>{{ b.sub }}</td>
-                                <td>{{ b.date }}</td>
-                                <td>{{ b.time }}</td>
-                                <td>
-                                    Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
-                                    Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
-                                    HOD: <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
-                                </td>
-                                <td>
-                                    {% if b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
-                                    <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                        {% csrf_token %}
-                                        <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                    </form>
-                                    {% endif %}
-                                    {% if b.body %}
-                                        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
-                                        <!-- Reason Modal -->
-                                        <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
-                                          <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                              <div class="modal-header">
-                                                <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Reason for Bonafide</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                  <span aria-hidden="true">&times;</span>
-                                                </button>
-                                              </div>
-                                              <div class="modal-body">
-                                                {{ b.body }}
-                                                {% if b.proof %}
-                                                  <hr>
-                                                  <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
-                                                {% endif %}
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr><td colspan="6">No class bonafide forms.</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-        <!-- Mentees Bonafide Table -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card mb-4">
-                    <div class="card-header bg-info text-white">
-                        <b>Mentees Bonafide Forms</b>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Student</th>
-                                    <th>Subject</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for b in mentee_bonafides %}
+                            {% for b in class_bonafides %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ b.user.name }}</td>
@@ -132,18 +57,35 @@
                                         {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
                                         <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
                                             {% csrf_token %}
+                                            <input type="hidden" name="role" value="mentor">
                                             <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
                                             <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                         </form>
+                                        {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
+                                        <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="role" value="advisor">
+                                            <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                            <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                        {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
+                                        <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="role" value="hod">
+                                            <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                            <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                        {% else %}
+                                            <span class="text-muted">No action available</span>
                                         {% endif %}
                                         {% if b.body %}
-                                            <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModalMentee{{ b.id }}">View Reason</button>
+                                            <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
                                             <!-- Reason Modal -->
-                                            <div class="modal fade" id="reasonModalMentee{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabelMentee{{ b.id }}" aria-hidden="true">
+                                            <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
                                               <div class="modal-dialog" role="document">
                                                 <div class="modal-content">
                                                   <div class="modal-header">
-                                                    <h5 class="modal-title" id="reasonModalLabelMentee{{ b.id }}">Reason for Bonafide</h5>
+                                                    <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Reason for Bonafide</h5>
                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                       <span aria-hidden="true">&times;</span>
                                                     </button>
@@ -162,13 +104,89 @@
                                     </td>
                                 </tr>
                             {% empty %}
-                                <tr><td colspan="7">No mentee bonafide forms.</td></tr>
+                                <tr><td colspan="7">No class bonafide forms.</td></tr>
                             {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-</div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <b>Mentee Bonafide Forms</b>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Submitted At</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                                        {% for b in mentee_bonafides %}
+                                                                <tr>
+                                                                        <td>{{ forloop.counter }}</td>
+                                                                        <td>{{ b.user.name }}</td>
+                                                                        <td>{{ b.sub }}</td>
+                                                                        <td>{{ b.date }}</td>
+                                                                        <td>{{ b.time }}</td>
+                                                                        <td>{{ b.created|date:"d M Y H:i" }}</td>
+                                                                        <td>
+                                                                                Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
+                                                                                Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
+                                                                                HOD: <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
+                                                                        </td>
+                                                                        <td>
+                                                                                {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
+                                                                                <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                                                                        {% csrf_token %}
+                                                                                        <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                                                </form>
+                                                                                {% endif %}
+                                                                                {% if b.body %}
+                                                                                        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModalMentee{{ b.id }}">View Reason</button>
+                                                                                        <!-- Reason Modal -->
+                                                                                        <div class="modal fade" id="reasonModalMentee{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabelMentee{{ b.id }}" aria-hidden="true">
+                                                                                            <div class="modal-dialog" role="document">
+                                                                                                <div class="modal-content">
+                                                                                                    <div class="modal-header">
+                                                                                                        <h5 class="modal-title" id="reasonModalLabelMentee{{ b.id }}">Reason for Bonafide</h5>
+                                                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                                            <span aria-hidden="true">&times;</span>
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                    <div class="modal-body">
+                                                                                                        {{ b.body }}
+                                                                                                        {% if b.proof %}
+                                                                                                            <hr>
+                                                                                                            <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                                                                                                        {% endif %}
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                {% endif %}
+                                                                        </td>
+                                                                </tr>
+                            {% empty %}
+                                <tr><td colspan="8">No mentee bonafide forms.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

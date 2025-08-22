@@ -344,51 +344,37 @@ def staff_action_leave(request, id):
 
     if request.POST:
         od = LEAVE.objects.get(id=id)
-        print(od.user.mentor.user.username, request.user)
-
-        if str(od.user.mentor.user.username) == str(request.user):
-            od.Mstatus = get_post(request, 'sts')
-            if od.Mstatus == STATUS[2][0]:
+        role = request.POST.get('role')
+        status = request.POST.get('sts')
+        from .models import Notification
+        if role == 'mentor' and str(od.user.mentor.user.username) == str(request.user):
+            od.Mstatus = status
+            if status == STATUS[2][0]:
+                # If rejected by mentor, reject all
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
-            from .models import Notification
             Notification.objects.create(
                 user=od.user,
                 message=f"Your Leave request was {od.Mstatus} by Mentor"
             )
-            print(od.Mstatus)
-
-        if str(od.user.advisor.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            if od.Astatus == STATUS[2][0]:
+        elif role == 'advisor' and str(od.user.advisor.user.username) == str(request.user):
+            od.Astatus = status
+            if status == STATUS[2][0]:
+                # If rejected by advisor, reject HOD
                 od.Hstatus = STATUS[2][0]
-            from .models import Notification
             Notification.objects.create(
                 user=od.user,
                 message=f"Your Leave request was {od.Astatus} by Advisor"
             )
-        if str(od.user.hod.user.username) == str(request.user):
-            action_status = get_post(request, 'sts')
-            if action_status == STATUS[1][0]:  # 'Approved'
-                od.Mstatus = STATUS[1][0]
-                od.Astatus = STATUS[1][0]
-                od.Hstatus = STATUS[1][0]
-            elif action_status == STATUS[2][0]:  # 'Rejected'
-                od.Mstatus = STATUS[2][0]
-                od.Astatus = STATUS[2][0]
-                od.Hstatus = STATUS[2][0]
-            from .models import Notification
+        elif role == 'hod' and str(od.user.hod.user.username) == str(request.user):
+            od.Hstatus = status
             Notification.objects.create(
                 user=od.user,
-                message=f"Your Leave request was {action_status} by HOD"
+                message=f"Your Leave request was {od.Hstatus} by HOD"
             )
             od.save()
-            print(od.Astatus)
             return redirect("hod_leave_view")
-
         od.save()
-        print("Changed")
-
     return redirect("staff_leave_view")
 
 
@@ -698,43 +684,34 @@ def staff_bonafides(request):
 def staff_action_bonafide(request, id):
     if request.POST:
         bonafide = BONAFIDE.objects.get(id=id)
-        # Mentor action
-        if str(bonafide.user.mentor.user.username) == str(request.user):
-            bonafide.Mstatus = get_post(request, 'sts')
-            if bonafide.Mstatus == STATUS[2][0]:
+        role = request.POST.get('role')
+        status = request.POST.get('sts')
+        from .models import Notification
+        if role == 'mentor' and str(bonafide.user.mentor.user.username) == str(request.user):
+            bonafide.Mstatus = status
+            if status == STATUS[2][0]:
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
-            from .models import Notification
             Notification.objects.create(
                 user=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Mstatus} by Mentor"
             )
-            bonafide.save()
-        # Advisor action
-        if str(bonafide.user.advisor.user.username) == str(request.user):
-            bonafide.Astatus = get_post(request, 'sts')
-            if bonafide.Astatus == STATUS[2][0]:
+        elif role == 'advisor' and str(bonafide.user.advisor.user.username) == str(request.user):
+            bonafide.Astatus = status
+            if status == STATUS[2][0]:
                 bonafide.Hstatus = STATUS[2][0]
-            from .models import Notification
             Notification.objects.create(
                 user=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Astatus} by Advisor"
             )
-            bonafide.save()
-        # HOD action
-        if str(bonafide.user.hod.user.username) == str(request.user):
-            action_status = get_post(request, 'sts')
-            if action_status == STATUS[2][0]:  # 'Rejected'
-                bonafide.Hstatus = STATUS[2][0]
-            else:
-                bonafide.Hstatus = STATUS[1][0]  # 'Approved'
-            bonafide.Astatus = STATUS[1][0]  # Always set Advisor to 'Approved' for HOD action
-            from .models import Notification
+        elif role == 'hod' and str(bonafide.user.hod.user.username) == str(request.user):
+            bonafide.Hstatus = status
             Notification.objects.create(
                 user=bonafide.user,
-                message=f"Your Bonafide request was {action_status} by HOD"
+                message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
             )
             bonafide.save()
             return redirect("hod_bonafide_view")
-        return redirect("staff_bonafides")
+        bonafide.save()
+    return redirect("staff_bonafides")
 

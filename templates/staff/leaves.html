@@ -45,12 +45,12 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>Submitted At</th>
                             <th>VIEW</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if aods %}
                         {% for i in aods %}
                         <tr>
                             <td class="serial">
@@ -63,9 +63,15 @@
                             <td>{{ i.user.name }}</td>
                             <td>{{ i.sub }}</td>
                             <td>{{ i.start }} - {{ i.end }}</td>
+                            <td>{{ i.created|date:"d M Y H:i" }}</td>
                             <td>
                                 <button 
-                                    class="btn btn-sm btn-primary" 
+                                    type="button"
+                                    class="btn btn-info btn-sm" 
+                                    data-toggle="modal" 
+                                    data-target="#detail"
+                                    data-sub="{{ i.sub }}" 
+                                    data-name="{{ i.user.name }}"
                                     data-body="{{ i.body }}"
                                     {% if i.proof %}
                                         data-url="{{ i.proof.url }}"
@@ -73,40 +79,41 @@
                                         data-url=""
                                     {% endif %}
                                 >
-                                    <small>#LE{{ i.id }}</small>
+                                    <small>View</small>
                                 </button>
                             </td>
                             <td>
-                                {% if i.Mstatus == "Approved" %}
-                                    {% if i.Astatus == "Approved" %}
-                                        <button class="btn btn-success ">{{ i.Astatus }}</button>
-                                    {% elif i.Astatus == "Rejected" %}
-                                        <button class="btn btn-danger ">{{ i.Astatus }}</button>
-                                    {% else %}
-                                        <form action="{% url 'staff_action_leave' i.id %}" method="POST">
-                                            {% csrf_token %}
-                                            <div class="input-group">
-                                                <select name="sts" class="form-control">
-                                                    <option value="Approved" default>Approve</option>
-                                                    <option value="Rejected">Reject</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-success">submit</button>
-                                            </div>
-                                        </form>
-                                    {% endif %}
-                                {% elif i.Mstatus == 'Rejected' %}
-                                    <p><small>Rejected by mentor</small></p>
+                                {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="role" value="mentor">
+                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                                {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="role" value="advisor">
+                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                                {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="role" value="hod">
+                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
                                 {% else %}
-                                    <button class="btn btn-outline-warning" disabled>Waiting for Mentor Status</button>
+                                    <span class="text-muted">No action available</span>
                                 {% endif %}
                             </td>
                         </tr>
-                        {% endfor %}
-                        {% else %}
+                        {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center">No records found</td>
+                            <td colspan="7" class="text-center">No records found</td>
                         </tr>
-                        {% endif %}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -128,12 +135,12 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>Submitted At</th>
                             <th>VIEW</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if mods %}
                         {% for i in mods %}
                         <tr>
                             <td class="serial">
@@ -146,6 +153,7 @@
                             <td>{{ i.user.name }}</td>
                             <td>{{ i.sub }}</td>
                             <td>{{ i.start }} - {{ i.end }}</td>
+                            <td>{{ i.created|date:"d M Y H:i" }}</td>
                             <td>
                                 <button 
                                     type="button" 
@@ -161,34 +169,26 @@
                                         data-url=""
                                     {% endif %}
                                 >
-                                    <small>#LE{{ i.id }}</small>
+                                    <small>View</small>
                                 </button>
                             </td>
                             <td>
-                                {% if i.Mstatus == "Approved" %}
-                                    <button class="btn btn-success ">{{ i.Mstatus }}</button>
-                                {% elif i.Mstatus == "Rejected" %}
-                                    <button class="btn btn-danger ">{{ i.Mstatus }}</button>
+                                {% if i.status == 'Pending' and user.username == i.user.mentor.user.username %}
+                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                    {% csrf_token %}
+                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
                                 {% else %}
-                                    <form action="{% url 'staff_action_leave' i.id %}" method="POST">
-                                        {% csrf_token %}
-                                        <div class="input-group">
-                                            <select name="sts" class="form-control">
-                                                <option value="Approved" default>Approve</option>
-                                                <option value="Rejected">Reject</option>
-                                            </select>
-                                            <button type="submit" class="btn btn-success">submit</button>
-                                        </div>
-                                    </form>
+                                    <span class="text-muted">No action available</span>
                                 {% endif %}
                             </td>
                         </tr>
-                        {% endfor %}
-                        {% else %}
+                        {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center">No records found</td>
+                            <td colspan="7" class="text-center">No records found</td>
                         </tr>
-                        {% endif %}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

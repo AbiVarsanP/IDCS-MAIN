@@ -149,12 +149,34 @@ class StudentAdmin(admin.ModelAdmin):
 		return render(request, "admin/core/import_students.html", {"form": form})
 
 admin.site.register(Student, StudentAdmin)
-admin.site.register(Staff)
+class StaffAdmin(admin.ModelAdmin):
+	list_display = ('user', 'name', 'department', 'position', 'position2', 'position3')
+	list_filter = ('department', 'position', 'position2', 'position3')
+	search_fields = ('name', 'user__username')
+
+admin.site.register(Staff, StaffAdmin)
 admin.site.register(OD)
 admin.site.register(LEAVE)
 admin.site.register(GATEPASS)
 admin.site.register(HOD)
-admin.site.register(AHOD)
+class AHODAdmin(admin.ModelAdmin):
+	list_display = ('user', 'department')
+	list_filter = ('department',)
+
+	actions = ['set_position2_ahod']
+
+	def set_position2_ahod(self, request, queryset):
+		# Set position2 to Assistant Head of the Department (1) for all linked staff
+		updated = 0
+		for ahod in queryset:
+			if ahod.user:
+				ahod.user.position2 = 1  # 1 = Assistant Head of the Department
+				ahod.user.save()
+				updated += 1
+		self.message_user(request, f"Set position2 as Assistant Head of the Department for {updated} staff.")
+	set_position2_ahod.short_description = 'Set position2 as Assistant Head of the Department for selected AHODs'
+
+admin.site.register(AHOD, AHODAdmin)
 admin.site.register(StaffRating)
 admin.site.register(RatingQuestions)
 admin.site.register(IndividualStaffRating)

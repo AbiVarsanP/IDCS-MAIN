@@ -58,6 +58,9 @@
                     <li class ="{% if request.resolver_match.url_name == 'student_feedback' %}active{% endif %}">
                         <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
                     </li>
+                    <li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
+                        <a href="{% url 'notifications_view' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a>
+                    </li>
                     {% endblock %}
                     <li class="menu-title">Profile</li><!-- /.menu-title -->
                     <li>
@@ -94,26 +97,41 @@
                         </div> -->
 
                         <div class="dropdown for-notification">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-bell"></i>
-                                <span class="count bg-danger">3</span>
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="notification">
-                                <p class="red">You have 3 Notification</p>
-                                <a class="dropdown-item media" href="#">
-                                    <i class="fa fa-check"></i>
-                                    <p>Server #1 overloaded.</p>
-                                </a>
-                                <a class="dropdown-item media" href="#">
-                                    <i class="fa fa-info"></i>
-                                    <p>Server #2 overloaded.</p>
-                                </a>
-                                <a class="dropdown-item media" href="#">
-                                    <i class="fa fa-warning"></i>
-                                    <p>Server #3 overloaded.</p>
-                                </a>
-                            </div>
+                            {% if request.user.is_authenticated and request.user.student.exists %}
+                                {% with student=request.user.student.first %}
+                                    {% with latest_notifications=student.notifications.all|slice:":5" %}
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fa fa-bell"></i>
+                                            <span class="count bg-danger">{{ latest_notifications|length }}</span>
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="notification">
+                                            {% if latest_notifications %}
+                                                <p class="red">You have {{ latest_notifications|length }} Notification{{ latest_notifications|length|pluralize }}</p>
+                                                {% for n in latest_notifications %}
+                                                    <a class="dropdown-item media" href="{% url 'notifications_view' %}">
+                                                        <i class="fa fa-info"></i>
+                                                        <p>{{ n.message }}<br><small>{{ n.created_at|date:'Y-m-d H:i' }}</small></p>
+                                                    </a>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="red">No new notifications</p>
+                                            {% endif %}
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item text-center" href="{% url 'notifications_view' %}"><b>View All</b></a>
+                                        </div>
+                                    {% endwith %}
+                                {% endwith %}
+                            {% else %}
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-bell"></i>
+                                    <span class="count bg-danger">0</span>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="notification">
+                                    <p class="red">No notifications</p>
+                                </div>
+                            {% endif %}
                         </div>
                         <!-- 
                         <div class="dropdown for-message">

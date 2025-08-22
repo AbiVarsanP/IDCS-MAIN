@@ -3,6 +3,20 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from .constants import *
 
+# Notification model for student notifications
+class Notification(models.Model):
+    user = models.ForeignKey('Student', on_delete=models.CASCADE, related_name="notifications")
+    message = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+from django.db import models
+from django.contrib.auth.models import User
+from django.urls import reverse
+from .constants import *
+
 class AHOD(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE)
     get_feedback = models.BooleanField(default=False)
@@ -277,3 +291,14 @@ class BONAFIDE(models.Model):
         ordering = ['-id']
     def __str__(self) -> str:
         return f"{self.user.name} {self.sub}"
+
+
+    # Notification model for student notifications
+    class Notification(models.Model):
+        user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="notifications")
+        message = models.CharField(max_length=255)
+        created_at = models.DateTimeField(auto_now_add=True)
+        is_read = models.BooleanField(default=False)
+
+        class Meta:
+            ordering = ['-created_at']

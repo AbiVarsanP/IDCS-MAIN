@@ -1,3 +1,22 @@
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Notification, Student
+
+# Student notifications view
+@login_required
+def notifications_view(request):
+    student = Student.objects.get(user=request.user)
+    # Latest 5 unread notifications for popup/dropdown
+    latest_unread = Notification.objects.filter(user=student, is_read=False)[:5]
+    # All notifications for history
+    all_notifications = Notification.objects.filter(user=student)
+    # Mark all unread as read when viewing history
+    if request.method == "POST":
+        Notification.objects.filter(user=student, is_read=False).update(is_read=True)
+    return render(request, "student/notification_history.html", {
+        "latest_unread": latest_unread,
+        "all_notifications": all_notifications,
+    })
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -280,12 +299,22 @@ def staff_action_od(request, id):
             if od.Mstatus == STATUS[2][0]:
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your OD request was {od.Mstatus} by Mentor"
+            )
             print(od.Mstatus)
 
         if str(od.user.advisor.user.username) == str(request.user):
             od.Astatus = get_post(request, 'sts')
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your OD request was {od.Astatus} by Advisor"
+            )
         if str(od.user.hod.user.username) == str(request.user):
             action_status = get_post(request, 'sts')
             if action_status == STATUS[1][0]:  # 'Approved'
@@ -296,6 +325,11 @@ def staff_action_od(request, id):
                 od.Mstatus = STATUS[2][0]
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your OD request was {action_status} by HOD"
+            )
             od.save()
             print(od.Astatus)
             return redirect("hod_od_view")
@@ -317,12 +351,22 @@ def staff_action_leave(request, id):
             if od.Mstatus == STATUS[2][0]:
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your Leave request was {od.Mstatus} by Mentor"
+            )
             print(od.Mstatus)
 
         if str(od.user.advisor.user.username) == str(request.user):
             od.Astatus = get_post(request, 'sts')
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your Leave request was {od.Astatus} by Advisor"
+            )
         if str(od.user.hod.user.username) == str(request.user):
             action_status = get_post(request, 'sts')
             if action_status == STATUS[1][0]:  # 'Approved'
@@ -333,6 +377,11 @@ def staff_action_leave(request, id):
                 od.Mstatus = STATUS[2][0]
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your Leave request was {action_status} by HOD"
+            )
             od.save()
             print(od.Astatus)
             return redirect("hod_leave_view")
@@ -355,12 +404,22 @@ def staff_action_gatepass(request, id):
             if od.Mstatus == STATUS[2][0]:
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your Gatepass request was {od.Mstatus} by Mentor"
+            )
             print(od.Mstatus)
 
         if str(od.user.advisor.user.username) == str(request.user):
             od.Astatus = get_post(request, 'sts')
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your Gatepass request was {od.Astatus} by Advisor"
+            )
         if str(od.user.hod.user.username) == str(request.user):
             action_status = get_post(request, 'sts')
             if action_status == STATUS[1][0]:  # 'Approved'
@@ -371,6 +430,11 @@ def staff_action_gatepass(request, id):
                 od.Mstatus = STATUS[2][0]
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=od.user,
+                message=f"Your Gatepass request was {action_status} by HOD"
+            )
             od.save()
             print(od.Astatus)
             return redirect("hod_gatepass_view")
@@ -640,12 +704,22 @@ def staff_action_bonafide(request, id):
             if bonafide.Mstatus == STATUS[2][0]:
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=bonafide.user,
+                message=f"Your Bonafide request was {bonafide.Mstatus} by Mentor"
+            )
             bonafide.save()
         # Advisor action
         if str(bonafide.user.advisor.user.username) == str(request.user):
             bonafide.Astatus = get_post(request, 'sts')
             if bonafide.Astatus == STATUS[2][0]:
                 bonafide.Hstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                user=bonafide.user,
+                message=f"Your Bonafide request was {bonafide.Astatus} by Advisor"
+            )
             bonafide.save()
         # HOD action
         if str(bonafide.user.hod.user.username) == str(request.user):
@@ -655,6 +729,11 @@ def staff_action_bonafide(request, id):
             else:
                 bonafide.Hstatus = STATUS[1][0]  # 'Approved'
             bonafide.Astatus = STATUS[1][0]  # Always set Advisor to 'Approved' for HOD action
+            from .models import Notification
+            Notification.objects.create(
+                user=bonafide.user,
+                message=f"Your Bonafide request was {action_status} by HOD"
+            )
             bonafide.save()
             return redirect("hod_bonafide_view")
         return redirect("staff_bonafides")

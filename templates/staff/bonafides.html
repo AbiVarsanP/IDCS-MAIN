@@ -76,7 +76,11 @@
                                             <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                         </form>
                                         {% else %}
-                                            <span class="text-muted">No action available</span>
+                                            {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
+                                                <span class="text-success">Approved</span>
+                                            {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' %}
+                                                <span class="text-danger">Rejected</span>
+                                            {% endif %}
                                         {% endif %}
                                         {% if b.body %}
                                             <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
@@ -148,13 +152,34 @@
                                                                                 HOD: <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
                                                                         </td>
                                                                         <td>
-                                                                                {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
-                                                                                <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                                                                        {% csrf_token %}
-                                                                                        <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                                                </form>
-                                                                                {% endif %}
+                                        {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
+                                        <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="role" value="mentor">
+                                            <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                            <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                        {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
+                                        <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="role" value="advisor">
+                                            <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                            <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                        {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
+                                        <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="role" value="hod">
+                                            <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                            <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                        {% else %}
+                                            {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
+                                                <span class="text-success">Approved</span>
+                                            {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' %}
+                                                <span class="text-danger">Rejected</span>
+                                            {% endif %}
+                                        {% endif %}
                                                                                 {% if b.body %}
                                                                                         <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModalMentee{{ b.id }}">View Reason</button>
                                                                                         <!-- Reason Modal -->

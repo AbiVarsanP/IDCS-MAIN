@@ -71,6 +71,8 @@ class Staff(models.Model):
     age = models.PositiveIntegerField(blank=True,null=True)
 
     position = models.PositiveIntegerField(choices=POS,default=0)
+    position2 = models.PositiveIntegerField(choices=POS,default=0, blank=True, null=True)
+    position3 = models.PositiveIntegerField(choices=POS,default=0, blank=True, null=True)
 
     my_feedbacks = models.ManyToManyField('IndividualStaffRating',related_name='my_ratings',blank=True)
 

@@ -41,7 +41,9 @@
 <li class ="{% if request.resolver_match.url_name == 'student_feedback' %}active{% endif %}">
     <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
 </li>
-
+<li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
+    <a href="{% url 'notifications_view' %}" class="btn btn-warning btn-block mt-2"><i class="fa fa-bell"></i> Notification History</a>
+</li>
 {% endblock %}
 {% block root %}
 <div class="container mt-4">

@@ -40,8 +40,23 @@
                 <ul class="nav navbar-nav">
 
                     {% block nav %}
-                    <li class="active">
-                        <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+                    <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
+                            <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+                    </li>
+                    <li class="{% if request.resolver_match.url_name == 'od' %}active{% endif %}">
+                        <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+                    </li>
+                    <li class ="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
+                        <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+                    </li>
+                    <li class ="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
+                        <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+                    </li>
+                    <li class ="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
+                        <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
+                    </li>
+                    <li class ="{% if request.resolver_match.url_name == 'student_feedback' %}active{% endif %}">
+                        <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
                     </li>
                     {% endblock %}
                     <li class="menu-title">Profile</li><!-- /.menu-title -->

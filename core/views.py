@@ -15,6 +15,7 @@ from django.utils.dateparse import parse_datetime   # ✅ must be here
 from .models import GATEPASS, Student
 import qrcode
 
+
 # Student Profile View
 @login_required
 def student_profile(request):
@@ -105,12 +106,18 @@ def login_user(request):
     if request.POST:
         reg = request.POST.get('reg')
         pwd = request.POST.get('pass')
-        user = authenticate(request, username=reg, password=pwd)
-        if user is not None:
-            login(request, user)
-            return redirect(settings.LOGIN_REDIRECT_URL)
-        else:
-            print("Invalid")
+        error_msg = None
+        try:
+            user_obj = User.objects.get(username=reg)
+            user = authenticate(request, username=reg, password=pwd)
+            if user is not None:
+                login(request, user)
+                return redirect(settings.LOGIN_REDIRECT_URL)
+            else:
+                error_msg = "Wrong Password"
+        except User.DoesNotExist:
+            error_msg = "Wrong Register Number"
+        context['error_msg'] = error_msg
 
     return render(request, 'auth/login.html', context)
 

@@ -20,14 +20,20 @@ AI&DS - B :
 6. WORKFLOW MANAGEMENT (ROLE MANAGEMENT)
 7. FEEDBACK 
 
-
+SHOULD CHANGE THE SECTION LIST IN THE BACKEND
+SHOULD CHANGE THE SECTION LIST IN THE BACKEND
+SHOULD CHANGE THE SECTION LIST IN THE BACKEND
+SHOULD CHANGE THE SECTION LIST IN THE BACKEND
+SHOULD CHANGE THE SECTION LIST IN THE BACKEND
+SHOULD CHANGE THE SECTION LIST IN THE BACKEND
+SHOULD CHANGE THE SECTION LIST IN THE BACKEND
 
 
 ########################################################################################################################################################################################################################################################
 
 Pending works :
 
-1. Preview button for students
+1. Preview button for students - cmpld 
 2. Attendance
 3. Assignments
 4. Exam Schedules
@@ -36,3 +42,10 @@ Pending works :
 7. Billing
 8. Announcements
 9. Result Announcements
+
+
+Updates(J)
+
+1. staff id : should be changed to student ID (in std login)
+2. HOD and advisor name should be added in student profile (in std login)
+3. add IT department in bonafide form 

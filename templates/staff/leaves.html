@@ -105,7 +105,13 @@
                                     <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                 </form>
                                 {% else %}
-                                    <span class="text-muted">No action available</span>
+                                    {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                        <span class="text-success">Approved</span>
+                                    {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                        <span class="text-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="text-muted">No action available</span>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         </tr>
@@ -173,14 +179,35 @@
                                 </button>
                             </td>
                             <td>
-                                {% if i.status == 'Pending' and user.username == i.user.mentor.user.username %}
+                                {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
                                 <form method="post" action="{% url 'staff_action_leave' i.id %}">
                                     {% csrf_token %}
+                                    <input type="hidden" name="role" value="mentor">
+                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                                {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="role" value="advisor">
+                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                                {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="role" value="hod">
                                     <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
                                     <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                 </form>
                                 {% else %}
-                                    <span class="text-muted">No action available</span>
+                                    {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                        <span class="text-success">Approved</span>
+                                    {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                        <span class="text-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="text-muted">No action available</span>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         </tr>

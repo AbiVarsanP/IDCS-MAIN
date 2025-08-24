@@ -51,6 +51,7 @@
                             <th>SUB</th>
                             <th>FROM-TO</th>
                             <th>Submitted At</th>
+                            <th>Status</th>
                             <th>VIEW</th>
                             <th>OPTION</th>
                         </tr>
@@ -63,6 +64,11 @@
                             <td>{{i.sub}}</td>
                             <td>{{i.start}} - {{i.end}}</td>
                             <td>{{ i.created|date:"d M Y H:i" }}</td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                            </td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"
@@ -139,6 +145,11 @@
                             <td>{{i.sub}}</td>
                             <td>{{i.start}} - {{i.end}}</td>
                             <td>{{ i.created|date:"d M Y H:i" }}</td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                            </td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"

@@ -73,6 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var scholarRadios = document.getElementsByName('scholar_type');
     var busTypeRow = document.querySelector('.form-row .form-group label[for="college_bus_type"]').closest('.form-row');
     var busFareGroup = document.getElementById('bus_fare').closest('.form-group');
+    var busTypeRadios = document.getElementsByName('bus_type');
+
     function toggleBusFields() {
         var selected = document.querySelector('input[name="scholar_type"]:checked').value;
         if (selected === 'Hostel') {
@@ -80,11 +82,25 @@ document.addEventListener('DOMContentLoaded', function() {
             busFareGroup.style.display = 'none';
         } else {
             busTypeRow.style.display = '';
+            // Also check bus type
+            toggleBusFare();
+        }
+    }
+
+    function toggleBusFare() {
+        var busTypeSelected = document.querySelector('input[name="bus_type"]:checked');
+        if (busTypeSelected && busTypeSelected.value === 'Out Bus') {
+            busFareGroup.style.display = 'none';
+        } else {
             busFareGroup.style.display = '';
         }
     }
+
     scholarRadios.forEach(function(radio) {
         radio.addEventListener('change', toggleBusFields);
+    });
+    busTypeRadios.forEach(function(radio) {
+        radio.addEventListener('change', toggleBusFare);
     });
     toggleBusFields();
 });

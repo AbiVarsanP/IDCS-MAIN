@@ -8,12 +8,12 @@ from .models import Staff
 def notifications_view(request):
     student = Student.objects.get(user=request.user)
     # Latest 5 unread notifications for popup/dropdown
-    latest_unread = Notification.objects.filter(user=student, is_read=False)[:5]
+    latest_unread = Notification.objects.filter(student=student, is_read=False)[:5]
     # All notifications for history
-    all_notifications = Notification.objects.filter(user=student)
+    all_notifications = Notification.objects.filter(student=student)
     # Mark all unread as read when viewing history
     if request.method == "POST":
-        Notification.objects.filter(user=student, is_read=False).update(is_read=True)
+        Notification.objects.filter(student=student, is_read=False).update(is_read=True)
     return render(request, "student/notification_history.html", {
         "latest_unread": latest_unread,
         "all_notifications": all_notifications,

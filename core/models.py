@@ -5,7 +5,8 @@ from .constants import *
 
 # Notification model for student notifications
 class Notification(models.Model):
-    user = models.ForeignKey('Student', on_delete=models.CASCADE, related_name="notifications")
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name="student_notifications", null=True, blank=True)
+    staff = models.ForeignKey('Staff', on_delete=models.CASCADE, related_name="staff_notifications", null=True, blank=True)
     message = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
@@ -293,12 +294,3 @@ class BONAFIDE(models.Model):
         return f"{self.user.name} {self.sub}"
 
 
-    # Notification model for student notifications
-    class Notification(models.Model):
-        user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="notifications")
-        message = models.CharField(max_length=255)
-        created_at = models.DateTimeField(auto_now_add=True)
-        is_read = models.BooleanField(default=False)
-
-        class Meta:
-            ordering = ['-created_at']

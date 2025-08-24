@@ -26,6 +26,7 @@ urlpatterns += [
     path("gatepass/action/<int:id>",staff_action_gatepass,name='staff_action_gatepass'),
     path("bonafide/action/<int:id>", staff_action_bonafide, name="staff_action_bonafide"),
     path("bonafides/", staff_bonafides, name="staff_bonafides"),
+    path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
 ]
 # hod
 

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Notification, Student
+from .models import Staff
 
 # Student notifications view
 @login_required
@@ -16,6 +17,33 @@ def notifications_view(request):
     return render(request, "student/notification_history.html", {
         "latest_unread": latest_unread,
         "all_notifications": all_notifications,
+    })
+
+# Staff notifications view
+@login_required
+def staff_notifications_view(request):
+    staff = None
+    # Try to get staff from context if available
+    if 'duser' in request.session or 'duser' in request.__dict__ or hasattr(request, 'duser'):
+        staff = getattr(request, 'duser', None)
+    if not staff:
+        try:
+            staff = Staff.objects.get(user=request.user)
+        except Staff.DoesNotExist:
+            staff = None
+    if not staff:
+        return redirect('login')
+    # Latest 5 unread notifications for bell icon popup
+    latest_unread = Notification.objects.filter(staff=staff, is_read=False).order_by('-created_at')[:5]
+    # All notifications for history page
+    all_notifications = Notification.objects.filter(staff=staff).order_by('-created_at')
+    # Mark all unread as read when viewing history or clicking 'mark all read'
+    if request.method == "POST":
+        Notification.objects.filter(staff=staff, is_read=False).update(is_read=True)
+    return render(request, "staff/notification_history.html", {
+        "latest_unread": latest_unread,
+        "all_notifications": all_notifications,
+        "unread_count": Notification.objects.filter(staff=staff, is_read=False).count(),
     })
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import login, logout, authenticate
@@ -165,7 +193,15 @@ def od(request):
         obj = OD(user=context['duser'], sub=sub, body=body,
                  start=start, end=end, proof=proff)
         obj.save()
-
+        # Notify mentor, advisor, HOD
+        student = context['duser']
+        staff_list = [student.mentor, student.advisor, student.hod]
+        for staff in staff_list:
+            if staff:
+                Notification.objects.create(
+                    staff=staff,
+                    message=f"New OD request from {student.name}",
+                )
         return redirect("dash")
 
     return render(request, 'student/od.html', context=context)
@@ -194,7 +230,15 @@ def leave(request):
         obj = LEAVE(user=context['duser'], sub=sub,
                     body=body, start=f, end=t, proof=proff)
         obj.save()
-
+        # Notify mentor, advisor, HOD
+        student = context['duser']
+        staff_list = [student.mentor, student.advisor, student.hod]
+        for staff in staff_list:
+            if staff:
+                Notification.objects.create(
+                    staff=staff,
+                    message=f"New Leave request from {student.name}",
+                )
         return redirect("dash")
 
     return render(request, 'student/leave.html', context=context)
@@ -213,6 +257,15 @@ def gatepass(request):
         end = parse_datetime(end)
         obj = GATEPASS(user=context['duser'], sub=sub, start=start, end=end)
         obj.save()
+        # Notify mentor, advisor, HOD
+        student = context['duser']
+        staff_list = [student.mentor, student.advisor, student.hod]
+        for staff in staff_list:
+            if staff:
+                Notification.objects.create(
+                    staff=staff,
+                    message=f"New Gatepass request from {student.name}",
+                )
         return redirect("gatepass")
     if action == 'status':
         # Show all gatepasses for this student
@@ -665,6 +718,15 @@ def bonafide_view(request):
         body = " | ".join(body_parts)
         obj = BONAFIDE(user=context['duser'], sub=sub, body=body, date=date, proof=proff)
         obj.save()
+        # Notify mentor, advisor, HOD
+        student = context['duser']
+        staff_list = [student.mentor, student.advisor, student.hod]
+        for staff in staff_list:
+            if staff:
+                Notification.objects.create(
+                    staff=staff,
+                    message=f"New Bonafide request from {student.name}",
+                )
         return redirect("dash")
     return render(request, 'student/bonafide_form.html', context=context)
 

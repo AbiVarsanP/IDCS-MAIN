@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block nav %}
+<li>
+    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+</li>
+<li>
+    <a href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+</li>
+<li>
+    <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+</li>
+<li>
+    <a href="{% url 'staff_bonafides' %}" ><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+</li>
+<li>
+    <a href="{% url 'staff_gatepass_view' %}"><i class="ti-shift-right-alt menu-icon"></i>Gatepass </a>
+</li>
+<li class="active">
+    <a href="{% url 'staff_notifications' %}"><i class="fa fa-bell"></i> Notification History</a>
+</li>
+{% endblock %}
+{% block root %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><b>Staff Notification History</b></span>
+                    <form method="post" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light btn-sm">Mark all as read</button>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for n in all_notifications %}
+                        <li class="list-group-item {% if not n.is_read %}bg-warning-light{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fa fa-info-circle text-info"></i>
+                                    <span>{{ n.message }}</span>
+                                </div>
+                                <small class="text-muted">{{ n.created_at|date:'d M Y H:i' }}</small>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center">No notifications found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -97,9 +97,9 @@
                         </div> -->
 
                         <div class="dropdown for-notification">
-                            {% if request.user.is_authenticated and request.user.student.exists %}
-                                {% with student=request.user.student.first %}
-                                    {% with latest_notifications=student.notifications.all|slice:":5" %}
+                            {% if request.user.is_authenticated %}
+                                {% if request.user.is_staff %}
+                                    {% with latest_notifications=latest_unread %}
                                         <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fa fa-bell"></i>
@@ -109,7 +109,7 @@
                                             {% if latest_notifications %}
                                                 <p class="red">You have {{ latest_notifications|length }} Notification{{ latest_notifications|length|pluralize }}</p>
                                                 {% for n in latest_notifications %}
-                                                    <a class="dropdown-item media" href="{% url 'notifications_view' %}">
+                                                    <a class="dropdown-item media" href="{% url 'staff_notifications' %}">
                                                         <i class="fa fa-info"></i>
                                                         <p>{{ n.message }}<br><small>{{ n.created_at|date:'Y-m-d H:i' }}</small></p>
                                                     </a>
@@ -118,10 +118,35 @@
                                                 <p class="red">No new notifications</p>
                                             {% endif %}
                                             <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item text-center" href="{% url 'notifications_view' %}"><b>View All</b></a>
+                                            <a class="dropdown-item text-center" href="{% url 'staff_notifications' %}"><b>View All</b></a>
                                         </div>
                                     {% endwith %}
-                                {% endwith %}
+                                {% else %}
+                                    {% with student=request.user.student.first %}
+                                        {% with latest_notifications=student.notifications.all|slice:":5" %}
+                                            <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fa fa-bell"></i>
+                                                <span class="count bg-danger">{{ latest_notifications|length }}</span>
+                                            </button>
+                                            <div class="dropdown-menu" aria-labelledby="notification">
+                                                {% if latest_notifications %}
+                                                    <p class="red">You have {{ latest_notifications|length }} Notification{{ latest_notifications|length|pluralize }}</p>
+                                                    {% for n in latest_notifications %}
+                                                        <a class="dropdown-item media" href="{% url 'notifications_view' %}">
+                                                            <i class="fa fa-info"></i>
+                                                            <p>{{ n.message }}<br><small>{{ n.created_at|date:'Y-m-d H:i' }}</small></p>
+                                                        </a>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <p class="red">No new notifications</p>
+                                                {% endif %}
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item text-center" href="{% url 'notifications_view' %}"><b>View All</b></a>
+                                            </div>
+                                        {% endwith %}
+                                    {% endwith %}
+                                {% endif %}
                             {% else %}
                                 <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

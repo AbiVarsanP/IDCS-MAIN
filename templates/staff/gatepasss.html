@@ -51,6 +51,7 @@
                             <th>SUB</th>
                             <th>FROM-TO</th>
                             <th>Submitted At</th>
+                            <th>Status</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -62,6 +63,11 @@
                             <td>{{i.sub}}</td>
                             <td>{{i.start}} - {{i.end}}</td>
                             <td>{{ i.created|date:"d M Y H:i" }}</td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                            </td>
                             <td>
                                 {% if i.Mstatus == "Approved" %}
                                 {% if i.Astatus == "Approved" %}
@@ -125,6 +131,11 @@
                             <td>{{i.sub}}</td>
                             <td>{{i.start}} - {{i.end}}</td>
                             <td>{{ i.created|date:"d M Y H:i" }}</td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                            </td>
                             <td>
                                 {% if i.Mstatus == "Approved" %}
                                 <button class="btn btn-success ">{{i.Mstatus}}</button>

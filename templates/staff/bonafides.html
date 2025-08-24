@@ -34,8 +34,7 @@
                                 <th>#</th>
                                 <th>Student</th>
                                 <th>Subject</th>
-                                <th>Date</th>
-                                <th>Time</th>
+                                <th>Submitted At</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -46,8 +45,7 @@
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ b.user.name }}</td>
                                     <td>{{ b.sub }}</td>
-                                    <td>{{ b.date }}</td>
-                                    <td>{{ b.time }}</td>
+                                    <td>{{ b.created|date:"d M Y H:i" }}</td>
                                     <td>
                                         Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
                                         Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
@@ -130,8 +128,6 @@
                                 <th>#</th>
                                 <th>Student</th>
                                 <th>Subject</th>
-                                <th>Date</th>
-                                <th>Time</th>
                                 <th>Submitted At</th>
                                 <th>Status</th>
                                 <th>Action</th>
@@ -143,8 +139,6 @@
                                                                         <td>{{ forloop.counter }}</td>
                                                                         <td>{{ b.user.name }}</td>
                                                                         <td>{{ b.sub }}</td>
-                                                                        <td>{{ b.date }}</td>
-                                                                        <td>{{ b.time }}</td>
                                                                         <td>{{ b.created|date:"d M Y H:i" }}</td>
                                                                         <td>
                                                                                 Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>

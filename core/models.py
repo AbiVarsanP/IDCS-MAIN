@@ -1,7 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.urls import reverse
 from .constants import *
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class AHOD(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE)
@@ -154,6 +155,24 @@ class LEAVE(models.Model):
         return f"{self.user.name} {self.sub}"
     
 
+
+class BONAFIDE(models.Model):
+    user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='bonafide_student')
+    reason = models.CharField(max_length=255)
+    body = models.TextField(blank=True, null=True)
+    proof = models.FileField(upload_to='bonafide/proof', blank=True)
+    certificate = models.FileField(upload_to='bonafide/proof/certificate', blank=True)
+    # Status
+    Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-id']
+
+    def __str__(self) -> str:
+        return f"{self.user.name} {self.reason}"
 
 class GATEPASS(models.Model):
     user = models.ForeignKey(Student,on_delete=models.CASCADE,related_name='sg_student')

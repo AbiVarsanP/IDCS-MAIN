@@ -1,3 +1,20 @@
+from django.contrib.auth.decorators import login_required
+
+# ...existing code...
+
+@login_required
+def ahod_dash(request):
+    context = set_config(request)
+    ahod = AHOD.objects.get(user=context['duser'])
+    # Get department code for AHOD
+    ahod_dept = ahod.user.department
+    # Get all students in the same department as AHOD
+    students = Student.objects.filter(department=ahod_dept)
+    context['all_od'] = OD.objects.filter(user__in=students).distinct()
+    context['all_leave'] = LEAVE.objects.filter(user__in=students).distinct()
+    context['all_gatepass'] = GATEPASS.objects.filter(user__in=students).distinct()
+    context['all_bonafide'] = BONAFIDE.objects.filter(user__in=students).distinct()
+    return render(request, 'ahod/dash.html', context)
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -14,6 +31,81 @@ from django.contrib import messages
 from django.utils.dateparse import parse_datetime   # ✅ must be here
 from .models import GATEPASS, Student
 import qrcode
+
+@login_required
+def ahod_od_view(request):
+    context = set_config(request)
+    ahod = AHOD.objects.get(user=context['duser'])
+    # Convert AHOD's department int to string code for Student.department
+    from .constants import SDEPT, DEPT
+    ahod_dept_int = ahod.user.department
+    # Find the string code for this department
+    dept_code = None
+    for code, name in DEPT:
+        if name == SDEPT[ahod_dept_int][1]:
+            dept_code = code
+            break
+    if not dept_code:
+        dept_code = str(ahod_dept_int)
+    # All ODs where student's hod or ahod is the AHOD user, or department matches
+    context['hods'] = [
+        i for i in OD.objects.all()
+        if (
+            (i.user.hod and i.user.hod.id == ahod.user.id) or
+            (i.user.ahod and i.user.ahod.id == ahod.id) or
+            (str(i.user.department) == str(ahod.user.department))
+        )
+    ]
+    # Mentees: students where AHOD is mentor
+    context['mods'] = [i for i in OD.objects.all() if i.user.mentor and i.user.mentor.id == ahod.user.id]
+    return render(request, 'ahod/ods.html', context)
+
+@login_required
+def ahod_leave_view(request):
+    context = set_config(request)
+    ahod = AHOD.objects.get(user=context['duser'])
+    # Mentees: students where AHOD is mentor
+    context['mods'] = [i for i in LEAVE.objects.all() if i.user.mentor and i.user.mentor.id == ahod.user.id]
+    # Dept leaves: all leaves where student's hod is AHOD user, or mentor is not AHOD user
+    context['hods'] = [
+        i for i in LEAVE.objects.all()
+        if (
+            (i.user.hod and i.user.hod.id == ahod.user.id) or
+            (not i.user.mentor or i.user.mentor.id != ahod.user.id)
+        )
+    ]
+    return render(request, 'ahod/leaves.html', context)
+
+@login_required
+def ahod_gatepass_view(request):
+    context = set_config(request)
+    ahod = AHOD.objects.get(user=context['duser'])
+    # Mentees: students where AHOD is mentor
+    context['mods'] = [i for i in GATEPASS.objects.all() if i.user.mentor and i.user.mentor.id == ahod.user.id]
+    # Dept gatepasses: all gatepasses where student's hod is AHOD user, or mentor is not AHOD user
+    context['hods'] = [
+        i for i in GATEPASS.objects.all()
+        if (
+            (i.user.hod and i.user.hod.id == ahod.user.id) or
+            (not i.user.mentor or i.user.mentor.id != ahod.user.id)
+        )
+    ]
+    return render(request, 'ahod/gatepasss.html', context)
+
+@login_required
+def ahod_bonafide_view(request):
+    context = set_config(request)
+    ahod = AHOD.objects.get(user=context['duser'])
+    context['bonafides'] = [
+        i for i in BONAFIDE.objects.all()
+        if (
+            (i.user.hod and i.user.hod.id == ahod.user.id) or
+            (i.user.ahod and i.user.ahod.id == ahod.id) or
+            (str(i.user.department) == str(ahod.user.department))
+        )
+    ]
+    return render(request, 'ahod/bonafides.html', context)
+
 
 
 # Student Profile View
@@ -47,30 +139,62 @@ def dash(request):
     if not request.user.is_staff:
         context['BF'] = BONAFIDE.objects.filter(user=context['duser'].id)
         return render(request, 'student/dash.html', context=context)
-    elif context['duser'].position == 0:
+    elif context['duser'].position == 0 or AHOD.objects.filter(user=context['duser']).exists() or context['duser'].position2 == 1:
+        # HOD or AHOD or Assistant Head of Department
         context['allratings'] = IndividualStaffRating.objects.all()
-        hod = HOD.objects.get(user=context['duser'])
-        staff_list = [i for i in hod.staffs.all()]
-        ratings = map_feedback(staff_list)
-        context['ratings'] = ratings
-        temp = IndividualStaffRating.objects.all()
-        rating_logs = []
-        for i in temp:
-            if i.staff.department == context['duser'].department:
-                rating_logs.append(i)
-        context['my_rating'] = ratings[context['duser'].name]
-        context['rating_log'] = rating_logs[:len(ratings)]
-        # Bonafide forms for which the logged-in HOD is mentor, advisor, or HOD
-        try:
-            hod_staff = Staff.objects.get(user=context['duser'].user)
-            context['bonafides'] = BONAFIDE.objects.filter(
-                models.Q(user__mentor=hod_staff) |
-                models.Q(user__advisor=hod_staff) |
-                models.Q(user__hod=hod_staff)
+        # If HOD, use HOD logic
+        if context['duser'].position == 0:
+            hod = HOD.objects.get(user=context['duser'])
+            staff_list = [i for i in hod.staffs.all()]
+            ratings = map_feedback(staff_list)
+            context['ratings'] = ratings
+            temp = IndividualStaffRating.objects.all()
+            rating_logs = []
+            for i in temp:
+                if i.staff.department == context['duser'].department:
+                    rating_logs.append(i)
+            context['my_rating'] = ratings[context['duser'].name]
+            context['rating_log'] = rating_logs[:len(ratings)]
+            try:
+                hod_staff = Staff.objects.get(user=context['duser'].user)
+                context['bonafides'] = BONAFIDE.objects.filter(
+                    models.Q(user__mentor=hod_staff) |
+                    models.Q(user__advisor=hod_staff) |
+                    models.Q(user__hod=hod_staff)
+                ).distinct()
+            except Staff.DoesNotExist:
+                context['bonafides'] = BONAFIDE.objects.none()
+            return render(request, "hod/dash.html", context)
+        # If AHOD or Assistant HOD, show all student applications for their department
+        else:
+            # Find the AHOD object for this user
+            ahod = AHOD.objects.filter(user=context['duser']).first()
+            if ahod:
+                staff_list = list(ahod.staffs.all())
+                staff_list.append(ahod.user)
+            else:
+                staff_list = [context['duser']]
+            context['all_od'] = OD.objects.filter(
+                models.Q(user__advisor__in=staff_list) |
+                models.Q(user__mentor__in=staff_list) |
+                models.Q(user__hod__in=staff_list)
             ).distinct()
-        except Staff.DoesNotExist:
-            context['bonafides'] = BONAFIDE.objects.none()
-        return render(request, "hod/dash.html", context)
+            context['all_leave'] = LEAVE.objects.filter(
+                models.Q(user__advisor__in=staff_list) |
+                models.Q(user__mentor__in=staff_list) |
+                models.Q(user__hod__in=staff_list)
+            ).distinct()
+            context['all_gatepass'] = GATEPASS.objects.filter(
+                models.Q(user__advisor__in=staff_list) |
+                models.Q(user__mentor__in=staff_list) |
+                models.Q(user__hod__in=staff_list)
+            ).distinct()
+            context['all_bonafide'] = BONAFIDE.objects.filter(
+                models.Q(user__advisor__in=staff_list) |
+                models.Q(user__mentor__in=staff_list) |
+                models.Q(user__hod__in=staff_list)
+            ).distinct()
+            return render(request, "ahod/dash.html", context)
     else:
         from django.utils import timezone
         from datetime import timedelta
@@ -335,10 +459,17 @@ def staff_action_leave(request, id):
                 od.Hstatus = STATUS[2][0]
             od.save()
             print(od.Astatus)
+            # Redirect back to referring page (AHOD or HOD)
+            ref = request.META.get('HTTP_REFERER')
+            if ref:
+                return redirect(ref)
             return redirect("hod_leave_view")
 
         od.save()
         print("Changed")
+        ref = request.META.get('HTTP_REFERER')
+        if ref:
+            return redirect(ref)
 
     return redirect("staff_leave_view")
 

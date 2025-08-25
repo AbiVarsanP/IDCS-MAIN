@@ -14,7 +14,7 @@ try:
 except ImportError:
 	has_openpyxl = False
 
-from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback
+from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE
 
 def export_students_csv(modeladmin, request, queryset):
 	response = HttpResponse(content_type='text/csv')
@@ -107,9 +107,12 @@ class StudentAdmin(admin.ModelAdmin):
 				from django.contrib.auth.models import User
 				for row in reader:
 					username = row.get('user')
-					if not username:
+					if not username or not username.isdigit():
 						continue
-					user, _ = User.objects.get_or_create(username=username)
+					user, created_user = User.objects.get_or_create(username=username)
+					if created_user:
+						user.set_password('123')
+						user.save()
 					student, created_obj = Student.objects.get_or_create(user=user)
 					# Set/update all fields
 					student.roll = row.get('roll')
@@ -158,6 +161,7 @@ admin.site.register(Staff, StaffAdmin)
 admin.site.register(OD)
 admin.site.register(LEAVE)
 admin.site.register(GATEPASS)
+admin.site.register(BONAFIDE)
 admin.site.register(HOD)
 class AHODAdmin(admin.ModelAdmin):
 	list_display = ('user', 'department')

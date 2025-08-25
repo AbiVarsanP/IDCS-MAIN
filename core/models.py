@@ -164,10 +164,14 @@ class LEAVE(models.Model):
 
 class BONAFIDE(models.Model):
     user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='bonafide_student')
-    reason = models.CharField(max_length=255, blank=True, null=True)
+    reason = models.CharField(max_length=255, blank=True, null=True)  # keep or rename
     body = models.TextField(blank=True, null=True)
     proof = models.FileField(upload_to='bonafide/proof', blank=True)
     certificate = models.FileField(upload_to='bonafide/proof/certificate', blank=True)
+
+    # Add these ↓
+    sub = models.CharField(max_length=255)   # Purpose
+    date = models.DateField(null=True, blank=True)
 
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
@@ -179,7 +183,8 @@ class BONAFIDE(models.Model):
         ordering = ['-id']
 
     def __str__(self) -> str:
-        return f"{self.user.name} {self.reason}"
+        return f"{self.user.name} {self.sub}"
+
 
 
 class GATEPASS(models.Model):

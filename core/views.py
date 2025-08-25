@@ -59,10 +59,12 @@ def notifications_view(request):
     # Mark all unread as read when viewing history
     if request.method == "POST":
         Notification.objects.filter(student=student, is_read=False).update(is_read=True)
-    return render(request, "student/notification_history.html", {
+    context = {
         "latest_unread": latest_unread,
         "all_notifications": all_notifications,
-    })
+        "duser": student,
+    }
+    return render(request, "student/notification_history.html", context)
 
 # Staff notifications view
 @login_required
@@ -94,6 +96,7 @@ def staff_notifications_view(request):
         "latest_unread": latest_unread,
         "all_notifications": all_notifications,
         "unread_count": unread_count,
+        "duser": staff,
     })
 
 from django.shortcuts import render, redirect, HttpResponse
@@ -195,7 +198,30 @@ def ahod_bonafide_view(request):
 @login_required
 def student_profile(request):
     context = set_config(request)
-    return render(request, 'student/profile.html', context)
+    student = context.get('duser')
+    dept_ahod = None
+    dept_hod = None
+    # Prefer direct relation if set
+    if hasattr(student, 'ahod') and student.ahod:
+        dept_ahod = student.ahod
+    if hasattr(student, 'hod') and student.hod:
+        from .models import HOD
+        dept_hod = HOD.objects.filter(user=student.hod).first()
+    # Fallback to department match if not set
+    if not dept_ahod or not dept_hod:
+        if hasattr(student, 'department') and student.department is not None:
+            from .models import AHOD, HOD
+            try:
+                dept_code = int(student.department)
+                if not dept_ahod:
+                    dept_ahod = AHOD.objects.filter(department=dept_code).first()
+                if not dept_hod:
+                    dept_hod = HOD.objects.filter(department=dept_code).first()
+            except Exception:
+                pass
+    context['dept_ahod'] = dept_ahod
+    context['dept_hod'] = dept_hod
+    return render(request, 'common/profile.html', context)
 
 
 @login_required
@@ -220,7 +246,11 @@ def dash(request):
     if 'duser' not in context:
         return redirect('login')
     if not request.user.is_staff:
-        context['BF'] = BONAFIDE.objects.filter(user=context['duser'].id)
+        # Show only the student's own results for each section
+        context['gatepasses'] = GATEPASS.objects.filter(user=context['duser'])
+        context['bonafides'] = BONAFIDE.objects.filter(user=context['duser'])
+        context['leaves'] = LEAVE.objects.filter(user=context['duser'])
+        context['ods'] = OD.objects.filter(user=context['duser'])
         return render(request, 'student/dash.html', context=context)
 
     elif context['duser'].position == 0 or AHOD.objects.filter(user=context['duser']).exists() or context['duser'].position2 == 1:
@@ -538,7 +568,7 @@ def staff_action_od(request, id):
                 od.Hstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your OD request was {od.Mstatus} by Mentor"
             )
             print(od.Mstatus)
@@ -549,7 +579,7 @@ def staff_action_od(request, id):
                 od.Hstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your OD request was {od.Astatus} by Advisor"
             )
         if str(od.user.hod.user.username) == str(request.user):
@@ -565,7 +595,7 @@ def staff_action_od(request, id):
 
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your OD request was {action_status} by HOD"
             )
 
@@ -593,7 +623,7 @@ def staff_action_leave(request, id):
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your Leave request was {od.Mstatus} by Mentor"
             )
         elif role == 'advisor' and str(od.user.advisor.user.username) == str(request.user):
@@ -620,13 +650,13 @@ def staff_action_leave(request, id):
                 return redirect(ref)
 
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your Leave request was {od.Astatus} by Advisor"
             )
         elif role == 'hod' and str(od.user.hod.user.username) == str(request.user):
             od.Hstatus = status
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your Leave request was {od.Hstatus} by HOD"
             )
             od.save()
@@ -657,7 +687,7 @@ def staff_action_gatepass(request, id):
                 od.Hstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your Gatepass request was {od.Mstatus} by Mentor"
             )
             print(od.Mstatus)
@@ -668,7 +698,7 @@ def staff_action_gatepass(request, id):
                 od.Hstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your Gatepass request was {od.Astatus} by Advisor"
             )
         if str(od.user.hod.user.username) == str(request.user):
@@ -684,7 +714,7 @@ def staff_action_gatepass(request, id):
 
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your Gatepass request was {action_status} by HOD"
             )
 
@@ -931,6 +961,8 @@ def student_feedback_form(request, id,typ):
 @login_required
 def bonafide_view(request):
     context = set_config(request)
+    # Show only bonafide results for the student
+    context['bonafides'] = BONAFIDE.objects.filter(user=context['duser'])
     if request.POST:
         sub = get_post(request, 'sub')
         date = get_post(request, 'date')
@@ -1001,7 +1033,7 @@ def staff_action_bonafide(request, id):
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                user=bonafide.user,
+                student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Mstatus} by Mentor"
             )
         elif role == 'advisor' and str(bonafide.user.advisor.user.username) == str(request.user):
@@ -1009,13 +1041,13 @@ def staff_action_bonafide(request, id):
             if status == STATUS[2][0]:
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                user=bonafide.user,
+                student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Astatus} by Advisor"
             )
         elif role == 'hod' and str(bonafide.user.hod.user.username) == str(request.user):
             bonafide.Hstatus = status
             Notification.objects.create(
-                user=bonafide.user,
+                student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
             )
             bonafide.save()

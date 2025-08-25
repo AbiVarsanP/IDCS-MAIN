@@ -1,6 +1,8 @@
 from django.urls import path
 
+
 from .views import *
+from .profile_views import staff_profile, hod_profile
 
 
 
@@ -10,6 +12,8 @@ urlpatterns = [
     path("notifications/", notifications_view, name="notifications_view"),
 
     path("profile/", student_profile, name='student_profile'),
+    path("staff/profile/", staff_profile, name='staff_profile'),
+    path("hod/profile/", hod_profile, name='hod_profile'),
     path("od/",od,name='od'),
     path("od/upload_proof_od/<int:id>",upload_proof_od,name='proof_od'),
     path("leave/",leave,name='leave'),

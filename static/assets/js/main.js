@@ -87,4 +87,22 @@ jQuery(document).ready(function($) {
 	});
   
  
+	// Force user avatar dropdown to open on click (fix for Bootstrap dropdown issues)
+		$(document).on('click', '.user-area .dropdown-toggle', function(e) {
+			e.preventDefault();
+			var $menu = $(this).closest('.user-area').find('.user-menu.dropdown-menu');
+			if ($menu.hasClass('show')) {
+				$menu.removeClass('show').css('display', 'none');
+			} else {
+				$('.user-menu.dropdown-menu').removeClass('show').css('display', 'none'); // close others
+				$menu.addClass('show').css('display', 'block');
+			}
+		});
+		// Close dropdown when clicking outside
+		$(document).on('click', function(e) {
+			if (!$(e.target).closest('.user-area').length) {
+				$('.user-menu.dropdown-menu').removeClass('show').css('display', 'none');
+			}
+		});
+
 });

@@ -446,7 +446,7 @@ def staff_action_leave(request, id):
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                user=od.user,
+                    student=od.user,
                 message=f"Your Leave request was {od.Mstatus} by Mentor"
             )
         elif role == 'advisor' and str(od.user.advisor.user.username) == str(request.user):
@@ -455,13 +455,13 @@ def staff_action_leave(request, id):
                 # If rejected by advisor, reject HOD
                 od.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                user=od.user,
+                    student=od.user,
                 message=f"Your Leave request was {od.Astatus} by Advisor"
             )
         elif role == 'hod' and str(od.user.hod.user.username) == str(request.user):
             od.Hstatus = status
             Notification.objects.create(
-                user=od.user,
+                    student=od.user,
                 message=f"Your Leave request was {od.Hstatus} by HOD"
             )
             od.save()
@@ -823,25 +823,29 @@ def staff_action_bonafide(request, id):
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                user=bonafide.user,
+                student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Mstatus} by Mentor"
             )
+            bonafide.save()
+            return redirect("hod_bonafide_view")
         elif role == 'advisor' and str(bonafide.user.advisor.user.username) == str(request.user):
             bonafide.Astatus = status
             if status == STATUS[2][0]:
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                user=bonafide.user,
+                student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Astatus} by Advisor"
             )
+            bonafide.save()
+            return redirect("staff_bonafides")
         elif role == 'hod' and str(bonafide.user.hod.user.username) == str(request.user):
             bonafide.Hstatus = status
             Notification.objects.create(
-                user=bonafide.user,
+                student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
             )
             bonafide.save()
             return redirect("hod_bonafide_view")
-        bonafide.save()
-    return redirect("staff_bonafides")
+        # If none of the above, still return a redirect
+        return redirect("hod_bonafide_view")
 

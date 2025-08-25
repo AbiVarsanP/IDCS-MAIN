@@ -6,6 +6,9 @@ from .views import *
 
 urlpatterns = [
     path("",dash,name='dash'),
+
+    path("notifications/", notifications_view, name="notifications_view"),
+
     path("profile/", student_profile, name='student_profile'),
     path("od/",od,name='od'),
     path("od/upload_proof_od/<int:id>",upload_proof_od,name='proof_od'),
@@ -15,7 +18,9 @@ urlpatterns = [
     path("feedback",student_feedback,name='student_feedback'),
     path("feedbackform/<int:id>/<str:typ>",student_feedback_form,name='student_feedback_form'),
     path('bonafide/', bonafide_view, name='bonafide'),
+
     path("dash/", ahod_dash, name="ahod_dash"),
+
 ]
 
 from .ahod_actions import ahod_action_od
@@ -43,6 +48,9 @@ urlpatterns += [
     path("gatepass/action/<int:id>",staff_action_gatepass,name='staff_action_gatepass'),
     path("bonafide/action/<int:id>", staff_action_bonafide, name="staff_action_bonafide"),
     path("bonafides/", staff_bonafides, name="staff_bonafides"),
+
+    path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
+
 ]
 # hod
 
@@ -56,6 +64,7 @@ urlpatterns += [
     path("hfeed/spottoogle/<int:id>",hod_spot_feedback_toggle,name='hod_spot_feedback_toggle'),
     path("hbonafide/", hod_bonafide_view, name="hod_bonafide_view"),
     
+        path('hod/notifications/', hod_notification_history, name='hod_notification_history'),
 ]
 
 # auth

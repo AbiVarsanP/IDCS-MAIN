@@ -22,6 +22,11 @@
     <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
 </li>
 
+<li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
+    <a href="{% url 'notifications_view' %}" ><i class="menu-icon fa fa-bell"></i> Notification History</a>
+</li>
+
+
 {% endblock %}
 {% block root %}
 <div class="container mt-4">
@@ -65,6 +70,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     purposeSelect.addEventListener('change', toggleOtherPurpose);
     toggleOtherPurpose();
+
+
+    // Scholar type logic
+    var scholarRadios = document.getElementsByName('scholar_type');
+    var busTypeRow = document.querySelector('.form-row .form-group label[for="college_bus_type"]').closest('.form-row');
+    var busFareGroup = document.getElementById('bus_fare').closest('.form-group');
+    var busTypeRadios = document.getElementsByName('bus_type');
+
+    function toggleBusFields() {
+        var selected = document.querySelector('input[name="scholar_type"]:checked').value;
+        if (selected === 'Hostel') {
+            busTypeRow.style.display = 'none';
+            busFareGroup.style.display = 'none';
+        } else {
+            busTypeRow.style.display = '';
+            // Also check bus type
+            toggleBusFare();
+        }
+    }
+
+    function toggleBusFare() {
+        var busTypeSelected = document.querySelector('input[name="bus_type"]:checked');
+        if (busTypeSelected && busTypeSelected.value === 'Out Bus') {
+            busFareGroup.style.display = 'none';
+        } else {
+            busFareGroup.style.display = '';
+        }
+    }
+
+    scholarRadios.forEach(function(radio) {
+        radio.addEventListener('change', toggleBusFields);
+    });
+    busTypeRadios.forEach(function(radio) {
+        radio.addEventListener('change', toggleBusFare);
+    });
+    toggleBusFields();
+
 });
 </script>
                         {% csrf_token %}

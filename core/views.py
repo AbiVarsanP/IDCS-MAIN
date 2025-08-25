@@ -341,44 +341,48 @@ def logout_user(request):
 
 def od(request):
     context = set_config(request)
+
     if request.method == "POST":
         sub = get_post(request, 'sub')
         body = get_post(request, 'reason')
         start = get_post(request, 'start')
         end = get_post(request, 'end')
-        proff = request.FILES.get('proof')
-
-
-        # Convert browser datetime string → Python datetime
-        start = parse_datetime(start)
-        end = parse_datetime(end)
-
-        obj = OD(user=context['duser'], sub=sub, body=body,
-                 start=start, end=end, proof=proff)
-        obj.save()
-
+        proof = request.FILES.get('proof')
 
         # Convert browser datetime string → Python datetime
         start = parse_datetime(start)
         end = parse_datetime(end)
 
-        obj = OD(user=context['duser'], sub=sub, body=body,
-                 start=start, end=end, proof=proff)
-        obj.save()
+        # Create OD request
+        obj = OD.objects.create(
+            user=context['duser'],
+            sub=sub,
+            body=body,
+            start=start,
+            end=end,
+            proof=proof
+        )
+
         # Notify mentor, advisor, HOD
         student = context['duser']
-        staff_list = [student.mentor, student.advisor, student.hod]
-        for staff in staff_list:
+        staff_list = [
+            (student.mentor, 'mentor'),
+            (student.advisor, 'advisor'),
+            (student.hod, 'hod')
+        ]
+
+        for staff, role in staff_list:
             if staff:
-                role = 'hod' if hasattr(staff, 'position') and staff.position == 0 else None
                 Notification.objects.create(
                     staff=staff,
                     role=role,
-                    message=f"New OD request from {student.name}",
+                    message=f"New OD request from {student.name}"
                 )
+
         return redirect("dash")
 
     return render(request, 'student/od.html', context=context)
+
 
 
 @login_required

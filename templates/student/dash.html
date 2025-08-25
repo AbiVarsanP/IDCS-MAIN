@@ -1,33 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block nav %}
 
-<li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
-    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-</li>
-<li class="{% if request.resolver_match.url_name == 'od' %}active{% endif %}">
-    <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
-</li>
-<li class ="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
-    <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
-</li>
-<li class ="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
-    <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
-</li>
-<li class ="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
-    <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
-</li>
-<li class ="{% if request.resolver_match.url_name == 'student_feedback' %}active{% endif %}">
-    <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
-</li>
-
-<li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
-    <a href="{% url 'notifications_view' %}" ><i class="menu-icon fa fa-bell"></i> Notification History</a>
-</li>
-
-
-{% endblock %}
 
 {% block root %}
 <div class="row">
@@ -71,6 +45,8 @@
         <div class="card">
             <div class="card-header">
                 <strong class="card-title"><b>Status</b></strong>
+            </div>
+            <div class="card-header">
                 <strong class="card-title">OD's</strong>
             </div>
             <div class="table-stats order-table ov-h">
@@ -183,8 +159,7 @@
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr>
-                        </tr>
+                        <tr><td colspan="6">No OD records found</td></tr>
                         {% endif %}
 
                     </tbody>
@@ -210,6 +185,7 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
+                            <th>AHOD</th>
                             <th>HOD</th>
                         </tr>
                     </thead>
@@ -227,13 +203,19 @@
                                 <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
                             </td>
                             <td>
+                                {% if i.user.ahod %}
+                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
                             </td>
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr>
-                        </tr>
+                        <tr><td colspan="6">No OD records found</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -288,8 +270,7 @@
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr>
-                        </tr>
+                        <tr><td colspan="6">No OD records found</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -355,8 +336,7 @@
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr>
-                        </tr>
+                        <tr><td colspan="6">No OD records found</td></tr>
                         {% endif %}
 
                     </tbody>

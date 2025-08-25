@@ -40,6 +40,7 @@ urlpatterns += [
     path("hfeed/spottoogle/<int:id>",hod_spot_feedback_toggle,name='hod_spot_feedback_toggle'),
     path("hbonafide/", hod_bonafide_view, name="hod_bonafide_view"),
     
+        path('hod/notifications/', hod_notification_history, name='hod_notification_history'),
 ]
 
 # auth

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4>HOD Notification History</h4>
+            <form method="post" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-light btn-sm">Mark All as Read</button>
+            </form>
+        </div>
+        <div class="card-body">
+            {% if notifications %}
+                <ul class="list-group">
+                    {% for n in notifications %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ n.message }}</span>
+                            <span class="badge badge-info">{{ n.created_at|date:'Y-m-d H:i' }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-warning text-center">No notifications yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

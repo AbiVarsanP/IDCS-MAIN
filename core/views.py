@@ -1,3 +1,31 @@
+from django.shortcuts import render
+from .models import Notification, Staff
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def hod_notification_history(request):
+    # Get HOD staff object
+    staff = None
+    if hasattr(request, 'duser'):
+        staff = getattr(request, 'duser', None)
+    if not staff:
+        try:
+            staff = Staff.objects.get(user=request.user)
+        except Staff.DoesNotExist:
+            staff = None
+    # Only allow HODs
+    if not staff or not hasattr(staff, 'position') or staff.position != 0:
+        return render(request, 'hod/notification_history.html', {'notifications': [], 'duser': staff})
+    # Query notifications for HOD
+    notifications = Notification.objects.filter(staff=staff, role__iexact='hod').order_by('-created_at')
+    if request.method == "POST":
+        notifications.filter(is_read=False).update(is_read=True)
+    recent_notifications = notifications[:5]
+    return render(request, 'hod/notification_history.html', {
+        'notifications': notifications,
+        'recent_notifications': recent_notifications,
+        'duser': staff
+    })
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Notification, Student
@@ -33,17 +61,22 @@ def staff_notifications_view(request):
             staff = None
     if not staff:
         return redirect('login')
-    # Latest 5 unread notifications for bell icon popup
-    latest_unread = Notification.objects.filter(staff=staff, is_read=False).order_by('-created_at')[:5]
-    # All notifications for history page
-    all_notifications = Notification.objects.filter(staff=staff).order_by('-created_at')
+    # Only show HOD notifications for HOD users
+    if hasattr(staff, 'position') and staff.position == 0:  # HOD position
+        latest_unread = Notification.objects.filter(staff=staff, role='hod', is_read=False).order_by('-created_at')[:5]
+        all_notifications = Notification.objects.filter(staff=staff, role='hod').order_by('-created_at')
+        unread_count = Notification.objects.filter(staff=staff, role='hod', is_read=False).count()
+    else:
+        latest_unread = Notification.objects.filter(staff=staff, is_read=False).order_by('-created_at')[:5]
+        all_notifications = Notification.objects.filter(staff=staff).order_by('-created_at')
+        unread_count = Notification.objects.filter(staff=staff, is_read=False).count()
     # Mark all unread as read when viewing history or clicking 'mark all read'
     if request.method == "POST":
         Notification.objects.filter(staff=staff, is_read=False).update(is_read=True)
     return render(request, "staff/notification_history.html", {
         "latest_unread": latest_unread,
         "all_notifications": all_notifications,
-        "unread_count": Notification.objects.filter(staff=staff, is_read=False).count(),
+        "unread_count": unread_count,
     })
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import login, logout, authenticate
@@ -198,8 +231,10 @@ def od(request):
         staff_list = [student.mentor, student.advisor, student.hod]
         for staff in staff_list:
             if staff:
+                role = 'hod' if hasattr(staff, 'position') and staff.position == 0 else None
                 Notification.objects.create(
                     staff=staff,
+                    role=role,
                     message=f"New OD request from {student.name}",
                 )
         return redirect("dash")
@@ -235,8 +270,10 @@ def leave(request):
         staff_list = [student.mentor, student.advisor, student.hod]
         for staff in staff_list:
             if staff:
+                role = 'hod' if hasattr(staff, 'position') and staff.position == 0 else None
                 Notification.objects.create(
                     staff=staff,
+                    role=role,
                     message=f"New Leave request from {student.name}",
                 )
         return redirect("dash")
@@ -262,8 +299,10 @@ def gatepass(request):
         staff_list = [student.mentor, student.advisor, student.hod]
         for staff in staff_list:
             if staff:
+                role = 'hod' if hasattr(staff, 'position') and staff.position == 0 else None
                 Notification.objects.create(
                     staff=staff,
+                    role=role,
                     message=f"New Gatepass request from {student.name}",
                 )
         return redirect("gatepass")
@@ -675,6 +714,33 @@ def student_feedback_form(request, id,typ):
 
         context['c_staff'].my_feedbacks.add(inrating)
         context['c_staff'].save()
+
+        # --- Feedback completion notification logic ---
+        # Get all students assigned to this staff for the same class/section/year
+        staff_obj = context['c_staff']
+        # Find students assigned to this staff (same year/section)
+        assigned_students = Student.objects.filter(
+            year=staff_obj.year,
+            section=staff_obj.section,
+            teaching_staffs=staff_obj
+        )
+        # Count how many have submitted feedback for this staff
+        completed_count = 0
+        for student in assigned_students:
+            # Check if student has feedbacked this staff
+            if IndividualStaffRating.objects.filter(staff=staff_obj, student=student, is_feedbacked=True).exists():
+                completed_count += 1
+        if completed_count == assigned_students.count() and assigned_students.count() > 0:
+            # Notify HOD only if not already notified for this staff
+            hod_staff = staff_obj.hod
+            msg = f"Feedback for Dr. {staff_obj.name} is completed by all assigned students."
+            if not Notification.objects.filter(staff=hod_staff, role='hod', message__icontains=staff_obj.name).exists():
+                Notification.objects.create(
+                    staff=hod_staff,
+                    role='hod',
+                    message=msg
+                )
+        # --- End feedback completion notification logic ---
         return redirect('student_feedback')
 
     return render(request, "feedbackform.html", context=context)
@@ -723,8 +789,10 @@ def bonafide_view(request):
         staff_list = [student.mentor, student.advisor, student.hod]
         for staff in staff_list:
             if staff:
+                role = 'hod' if hasattr(staff, 'position') and staff.position == 0 else None
                 Notification.objects.create(
                     staff=staff,
+                    role=role,
                     message=f"New Bonafide request from {student.name}",
                 )
         return redirect("dash")

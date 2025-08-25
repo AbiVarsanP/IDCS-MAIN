@@ -18,21 +18,17 @@
                         <hr style="margin: 0.5rem 0; width: 100%;">
                     </div>
                 </div>
-                <div class="card bg-light ml-4" style="min-width: 260px; max-width: 320px;">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="mr-3">
-                            {% if duser.profile %}
-                                <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
-                            {% else %}
-                                <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
-                            {% endif %}
-                        </div>
-                        <div>
-                            <strong>Staff ID:</strong> {{ duser.user.username }}<br>
-                            <strong>Name:</strong> {{ duser.name }}<br>
-                            <strong>User:</strong> Student
-                        </div>
-                    </div>
+                <div class="mr-3">
+                    {% if duser.profile %}
+                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                    {% else %}
+                        <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>Student ID:</strong> {{ duser.user.username }}<br>
+                    <strong>Name:</strong> {{ duser.name }}<br>
+                    <strong>User:</strong> Student
                 </div>
             </div>
         </div>
@@ -64,8 +60,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if OD%}
-                        {% for i in OD %}
+                        {% if ods %}
+                        {% for i in ods %}
                         <tr>
                             <td class="serial">{{ forloop.counter }}.</td>
 
@@ -88,7 +84,7 @@
                             </td>
                             <td>
                                 {% if i.user.ahod %}
-                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
                                 {% else %}
                                     <span class="badge badge-secondary">N/A</span>
                                 {% endif %}
@@ -131,8 +127,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if LE%}
-                        {% for i in LE %}
+                        {% if leaves %}
+                        {% for i in leaves %}
                         <tr>
                             <td class="serial">{{ forloop.counter }}.</td>
 
@@ -147,7 +143,7 @@
                             </td>
                             <td>
                                 {% if i.user.ahod %}
-                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
                                 {% else %}
                                     <span class="badge badge-secondary">N/A</span>
                                 {% endif %}
@@ -159,7 +155,7 @@
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr><td colspan="6">No OD records found</td></tr>
+                        <tr><td colspan="6">No Leave records found</td></tr>
                         {% endif %}
 
                     </tbody>
@@ -190,8 +186,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if BF %}
-                        {% for i in BF %}
+                        {% if bonafides %}
+                        {% for i in bonafides %}
                         <tr>
                             <td class="serial">{{ forloop.counter }}.</td>
                             <td> #BF{{i.id}} </td>
@@ -204,7 +200,7 @@
                             </td>
                             <td>
                                 {% if i.user.ahod %}
-                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
                                 {% else %}
                                     <span class="badge badge-secondary">N/A</span>
                                 {% endif %}
@@ -215,7 +211,7 @@
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr><td colspan="6">No OD records found</td></tr>
+                        <tr><td colspan="6">No Bonafide records found</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
@@ -224,61 +220,7 @@
     </div>
 </div>
 <!-- End Bonafide Table -->
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header">
-                <strong class="card-title">GATE PASS's</strong>
 
-            </div>
-            <div class="table-stats order-table ov-h">
-                <table class="table ">
-                    <thead>
-                        <tr>
-                            <th class="serial">#</th>
-                            <th>ID</th>
-                            <th>TITLE</th>
-                            <th>MENTOR</th>
-                            <th>ADVISOR</th>
-                            <th>AHOD</th>
-                            <th>HOD</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if BF %}
-                        {% for i in BF %}
-                        <tr>
-                            <td class="serial">{{ forloop.counter }}.</td>
-                            <td> #BF{{i.id}} </td>
-                            <td> <span class="name">{{i.sub}}</span> </td>
-                            <td>
-                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
-                            </td>
-                            <td>
-                                {% if i.user.ahod %}
-                                    <span class="badge badge-info">{{ i.Astatus }}</span>
-                                {% else %}
-                                    <span class="badge badge-secondary">N/A</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr><td colspan="6">No OD records found</td></tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div> <!-- /.table-stats -->
-        </div>
-    </div>
-</div>
-<!-- End Bonafide Table -->
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
@@ -300,8 +242,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if GP%}
-                        {% for i in GP %}
+                        {% if gatepasses %}
+                        {% for i in gatepasses %}
                         <tr>
                             <td class="serial">{{ forloop.counter }}.</td>
 
@@ -324,9 +266,9 @@
                             </td>
                             <td>
                                 {% if i.user.ahod %}
-                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
                                 {% else %}
-                                    <span class="badge badge-secondary">N/A</span>
+                                    <span class="badge badge-{{i.Astatus}}">N/A</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -336,7 +278,7 @@
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr><td colspan="6">No OD records found</td></tr>
+                        <tr><td colspan="6">No Gatepass records found</td></tr>
                         {% endif %}
 
                     </tbody>

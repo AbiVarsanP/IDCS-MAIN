@@ -7,7 +7,13 @@ from .constants import *
 class Notification(models.Model):
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name="student_notifications", null=True, blank=True)
     staff = models.ForeignKey('Staff', on_delete=models.CASCADE, related_name="staff_notifications", null=True, blank=True)
-    message = models.CharField(max_length=255)
+    ROLE_CHOICES = [
+        ('mentor', 'Mentor'),
+        ('advisor', 'Advisor'),
+        ('hod', 'HOD'),
+    ]
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
+    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 

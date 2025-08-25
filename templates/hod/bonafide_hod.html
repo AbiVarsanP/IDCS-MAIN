@@ -32,6 +32,18 @@
 </li>
 {% endblock %}
 {% block root %}
+<!-- Year Filter -->
+<form method="get" class="form-inline mb-3">
+    <label for="year" class="mr-2"><b>Filter by Year:</b></label>
+    <select name="year" id="year" class="form-control mr-2">
+        <option value="">All Years</option>
+        <option value="1" {% if request.GET.year == '1' %}selected{% endif %}>1st Year</option>
+        <option value="2" {% if request.GET.year == '2' %}selected{% endif %}>2nd Year</option>
+        <option value="3" {% if request.GET.year == '3' %}selected{% endif %}>3rd Year</option>
+        <option value="4" {% if request.GET.year == '4' %}selected{% endif %}>4th Year</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
 
             <!-- Department Students Table -->
             <div class="card mb-4">
@@ -54,6 +66,7 @@
                         <tbody>
                         {% for b in bonafide_forms %}
                             {% if b.user.hod.user.username == user.username and b.user.mentor.user.username != user.username %}
+                                {% if not request.GET.year or b.user.year|stringformat:'s' == request.GET.year %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ b.user.name }}</td>
@@ -110,6 +123,7 @@
                                         {% endif %}
                                     </td>
                                 </tr>
+                                {% endif %}
                             {% endif %}
                         {% empty %}
                             <tr><td colspan="7">No bonafide forms.</td></tr>

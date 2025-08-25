@@ -77,6 +77,7 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
+                            <th>AHOD</th>
                             <th>HOD</th>
 
                         </tr>
@@ -104,7 +105,13 @@
                             <td>
                                 <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
                             </td>
-
+                            <td>
+                                {% if i.user.ahod %}
+                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">N/A</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
                             </td>
@@ -137,6 +144,7 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
+                            <th>AHOD</th>
                             <th>HOD</th>
 
                         </tr>
@@ -156,7 +164,13 @@
                             <td>
                                 <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
                             </td>
-
+                            <td>
+                                {% if i.user.ahod %}
+                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">N/A</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
                             </td>
@@ -190,6 +204,7 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
+                            <th>AHOD</th>
                             <th>HOD</th>
                         </tr>
                     </thead>
@@ -205,6 +220,13 @@
                             </td>
                             <td>
                                 <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
+                            </td>
+                            <td>
+                                {% if i.user.ahod %}
+                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">N/A</span>
+                                {% endif %}
                             </td>
                             <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
@@ -237,6 +259,7 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
+                            <th>AHOD</th>
                             <th>HOD</th>
 
                         </tr>
@@ -264,7 +287,13 @@
                             <td>
                                 <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
                             </td>
-
+                            <td>
+                                {% if i.user.ahod %}
+                                    <span class="badge badge-info">{{ i.Astatus }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">N/A</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
                             </td>

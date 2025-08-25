@@ -54,60 +54,141 @@
                         <tbody>
                         {% for b in bonafide_forms %}
                             {% if b.user.hod.user.username == user.username and b.user.mentor.user.username != user.username %}
-                                                        <tr>
-                                                                <td>{{ forloop.counter }}</td>
-                                                                <td>{{ b.user.name }}</td>
-                                                                <td>{{ b.sub }}</td>
-                                                                <td>{{ b.created|date:'Y-m-d H:i' }}</td>
-                                                                <td>
-                                                                        Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
-                                                                        Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
-                                                                        HOD: 
-                                                                        {% if b.Hstatus == 'Approved' %}
-                                                                                <span class="badge badge-success">Approved</span>
-                                                                        {% elif b.Hstatus == 'Rejected' %}
-                                                                                <span class="badge badge-danger">Rejected</span>
-                                                                        {% else %}
-                                                                                <span class="badge badge-warning">Pending</span>
-                                                                        {% endif %}
-                                                                </td>
-                                                                <td>
-                                                                        {% if b.body %}
-                                                                                <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
-                                                                                <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
-                                                                                    <div class="modal-dialog" role="document">
-                                                                                        <div class="modal-content">
-                                                                                            <div class="modal-header">
-                                                                                                <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Reason for Bonafide</h5>
-                                                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                                                    <span aria-hidden="true">&times;</span>
-                                                                                                </button>
-                                                                                            </div>
-                                                                                            <div class="modal-body">
-                                                                                                {{ b.body }}
-                                                                                                {% if b.proof %}
-                                                                                                    <hr>
-                                                  <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
-                                                {% endif %}
-                                              </div>
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ b.user.name }}</td>
+                                    <td>{{ b.sub }}</td>
+                                    <td>{{ b.created|date:'Y-m-d H:i' }}</td>
+                                    <td>
+                                        Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
+                                        Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
+                                        HOD: 
+                                        {% if b.Hstatus == 'Approved' %}
+                                            <span class="badge badge-success">Approved</span>
+                                        {% elif b.Hstatus == 'Rejected' %}
+                                            <span class="badge badge-danger">Rejected</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if b.body %}
+                                            <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
+                                            <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Reason for Bonafide</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            {{ b.body }}
+                                                            {% if b.proof %}
+                                                                <hr>
+                                                                <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                          </div>
-                                        </div>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
-                                    <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                        {% csrf_token %}
-                                        <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                    </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                                {% csrf_token %}
+                                                <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
                             {% endif %}
                         {% empty %}
                             <tr><td colspan="7">No bonafide forms.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mentees Bonafide Applications Table -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <b>Mentees Bonafide Applications</b>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>SUBMITTED AT</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for b in bonafide_forms %}
+                            {% if b.user.mentor.user.username == user.username %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ b.user.name }}</td>
+                                    <td>{{ b.sub }}</td>
+                                    <td>{{ b.created|date:'Y-m-d H:i' }}</td>
+                                    <td>
+                                        Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
+                                        Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
+                                        HOD: 
+                                        {% if b.Hstatus == 'Approved' %}
+                                            <span class="badge badge-success">Approved</span>
+                                        {% elif b.Hstatus == 'Rejected' %}
+                                            <span class="badge badge-danger">Rejected</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if b.body %}
+                                            <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModalMentee{{ b.id }}">View Reason</button>
+                                            <div class="modal fade" id="reasonModalMentee{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabelMentee{{ b.id }}" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="reasonModalLabelMentee{{ b.id }}">Reason for Bonafide</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            {{ b.body }}
+                                                            {% if b.proof %}
+                                                                <hr>
+                                                                <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                                {% csrf_token %}
+                                                <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% empty %}
+                            <tr><td colspan="7">No mentee bonafide forms.</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>

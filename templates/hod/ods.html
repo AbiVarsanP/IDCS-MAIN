@@ -54,6 +54,7 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>VIEW</th>
+                            <th>Status</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -65,7 +66,7 @@
                             <td> {{i.user.name}} </td>
                             <td>{{i.sub}}</td>
                             <td>{{i.start}} - {{i.end}}</td>
-                            <td>{{i.created|date:'Y-m-d H:i'}}</td>
+                            <td>{{i.created|date:'Y-m-d H:i'}}}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"
@@ -76,6 +77,11 @@
                                 {% if i.certificate %}
                                     <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
                                 {% endif %}
+                            </td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                             </td>
                             <td>
                                 {% if i.Mstatus == "Approved" %}
@@ -125,6 +131,7 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>VIEW</th>
+                            <th>Status</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -136,7 +143,7 @@
                             <td> {{i.user.name}} </td>
                             <td>{{i.sub}}</td>
                             <td>{{i.start}} - {{i.end}}</td>
-                            <td>{{i.created|date:'Y-m-d H:i'}}</td>
+                            <td>{{i.created|date:'Y-m-d H:i'}}}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"
@@ -147,6 +154,11 @@
                                 {% if i.certificate %}
                                     <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
                                 {% endif %}
+                            </td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                             </td>
                             <td>
                                 {% if i.Hstatus == "Approved" %}
@@ -185,44 +197,75 @@
 <div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="detailLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <b>Mentees OD's</b>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="serial">ID</th>
+                                    <th>NAME</th>
+                                    <th>SUB</th>
+                                    <th>FROM-TO</th>
+                                    <th>SUBMITTED AT</th>
+                                    <th>VIEW</th>
+                                    <th>Status</th>
+                                    <th>OPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if mods%}
+                                {% for i in mods %}
+                                <tr>
+                                    ...existing code...
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr><td colspan="8">No mentee OD forms.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
+        </div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <b>Department Students OD's</b>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                <a type="button" target="_blank" class="btn btn-outline-warning" data-dismiss="modal">Close</a>
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="serial">ID</th>
+                            <th>NAME</th>
+                            <th>SUB</th>
+                            <th>FROM-TO</th>
+                            <th>SUBMITTED AT</th>
+                            <th>VIEW</th>
+                            <th>Status</th>
+                            <th>OPTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if hods%}
+                        {% for i in hods %}
+                        <tr>
+                            ...existing code...
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr><td colspan="8">No department OD forms.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
-
-
-<script>
-    $('#detail').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget)
-        var recipient = button.data('sub') 
-        var name = button.data('name') 
-        var content = button.data('body') 
-        var url = button.data('url') 
-        var modal = $(this)
-        modal.find('.modal-title').html(`<b>${recipient}</b>  <small>-by ${name}</small>`)
-        modal.find('.modal-body').text(content)
-        modal.find('.modal-footer').html(
-            `
-            <div class="btn-group">
-            <a href="${url}" downloade class="btn btn-outline-success">Downlode File</a>
-            <a href="${url}" target="_blank"  class="btn btn-outline-warning">View File</a>
-            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-            </div>
-            `
-        )
-    })
-</script>
-
 {% endblock %}

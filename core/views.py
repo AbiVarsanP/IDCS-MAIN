@@ -393,7 +393,7 @@ def staff_action_od(request, id):
                 od.Hstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your OD request was {od.Mstatus} by Mentor"
             )
             print(od.Mstatus)
@@ -404,7 +404,7 @@ def staff_action_od(request, id):
                 od.Hstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your OD request was {od.Astatus} by Advisor"
             )
         if str(od.user.hod.user.username) == str(request.user):
@@ -419,7 +419,7 @@ def staff_action_od(request, id):
                 od.Hstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
-                user=od.user,
+                student=od.user,
                 message=f"Your OD request was {action_status} by HOD"
             )
             od.save()

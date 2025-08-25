@@ -1,7 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.urls import reverse
 from .constants import *
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class AHOD(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE)

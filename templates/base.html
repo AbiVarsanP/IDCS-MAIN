@@ -42,6 +42,7 @@
                     {% block nav %}
 
                         {% if duser and duser.position == 0 %}
+                            
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
                                 <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
                             </li>
@@ -64,6 +65,9 @@
                                 <a href="{% url 'hod_notification_history' %}"><i class="fa fa-bell"></i> Notification History</a>
                             </li>
                         {% else %}
+                            <!-- <li>
+                                <a id="menuToggle" class="menutoggle"><i class="menu-icon fa fa-bars"></i></a>
+                            </li> -->
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
                                 <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
                             </li>
@@ -83,7 +87,7 @@
                                 <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
                             </li>
                             <li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
-                                <a href="{% url 'notifications_view' %}" class="btn btn-warning btn-block mt-2"><i class="fa fa-bell"></i> Notification History</a>
+                                <a href="{% url 'notifications_view' %}" ><i class="menu-icon fa fa-bell"></i> Notification History</a>
                             </li>
                         {% endif %}
 
@@ -106,7 +110,6 @@
                 <div class="navbar-header">
                     <a class="navbar-brand" href=""><img width="40%" src="{% static 'images/logo.png' %}"
                             alt="Logo"></a>
-                    <a class="navbar-brand hidden" href=""><img src="{% static 'images/logo.png' %}" alt="Logo"></a>
                     <a id="menuToggle" class="menutoggle"><i class="fa fa-bars"></i></a>
                 </div>
             </div>

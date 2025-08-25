@@ -29,6 +29,18 @@
 {% endblock %}
 
 {% block root %}
+<!-- Year Filter -->
+<form method="get" class="form-inline mb-3">
+    <label for="year" class="mr-2"><b>Filter by Year:</b></label>
+    <select name="year" id="year" class="form-control mr-2">
+        <option value="">All Years</option>
+        <option value="1" {% if request.GET.year == '1' %}selected{% endif %}>1st Year</option>
+        <option value="2" {% if request.GET.year == '2' %}selected{% endif %}>2nd Year</option>
+        <option value="3" {% if request.GET.year == '3' %}selected{% endif %}>3rd Year</option>
+        <option value="4" {% if request.GET.year == '4' %}selected{% endif %}>4th Year</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"></script>
@@ -56,12 +68,14 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>VIEW</th>
+                            <th>Status</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if mods %}
                         {% for i in mods %}
+                        {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
                         <tr>
                             <td class="serial">
                                 {% if i.proof %}
@@ -87,6 +101,11 @@
                                 </button>
                             </td>
                             <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                            </td>
+                            <td>
                                 {% if i.Mstatus == "Approved" %}
                                     <button class="btn btn-success">{{ i.Mstatus }}</button>
                                 {% elif i.Mstatus == "Rejected" %}
@@ -105,6 +124,7 @@
                                 {% endif %}
                             </td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                         {% else %}
                         <tr><td colspan="6" class="text-center">No mentee leaves found</td></tr>
@@ -133,6 +153,7 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>VIEW</th>
+                            <th>Status</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -162,6 +183,11 @@
                                     {% endif %}>
                                     <small>#LE{{ i.id }}</small>
                                 </button>
+                            </td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                             </td>
                             <td>
                                 {% if i.Hstatus == "Approved" %}

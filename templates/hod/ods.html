@@ -194,78 +194,42 @@
     </div>
 </div>
 
-<div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel"
-    aria-hidden="true">
+
+<div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card mb-4">
-                    <div class="card-header bg-success text-white">
-                        <b>Mentees OD's</b>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="serial">ID</th>
-                                    <th>NAME</th>
-                                    <th>SUB</th>
-                                    <th>FROM-TO</th>
-                                    <th>SUBMITTED AT</th>
-                                    <th>VIEW</th>
-                                    <th>Status</th>
-                                    <th>OPTION</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if mods%}
-                                {% for i in mods %}
-                                <tr>
-                                    ...existing code...
-                                </tr>
-                                {% endfor %}
-                                {% else %}
-                                <tr><td colspan="8">No mentee OD forms.</td></tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-        </div>
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <b>Department Students OD's</b>
+            <div class="modal-body">
+                <div id="modalBodyContent"></div>
             </div>
-            <div class="card-body">
-                <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th class="serial">ID</th>
-                            <th>NAME</th>
-                            <th>SUB</th>
-                            <th>FROM-TO</th>
-                            <th>SUBMITTED AT</th>
-                            <th>VIEW</th>
-                            <th>Status</th>
-                            <th>OPTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if hods%}
-                        {% for i in hods %}
-                        <tr>
-                            ...existing code...
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr><td colspan="8">No department OD forms.</td></tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
+
+<script>
+    $('#detail').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget)
+        var sub = button.data('sub')
+        var name = button.data('name')
+        var body = button.data('body')
+        var url = button.data('url')
+        var modal = $(this)
+        modal.find('.modal-title').html(`<b>${sub}</b> <small>-by ${name}</small>`)
+        var html = `<p><b>Subject:</b> ${sub}</p>`
+        html += `<p><b>Student Name:</b> ${name}</p>`
+        html += `<p><b>Details:</b> ${body}</p>`
+        if (url) {
+            html += `<hr><a href="${url}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>`
+        }
+        modal.find('#modalBodyContent').html(html)
+    })
+</script>
 {% endblock %}

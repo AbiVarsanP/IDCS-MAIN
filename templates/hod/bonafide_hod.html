@@ -97,11 +97,16 @@
                                     </td>
                                     <td>
                                         {% if b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
-                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}" class="bonafide-action-form">
                                                 {% csrf_token %}
+                                                <input type="hidden" name="role" value="hod">
                                                 <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
                                                 <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                             </form>
+                                        {% elif b.Hstatus == 'Approved' %}
+                                            <span class="badge badge-success">Approved</span>
+                                        {% elif b.Hstatus == 'Rejected' %}
+                                            <span class="badge badge-danger">Rejected</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -178,11 +183,16 @@
                                     </td>
                                     <td>
                                         {% if b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
-                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}" class="bonafide-action-form">
                                                 {% csrf_token %}
+                                                <input type="hidden" name="role" value="hod">
                                                 <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
                                                 <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                             </form>
+                                        {% elif b.Hstatus == 'Approved' %}
+                                            <span class="badge badge-success">Approved</span>
+                                        {% elif b.Hstatus == 'Rejected' %}
+                                            <span class="badge badge-danger">Rejected</span>
                                         {% endif %}
                                     </td>
                                 </tr>

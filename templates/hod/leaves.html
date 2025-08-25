@@ -56,6 +56,7 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>VIEW</th>
+                            <th>Status</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -85,6 +86,11 @@
                                     {% endif %}>
                                     <small>#LE{{ i.id }}</small>
                                 </button>
+                            </td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                             </td>
                             <td>
                                 {% if i.Mstatus == "Approved" %}
@@ -133,6 +139,7 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>VIEW</th>
+                            <th>Status</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -162,6 +169,11 @@
                                     {% endif %}>
                                     <small>#LE{{ i.id }}</small>
                                 </button>
+                            </td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                             </td>
                             <td>
                                 {% if i.Hstatus == "Approved" %}

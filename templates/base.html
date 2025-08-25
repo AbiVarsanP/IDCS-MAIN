@@ -40,24 +40,53 @@
                 <ul class="nav navbar-nav">
 
                     {% block nav %}
-                    <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
-                            <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-                    </li>
-                    <li class="{% if request.resolver_match.url_name == 'od' %}active{% endif %}">
-                        <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
-                    </li>
-                    <li class ="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
-                        <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
-                    </li>
-                    <li class ="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
-                        <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
-                    </li>
-                    <li class ="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
-                        <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
-                    </li>
-                    <li class ="{% if request.resolver_match.url_name == 'student_feedback' %}active{% endif %}">
-                        <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
-                    </li>
+
+                        {% if duser and duser.position == 0 %}
+                            <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
+                                <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'hod_feedback_view' %}"><i class="menu-icon ti ti-comments"></i>Feedback </a>
+                            </li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}">
+                                <a href="{% url 'hod_notification_history' %}"><i class="fa fa-bell"></i> Notification History</a>
+                            </li>
+                        {% else %}
+                            <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
+                                <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+                            </li>
+                            <li class="{% if request.resolver_match.url_name == 'od' %}active{% endif %}">
+                                <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+                            </li>
+                            <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
+                                <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+                            </li>
+                            <li class="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
+                                <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+                            </li>
+                            <li class="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
+                                <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
+                            </li>
+                            <li class="{% if request.resolver_match.url_name == 'student_feedback' %}active{% endif %}">
+                                <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
+                            </li>
+                            <li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
+                                <a href="{% url 'notifications_view' %}" class="btn btn-warning btn-block mt-2"><i class="fa fa-bell"></i> Notification History</a>
+                            </li>
+                        {% endif %}
+
                     {% endblock %}
                     <li class="menu-title">Profile</li><!-- /.menu-title -->
                     <li>
@@ -94,26 +123,83 @@
                         </div> -->
 
                         <div class="dropdown for-notification">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-bell"></i>
-                                <span class="count bg-danger">3</span>
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="notification">
-                                <p class="red">You have 3 Notification</p>
-                                <a class="dropdown-item media" href="#">
-                                    <i class="fa fa-check"></i>
-                                    <p>Server #1 overloaded.</p>
-                                </a>
-                                <a class="dropdown-item media" href="#">
-                                    <i class="fa fa-info"></i>
-                                    <p>Server #2 overloaded.</p>
-                                </a>
-                                <a class="dropdown-item media" href="#">
-                                    <i class="fa fa-warning"></i>
-                                    <p>Server #3 overloaded.</p>
-                                </a>
-                            </div>
+    {% if request.user.is_authenticated %}
+        {% if request.user.is_staff and duser.position == 0 %}
+            {% with latest_notifications=recent_notifications %}
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-bell"></i>
+                    <span class="count bg-danger">{{ latest_notifications|length }}</span>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="notification">
+                    <p class="red">You have {{ latest_notifications|length }} Notification{{ latest_notifications|length|pluralize }}</p>
+                    {% for n in latest_notifications %}
+                        <a class="dropdown-item media" href="{% url 'hod_notification_history' %}">
+                            <i class="fa fa-info"></i>
+                            <p>{{ n.message }}<br><small>{{ n.created_at|date:'Y-m-d H:i' }}</small></p>
+                        </a>
+                    {% empty %}
+                        <p class="red">No notifications</p>
+                    {% endfor %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-center" href="{% url 'hod_notification_history' %}"><b>View All</b></a>
+                </div>
+            {% endwith %}
+        {% elif request.user.is_staff %}
+            {% with latest_notifications=latest_unread %}
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-bell"></i>
+                    <span class="count bg-danger">{{ latest_notifications|length }}</span>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="notification">
+                    <p class="red">You have {{ latest_notifications|length }} Notification{{ latest_notifications|length|pluralize }}</p>
+                    {% for n in latest_notifications %}
+                        <a class="dropdown-item media" href="{% url 'staff_notifications' %}">
+                            <i class="fa fa-info"></i>
+                            <p>{{ n.message }}<br><small>{{ n.created_at|date:'Y-m-d H:i' }}</small></p>
+                        </a>
+                    {% empty %}
+                        <p class="red">No notifications</p>
+                    {% endfor %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-center" href="{% url 'staff_notifications' %}"><b>View All</b></a>
+                </div>
+            {% endwith %}
+        {% else %}
+            {% with student=request.user.student.first %}
+                {% with latest_notifications=student.notifications.all|slice:":5" %}
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-bell"></i>
+                        <span class="count bg-danger">{{ latest_notifications|length }}</span>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="notification">
+                        <p class="red">You have {{ latest_notifications|length }} Notification{{ latest_notifications|length|pluralize }}</p>
+                        {% for n in latest_notifications %}
+                            <a class="dropdown-item media" href="{% url 'notifications_view' %}">
+                                <i class="fa fa-info"></i>
+                                <p>{{ n.message }}<br><small>{{ n.created_at|date:'Y-m-d H:i' }}</small></p>
+                            </a>
+                        {% empty %}
+                            <p class="red">No notifications</p>
+                        {% endfor %}
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-center" href="{% url 'notifications_view' %}"><b>View All</b></a>
+                    </div>
+                {% endwith %}
+            {% endwith %}
+        {% endif %}
+    {% else %}
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="notification"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-bell"></i>
+            <span class="count bg-danger">0</span>
+        </button>
+        <div class="dropdown-menu" aria-labelledby="notification">
+            <p class="red">No notifications</p>
+        </div>
+    {% endif %}
                         </div>
                         <!-- 
                         <div class="dropdown for-message">

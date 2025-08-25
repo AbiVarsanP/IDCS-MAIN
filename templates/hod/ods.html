@@ -52,6 +52,7 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>SUBMITTED AT</th>
                             <th>VIEW</th>
                             <th>OPTION</th>
                         </tr>
@@ -60,16 +61,11 @@
                         {% if mods%}
                         {% for i in mods %}
                         <tr>
-                            
                             <td class="serial"> <a href="{{i.proof.url}}" >#OD{{i.id}}</a> </td>
                             <td> {{i.user.name}} </td>
-                            <td>
-                                {{i.sub}}
-                            </td>
-                            <td>
-                                {{i.start}} - {{i.end}}
-                            </td>
-
+                            <td>{{i.sub}}</td>
+                            <td>{{i.start}} - {{i.end}}</td>
+                            <td>{{i.created|date:'Y-m-d H:i'}}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"
@@ -77,34 +73,26 @@
                                 {% if i.proof %}
                                     <a href="{{i.proof.url}}" target="_blank" class="btn btn-outline-warning btn-sm">View File</a>
                                 {% endif %}
-                                    {% if i.certificate %}
-                                        <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
-                                    {% endif %}
                                 {% if i.certificate %}
                                     <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
                                 {% endif %}
                             </td>
-
                             <td>
-
                                 {% if i.Mstatus == "Approved" %}
-                                <button class="btn btn-success ">{{i.Mstatus}}</button>
-
+                                    <button class="btn btn-success ">{{i.Mstatus}}</button>
                                 {% elif i.Mstatus == "Rejected" %}
-                                <button class="btn btn-danger ">{{i.Mstatus}}</button>
-
+                                    <button class="btn btn-danger ">{{i.Mstatus}}</button>
                                 {% else %}
-                                <form action="{% url 'staff_action_od' i.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <div class="input-group">
-                                        <select name="sts" id="" class="form-control">
-                                            <option value="Approved" default>Approve</option>
-                                            <option value="Rejected">Reject</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-success">submit</button>
-
-                                    </div>
-                                </form>
+                                    <form action="{% url 'staff_action_od' i.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <select name="sts" id="" class="form-control">
+                                                <option value="Approved" default>Approve</option>
+                                                <option value="Rejected">Reject</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success">submit</button>
+                                        </div>
+                                    </form>
                                 {% endif %}
                             </td>
                         </tr>
@@ -135,6 +123,7 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>SUBMITTED AT</th>
                             <th>VIEW</th>
                             <th>OPTION</th>
                         </tr>
@@ -143,49 +132,38 @@
                         {% if hods%}
                         {% for i in hods %}
                         <tr>
-
                             <td class="serial"> <a href="{{i.proof.url}}" >#OD{{i.id}}</a> </td>
                             <td> {{i.user.name}} </td>
-                            <td>
-                                {{i.sub}}
-                            </td>
-                            <td>
-                                {{i.start}} - {{i.end}}
-                            </td>
-
+                            <td>{{i.sub}}</td>
+                            <td>{{i.start}} - {{i.end}}</td>
+                            <td>{{i.created|date:'Y-m-d H:i'}}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
                                     data-sub="{{i.sub}}" data-name="{{i.user.name}}"
                                     data-body="{{i.body}}" data-url="{{i.proof.url}}"><small>#OD{{i.id}}</small></button>
-                                    {% if i.proof %}
-                                        <a href="{{i.proof.url}}" target="_blank" class="btn btn-outline-warning btn-sm">View File</a>
-                                    {% endif %}
-                                    {% if i.certificate %}
-                                        <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
-                                    {% endif %}
-
+                                {% if i.proof %}
+                                    <a href="{{i.proof.url}}" target="_blank" class="btn btn-outline-warning btn-sm">View File</a>
+                                {% endif %}
+                                {% if i.certificate %}
+                                    <a href="{{i.certificate.url}}" target="_blank" class="btn btn-outline-success btn-sm">View Certificate</a>
+                                {% endif %}
                             </td>
-
                             <td>
-
                                 {% if i.Hstatus == "Approved" %}
-                                <button class="btn btn-success ">{{i.Hstatus}}</button>
-
+                                    <button class="btn btn-success ">{{i.Hstatus}}</button>
                                 {% elif i.Hstatus == "Rejected" %}
-                                <button class="btn btn-danger ">{{i.Hstatus}}</button>
-
+                                    <button class="btn btn-danger ">{{i.Hstatus}}</button>
                                 {% else %}
-                                <form action="{% url 'staff_action_od' i.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <div class="input-group">
-                                        <select name="sts" id="" class="form-control">
-                                            <option value="Approved" default>Approve</option>
-                                            <option value="Rejected">Reject</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-success">submit</button>
-
-                                    </div>
-                                </form>
+                                    <form action="{% url 'staff_action_od' i.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <select name="sts" id="" class="form-control">
+                                                <option value="Approved" default>Approve</option>
+                                                <option value="Rejected">Reject</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success">submit</button>
+                                        </div>
+                                    </form>
                                 {% endif %}
                             </td>
                         </tr>

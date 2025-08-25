@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block nav %}
-
 <li class="">
     <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
 </li>
@@ -17,9 +15,7 @@
 </li>
 <li class="active">
     <a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a>
-
 </li>
-
 <li>
     <a href="{% url 'hod_feedback_view' %}"><i class="menu-icon ti ti-comments"></i>Feedback </a>
 </li>
@@ -27,6 +23,7 @@
     <a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a>
 </li>
 {% endblock %}
+
 {% block root %}
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
@@ -40,145 +37,109 @@
 
 <div class="row">
     <div class="col-lg-12">
-        <div class="card">
+        <!-- Department Students Gatepass Table -->
+        <div class="card mb-4">
             <div class="card-header">
-                <strong class="card-title">Menties Gatepass</strong>
+                <strong class="card-title">Department Students Gatepass</strong>
             </div>
             <div class="table-stats order-table ov-h">
-                <table class="table ">
+                <table class="table">
                     <thead>
                         <tr>
                             <th class="serial">ID</th>
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>SUBMITTED AT</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if mods%}
-                        {% for i in mods %}
-                        <tr>
-                            
-                            <td class="serial"> <a href="{{i.proof.url}}" >#OD{{i.id}}</a> </td>
-                            <td> {{i.user.name}} </td>
-                            <td>
-                                {{i.sub}}
-                            </td>
-                            <td>
-                                {{i.start}} - {{i.end}}
-                            </td>
-
-                            
-
-                            <td>
-
-                                {% if i.Mstatus == "Approved" %}
-                                <button class="btn btn-success ">{{i.Mstatus}}</button>
-
-                                {% elif i.Mstatus == "Rejected" %}
-                                <button class="btn btn-danger ">{{i.Mstatus}}</button>
-
-                                {% else %}
-                                <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <div class="input-group">
-                                        <select name="sts" id="" class="form-control">
-                                            <option value="Approved" default>Approve</option>
-                                            <option value="Rejected">Reject</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-success">submit</button>
-
-                                    </div>
-                                </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr>
-                        </tr>
+                        {% if hods %}
+                            {% for i in hods %}
+                                <tr>
+                                    <td class="serial"> <a href="{{i.proof.url}}">#OD{{i.id}}</a> </td>
+                                    <td>{{i.user.name}}</td>
+                                    <td>{{i.sub}}</td>
+                                    <td>{{i.start}} - {{i.end}}</td>
+                                    <td>{{i.created|date:'Y-m-d H:i'}}}</td>
+                                    <td>
+                                        {% if i.Hstatus == "Approved" %}
+                                            <button class="btn btn-success">{{i.Hstatus}}</button>
+                                        {% elif i.Hstatus == "Rejected" %}
+                                            <button class="btn btn-danger">{{i.Hstatus}}</button>
+                                        {% else %}
+                                            <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <div class="input-group">
+                                                    <select name="sts" class="form-control">
+                                                        <option value="Approved">Approve</option>
+                                                        <option value="Rejected">Reject</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-success">Submit</button>
+                                                </div>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         {% endif %}
-
                     </tbody>
                 </table>
-            </div> <!-- /.table-stats -->
+            </div>
         </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-lg-12">
+        <!-- Mentees Gatepass Table -->
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">Department students Gatepass</strong>
+                <strong class="card-title">Mentees Gatepass</strong>
             </div>
             <div class="table-stats order-table ov-h">
-                <table class="table ">
+                <table class="table">
                     <thead>
                         <tr>
                             <th class="serial">ID</th>
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>SUBMITTED AT</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if hods%}
-                        {% for i in hods %}
-                        <tr>
-
-                            <td class="serial"> <a href="{{i.proof.url}}" >#OD{{i.id}}</a> </td>
-                            <td> {{i.user.name}} </td>
-                            <td>
-                                {{i.sub}}
-                            </td>
-                            <td>
-                                {{i.start}} - {{i.end}}
-                            </td>
-
-                            
-
-                            <td>
-
-                                {% if i.Hstatus == "Approved" %}
-                                <button class="btn btn-success ">{{i.Hstatus}}</button>
-
-                                {% elif i.Hstatus == "Rejected" %}
-                                <button class="btn btn-danger ">{{i.Hstatus}}</button>
-
-                                {% else %}
-                                <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <div class="input-group">
-                                        <select name="sts" id="" class="form-control">
-                                            <option value="Approved" default>Approve</option>
-                                            <option value="Rejected">Reject</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-success">submit</button>
-
-                                    </div>
-                                </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <td>---</td>
-                        <td>--</td>
-                        <td>---</td>
-                        <td>--</td>
+                        {% if mods %}
+                            {% for i in mods %}
+                                <tr>
+                                    <td class="serial"> <a href="{{i.proof.url}}">#OD{{i.id}}</a> </td>
+                                    <td>{{i.user.name}}</td>
+                                    <td>{{i.sub}}</td>
+                                    <td>{{i.start}} - {{i.end}}</td>
+                                    <td>{{i.created|date:'Y-m-d H:i'}}}</td>
+                                    <td>
+                                        {% if i.Mstatus == "Approved" %}
+                                            <button class="btn btn-success">{{i.Mstatus}}</button>
+                                        {% elif i.Mstatus == "Rejected" %}
+                                            <button class="btn btn-danger">{{i.Mstatus}}</button>
+                                        {% else %}
+                                            <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <div class="input-group">
+                                                    <select name="sts" class="form-control">
+                                                        <option value="Approved">Approve</option>
+                                                        <option value="Rejected">Reject</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-success">Submit</button>
+                                                </div>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         {% endif %}
-
                     </tbody>
                 </table>
-            </div> <!-- /.table-stats -->
+            </div>
         </div>
     </div>
 </div>
-
-
-
-
 {% endblock %}

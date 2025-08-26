@@ -43,30 +43,35 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">Mentor</div>
-                                        <input type="text" id="mentor" name="mentor" value="Mr/Mrs. {{duser.mentor.name}}" disabled
-                                            class="form-control">
+                                        <input type="text" id="mentor" name="mentor" value="Mr/Mrs. {{duser.mentor.name}}" disabled class="form-control">
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">Advisor</div>
-                                        <input type="text" id="advisor" name="advisor" value="Mr/Mrs. {{duser.advisor.name}}" disabled
-                                            class="form-control">
+                                        <input type="text" id="advisor" name="advisor" value="Mr/Mrs. {{duser.advisor.name}}" disabled class="form-control">
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">AHOD</div>
+                                        <input type="text" id="ahod" name="ahod" value="{% if duser.ahod %}Mr/Mrs. {{ duser.ahod.user.name }}{% endif %}" disabled class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">HOD</div>
-                                        <input type="text" id="hod" name="hod" value="DR {{duser.hod.name}}" disabled
-                                            class="form-control">
+                                        <input type="text" id="hod" name="hod" value="Mr/Mrs. {{duser.hod.name}}" disabled class="form-control">
                                     </div>
                                 </div>
                             </div>

@@ -2,6 +2,40 @@
 from django.shortcuts import render
 from .models import Notification, Staff
 from django.contrib.auth.decorators import login_required
+@login_required
+def ahod_notification_history(request):
+    ahod = None
+    if hasattr(request, 'duser'):
+        ahod = getattr(request, 'duser', None)
+    if not ahod:
+        try:
+            ahod = Staff.objects.get(user=request.user)
+        except Staff.DoesNotExist:
+            ahod = None
+    # Only allow AHODs
+    if not ahod or not hasattr(ahod, 'position2') or ahod.position2 != 1:
+        return render(request, 'ahod/notification_history.html', {'notifications': [], 'duser': ahod})
+    # Query notifications for AHOD
+    notifications = Notification.objects.filter(staff=ahod, role__iexact='ahod').order_by('-created_at')
+    if request.method == "POST":
+        notifications.filter(is_read=False).update(is_read=True)
+    recent_notifications = notifications[:5]
+    return render(request, 'ahod/notification_history.html', {
+        'notifications': notifications,
+        'recent_notifications': recent_notifications,
+        'duser': ahod
+    })
+
+
+@login_required
+def my_class_students(request):
+    staff = Staff.objects.get(user=request.user)
+    students = Student.objects.filter(advisor=staff).order_by('roll')
+    context = {
+        'students': students,
+        'duser': staff,
+    }
+    return render(request, 'staff/my_class_students.html', context)
 
 @login_required
 def ahod_dash(request):
@@ -51,7 +85,10 @@ from .models import Staff
 # Student notifications view
 @login_required
 def notifications_view(request):
-    student = Student.objects.get(user=request.user)
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return render(request, "student/notification_history.html", {"error": "No student record found for this user."})
     # Latest 5 unread notifications for popup/dropdown
     latest_unread = Notification.objects.filter(student=student, is_read=False)[:5]
     # All notifications for history
@@ -840,39 +877,48 @@ def hod_spot_feedback(request):
 
 
 @login_required
+
 def student_feedback(request):
     context = set_config(request)
+    duser = context.get('duser')
+    from .models import Student
+    if not isinstance(duser, Student):
+        try:
+            duser = Student.objects.get(user=request.user)
+            context['duser'] = duser
+        except Exception:
+            return render(request, 'student/feedback.html', context)
 
-    temp = list(i.id for i in context['duser'].teaching_staffs.all())
+    temp = list(i.id for i in duser.teaching_staffs.all())
     context['s_rating'] = []
     context['cs_rating'] = []
     
-    hod = HOD.objects.get(user=context['duser'].hod)
+    hod = HOD.objects.get(user=duser.hod)
 
     # spot feedback
-    spf = SpotFeedback.objects.filter(user=context['duser'].hod)
+    spf = SpotFeedback.objects.filter(user=duser.hod)
     context['spf_staff']=[]
     for i in spf:
-        if context['duser'] in i.students.all():
+        if duser in i.students.all():
             context['spf_staff'].append(Staff.objects.get(user=i.staff.user))
 
-        if context['duser'] in i.completed_students.all():
+        if duser in i.completed_students.all():
             context['cs_rating'].append(Staff.objects.get(user=i.staff.user))  
             
     if not hod.get_feedback:
-        context['duser'].feedback_for.clear()
+        duser.feedback_for.clear()
         return render(request, 'student/feedback.html', context)
 
     if hod.get_feedback:
-        rec_f = list(i.staff.id for i in context['duser'].feedback_for.all())
+        rec_f = list(i.staff.id for i in duser.feedback_for.all())
 
     for i in temp:
         if i not in rec_f:
             context['s_rating'].append(
-                context['duser'].teaching_staffs.get(id=i))
+                duser.teaching_staffs.get(id=i))
         else:
             context['cs_rating'].append(
-                context['duser'].teaching_staffs.get(id=i))
+                duser.teaching_staffs.get(id=i))
     
     return render(request, 'student/feedback.html', context)
 
@@ -963,8 +1009,19 @@ def student_feedback_form(request, id,typ):
 @login_required
 def bonafide_view(request):
     context = set_config(request)
-    # Show only bonafide results for the student
-    context['bonafides'] = BONAFIDE.objects.filter(user=context['duser'])
+    # Ensure duser is a Student instance
+    duser = context.get('duser')
+    from .models import Student
+    if not isinstance(duser, Student):
+        try:
+            duser = Student.objects.get(name=duser)
+            context['duser'] = duser
+        except Exception:
+            context['bonafides'] = BONAFIDE.objects.none()
+        else:
+            context['bonafides'] = BONAFIDE.objects.filter(user=duser)
+    else:
+        context['bonafides'] = BONAFIDE.objects.filter(user=duser)
     if request.POST:
         sub = get_post(request, 'sub')
         date = get_post(request, 'date')

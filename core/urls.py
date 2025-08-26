@@ -1,6 +1,6 @@
 from django.urls import path
-
-
+from .timetable_views import staff_timetable
+from .student_timetable_views import student_timetable
 from .views import *
 from .profile_views import staff_profile, hod_profile
 
@@ -8,9 +8,7 @@ from .profile_views import staff_profile, hod_profile
 
 urlpatterns = [
     path("",dash,name='dash'),
-
     path("notifications/", notifications_view, name="notifications_view"),
-
     path("profile/", student_profile, name='student_profile'),
     path("staff/profile/", staff_profile, name='staff_profile'),
     path("hod/profile/", hod_profile, name='hod_profile'),
@@ -22,8 +20,9 @@ urlpatterns = [
     path("feedback",student_feedback,name='student_feedback'),
     path("feedbackform/<int:id>/<str:typ>",student_feedback_form,name='student_feedback_form'),
     path('bonafide/', bonafide_view, name='bonafide'),
-
     path("dash/", ahod_dash, name="ahod_dash"),
+    path('student/timetable/', student_timetable, name='student_timetable'),
+
 
 ]
 
@@ -52,8 +51,9 @@ urlpatterns += [
     path("gatepass/action/<int:id>",staff_action_gatepass,name='staff_action_gatepass'),
     path("bonafide/action/<int:id>", staff_action_bonafide, name="staff_action_bonafide"),
     path("bonafides/", staff_bonafides, name="staff_bonafides"),
-
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
+    path("timetable/", staff_timetable, name="staff_timetable"),
+    path("my_class_students/", my_class_students, name="my_class_students"),
 
 ]
 # hod
@@ -69,6 +69,10 @@ urlpatterns += [
     path("hbonafide/", hod_bonafide_view, name="hod_bonafide_view"),
     
         path('hod/notifications/', hod_notification_history, name='hod_notification_history'),
+]
+
+urlpatterns += [
+    path("ahod/notifications/", ahod_notification_history, name="ahod_notification_history"),
 ]
 
 # auth

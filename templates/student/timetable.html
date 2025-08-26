@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+
+
+{% block root %}
+<h3>Class Timetable</h3>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th>Day / Period</th>
+            {% for p in periods %}
+                <th>{{ p }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for day in days %}
+        <tr>
+            <td><b>{{ day }}</b></td>
+            {% for p in periods %}
+                {% with key=day|add:"_"|add:p|stringformat:"s" %}
+                    <td>
+                        {{ table|dict_get:key }}
+                    </td>
+                {% endwith %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,27 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block nav %}
 
-<li class="">
-    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-</li>
-<li class="">
-    <a href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
-</li>
-<li class ="">
-    <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
-</li>
-<li>
-    <a href="{% url 'staff_bonafides' %}" ><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
-</li>
-<li class ="active">
-    <a href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
-</li>
-<li>
-    <a href="{% url 'staff_notifications' %}"><i class="menu-icon fa fa-bell"></i> Notification History</a>
-</li>
-{% endblock %}
 {% block root %}
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
     integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"

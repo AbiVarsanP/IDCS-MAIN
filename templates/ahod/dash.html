@@ -1,23 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block nav %}
-<li class="active">
-    <a href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-</li>
-<li>
-    <a href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
-</li>
-<li>
-    <a href="{% url 'ahod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
-</li>
-<li>
-    <a href="{% url 'ahod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
-</li>
-<li>
-    <a href="{% url 'ahod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a>
-</li>
-{% endblock %}
+
 
 {% block root %}
 <div class="row">

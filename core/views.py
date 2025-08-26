@@ -66,13 +66,13 @@ def hod_notification_history(request):
             staff = None
     # Only allow HODs
     if not staff or not hasattr(staff, 'position') or staff.position != 0:
-        return render(request, 'hod/notification_history.html', {'notifications': [], 'duser': staff})
+        return render(request, 'hod/hod_notification_history.html', {'notifications': [], 'duser': staff})
     # Query notifications for HOD
     notifications = Notification.objects.filter(staff=staff, role__iexact='hod').order_by('-created_at')
     if request.method == "POST":
         notifications.filter(is_read=False).update(is_read=True)
     recent_notifications = notifications[:5]
-    return render(request, 'hod/notification_history.html', {
+    return render(request, 'hod/hod_notification_history.html', {
         'notifications': notifications,
         'recent_notifications': recent_notifications,
         'duser': staff

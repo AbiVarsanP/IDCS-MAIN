@@ -82,10 +82,31 @@ from django.contrib import messages
 class StudentImportForm(forms.Form):
 	csv_file = forms.FileField(label="Select CSV file")
 
-class StudentAdmin(admin.ModelAdmin):
-	actions = [export_students_csv, export_students_excel]
+from django import forms as djforms
+from django.utils.safestring import mark_safe
+import datetime
 
+class StudentAdminForm(djforms.ModelForm):
+	class Meta:
+		model = Student
+		fields = '__all__'
+
+class StudentAdmin(admin.ModelAdmin):
+	form = StudentAdminForm
+	actions = [export_students_csv, export_students_excel]
 	change_list_template = "admin/core/student_changelist.html"
+	ordering = ['id']  # Default ordering (ascending by id)
+	list_display = ('id', 'user', 'roll', 'name', 'department', 'semester', 'year', 'section', 'mobile', 'batch_display', 'academic_year_display')
+	list_filter = ('department', 'semester', 'year', 'section', 'batch', 'academic_year')
+	search_fields = ('name', 'roll', 'user__username', 'department', 'mobile', 'parent_mobile', 'batch', 'academic_year')
+
+	def batch_display(self, obj):
+		return obj.batch_range
+	batch_display.short_description = 'Batch (4yr)'
+
+	def academic_year_display(self, obj):
+		return obj.academic_year_range
+	academic_year_display.short_description = 'Academic Year (1yr)'
 
 	def get_urls(self):
 		urls = super().get_urls()
@@ -144,6 +165,13 @@ class StudentAdmin(admin.ModelAdmin):
 					else:
 						student.dob = None
 					student.age = to_int(row.get('age'))
+					# Set batch and academic_year if present in CSV
+					batch_start = row.get('batch_start')
+					if batch_start and batch_start.isdigit():
+						student.batch = f"{batch_start}-{int(batch_start)+4}"
+					academic_start = row.get('academic_start')
+					if academic_start and academic_start.isdigit():
+						student.academic_year = f"{academic_start}-{int(academic_start)+2}"
 					student.save()
 					if created_obj:
 						created += 1
@@ -189,3 +217,8 @@ admin.site.register(StaffRating)
 admin.site.register(RatingQuestions)
 admin.site.register(IndividualStaffRating)
 admin.site.register(SpotFeedback)
+
+# Register AcademicRecord in admin
+from .models import AcademicRecord, Attendance
+admin.site.register(AcademicRecord)
+admin.site.register(Attendance)

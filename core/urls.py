@@ -7,6 +7,7 @@ from .profile_views import staff_profile, hod_profile
 
 
 urlpatterns = [
+    path('staff/my_class/', my_class_students, name='staff_my_class'),
     path("",dash,name='dash'),
     path("notifications/", notifications_view, name="notifications_view"),
     path("profile/", student_profile, name='student_profile'),

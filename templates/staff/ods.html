@@ -72,11 +72,13 @@
                                                 {% endif %}
                                         </td>
                                         <td>
-                                            {% if i.Mstatus == "Approved" %}
+                                            {% if i.Mstatus == "Rejected" %}
+                                                <button class="btn btn-danger" disabled>Rejected by mentor</button>
+                                            {% elif i.Astatus == "Rejected" %}
+                                                <button class="btn btn-danger" disabled>Rejected by advisor</button>
+                                            {% elif i.Mstatus == "Approved" %}
                                                 {% if i.Astatus == "Approved" %}
                                                     <button class="btn btn-success ">{{i.Astatus}}</button>
-                                                {% elif i.Astatus == "Rejected" %}
-                                                    <button class="btn btn-danger ">{{i.Astatus}}</button>
                                                 {% else %}
                                                     <form action="{% url 'staff_action_od' i.id %}" method="POST">
                                                         {% csrf_token %}
@@ -90,8 +92,6 @@
                                                         </div>
                                                     </form>
                                                 {% endif %}
-                                            {% elif i.Mstatus == 'Rejected' %}
-                                                <p><small>Rejected by mentor</small></p>
                                             {% else %}
                                                 <button class="btn btn-outline-warning" disabled>Waiting for Mentor Status</button>
                                             {% endif %}

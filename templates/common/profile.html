@@ -177,6 +177,14 @@
             {% endif %}
             <div class="info-box"><div class="info-label">HOD</div><div class="info-value">{% if dept_hod and dept_hod.user %}{{ dept_hod.user.name }}{% else %}-{% endif %}</div></div>
             <div class="info-box"><div class="info-label">AHOD</div><div class="info-value">{% if dept_ahod and dept_ahod.user %}{{ dept_ahod.user.name }}{% else %}-{% endif %}</div></div>
+            <div class="info-box"><div class="info-label">Batch</div><div class="info-value">{{ duser.batch_range|default:duser.batch }}</div></div>
+            <div class="info-box"><div class="info-label">Academic Year</div><div class="info-value">{{ duser.academic_year_range|default:duser.academic_year }}</div></div>
+            {% with acadrec=duser.academic_records.last %}
+                <div class="info-box"><div class="info-label">GPA</div><div class="info-value">{% if acadrec and acadrec.gpa %}{{ acadrec.gpa }}{% else %}-{% endif %}</div></div>
+                <div class="info-box"><div class="info-label">CGPA</div><div class="info-value">{% if acadrec and acadrec.cgpa %}{{ acadrec.cgpa }}{% else %}-{% endif %}</div></div>
+            {% endwith %}
+        </div>
+        <div class="profile-row">
         </div>
     </div>
 </div>

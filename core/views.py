@@ -603,6 +603,7 @@ def staff_action_od(request, id):
             if od.Mstatus == STATUS[2][0]:
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+                od.AHstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
                 student=od.user,
@@ -614,6 +615,7 @@ def staff_action_od(request, id):
             od.Astatus = get_post(request, 'sts')
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
+                od.AHstatus = STATUS[2][0]
             from .models import Notification
             Notification.objects.create(
                 student=od.user,

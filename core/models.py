@@ -1,7 +1,64 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
+try:
+    from django.db.models import JSONField
+except ImportError:
+    from django.contrib.postgres.fields import JSONField
+
+# AcademicRecord Model for Section 3.2: Marksheets and Scores
+class AcademicRecord(models.Model):
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='academic_records')
+    semester = models.CharField(max_length=20)
+    academic_year = models.CharField(max_length=20)
+    internal_assessment_marks = JSONField(blank=True, null=True, help_text="{subject: marks}")
+    university_exam_marks = JSONField(blank=True, null=True, help_text="{subject: marks}")
+    cia_test_scores = JSONField(blank=True, null=True, help_text="{test_type: score}")
+    practice_test_scores = JSONField(blank=True, null=True, help_text="{test_type: score}")
+    gpa = models.FloatField(blank=True, null=True)
+    cgpa = models.FloatField(blank=True, null=True)
+    arrear_subjects = JSONField(blank=True, null=True, help_text="List of arrear subjects (as a list)")
+    marksheet_file = models.FileField(upload_to='marksheets/', blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.student} - {self.semester} - {self.academic_year}"
+
+
+# Attendance Model for Section 3.2: Track attendance, link to events/workshops/training, integrate with Leaves/ODs for deductions
+class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ('Present', 'Present'),
+        ('Absent', 'Absent'),
+        ('On Leave', 'On Leave'),
+        ('On Duty', 'On Duty'),
+    ]
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='attendances')
+    date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    reason = models.TextField(blank=True, null=True, help_text="If absent/on leave/on duty, link to Leave/OD/Bonafide/Gatepass")
+    percentage = models.FloatField(default=0, help_text="Calculated overall attendance percentage")
+
+    # Foreign keys to related models for status updates (nullable, only one used per record)
+    leave = models.ForeignKey('LEAVE', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_leaves')
+    od = models.ForeignKey('OD', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_ods')
+    bonafide = models.ForeignKey('BONAFIDE', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_bonafides')
+    gatepass = models.ForeignKey('GATEPASS', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_gatepasses')
+
+    # Placeholder for event-specific attendance (One-to-Many to EventAttendance)
+    # event_attendance = models.ForeignKey('EventAttendance', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_events')
+
+    def __str__(self):
+        return f"{self.student} - {self.date} - {self.status}"
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from .constants import *
+try:
+    from django.contrib.postgres.fields import ArrayField
+except ImportError:
+    ArrayField = None
+try:
+    from django.db.models import JSONField
+except ImportError:
+    from django.contrib.postgres.fields import JSONField
 
 User = get_user_model()
 
@@ -48,6 +105,22 @@ class Student(models.Model):
     department = models.CharField(choices=DEPT, default="001", max_length=50, null=True)
     semester = models.PositiveIntegerField(choices=SEM, default=1, null=True)
     year = models.PositiveIntegerField(choices=YEAR, default=1, null=True)
+    # Batch: Enter start year, display as 'start year - start year+4'
+    batch = models.PositiveIntegerField(blank=True, null=True, help_text="Enter start year, e.g., 2020")
+    # Academic Year: Enter start year, display as 'start year - start year+2'
+    academic_year = models.PositiveIntegerField(blank=True, null=True, help_text="Enter start year, e.g., 2023")
+
+    @property
+    def batch_range(self):
+        if self.batch:
+            return f"{self.batch}-{self.batch+4}"
+        return ""
+
+    @property
+    def academic_year_range(self):
+        if self.academic_year:
+            return f"{self.academic_year}-{self.academic_year+1}"
+        return ""
     section = models.PositiveIntegerField(choices=SECTION, default=2)
     address = models.TextField(blank=True, null=True)
     mobile = models.IntegerField(blank=True, null=True)
@@ -130,6 +203,7 @@ class OD(models.Model):
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
 
     created = models.DateTimeField(auto_now_add=True)
 
@@ -152,6 +226,7 @@ class LEAVE(models.Model):
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
 
     created = models.DateTimeField(auto_now_add=True)
 
@@ -176,6 +251,7 @@ class BONAFIDE(models.Model):
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
 
     created = models.DateTimeField(auto_now_add=True)
 
@@ -196,6 +272,7 @@ class GATEPASS(models.Model):
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
 
     created = models.DateTimeField(auto_now_add=True)
 

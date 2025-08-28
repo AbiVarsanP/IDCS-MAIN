@@ -205,6 +205,9 @@ class OD(models.Model):
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
 
+
+    ahod_hod_action = models.CharField(max_length=50, blank=True, null=True)  # For AHOD & HOD joint action
+    ahod_hod_reason = models.TextField(blank=True, null=True)  # Reason for AHOD & HOD joint action
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -228,6 +231,8 @@ class LEAVE(models.Model):
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
 
+    ahod_hod_action = models.CharField(max_length=50, blank=True, null=True)  # For AHOD & HOD joint action
+    ahod_hod_reason = models.TextField(blank=True, null=True)  # Reason for AHOD & HOD joint action
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

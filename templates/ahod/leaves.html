@@ -95,7 +95,7 @@
                             <th>SUB</th>
                             <th>FROM-TO</th>
                             <th>VIEW</th>
-                            <th>ADVISOR STATUS</th>
+                            
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -125,29 +125,34 @@
                                     <small>#LE{{ i.id }}</small>
                                 </button>
                             </td>
+                            
                             <td>
-                                {% if i.Astatus == "Approved" %}
-                                    <span class="badge badge-success">Approved</span>
-                                {% elif i.Astatus == "Rejected" %}
-                                    <span class="badge badge-danger">Rejected</span>
+                                {% if i.Mstatus == "Approved" and i.Astatus == "Approved" %}
+                                    {% if i.AHstatus == "Approved" %}
+                                        <button class="btn btn-success">Approved</button>
+                                    {% elif i.AHstatus == "Rejected" %}
+                                        <button class="btn btn-danger">Rejected</button>
+                                    {% elif i.AHstatus == "Meet Me" %}
+                                        <button class="btn btn-warning">Meet Me</button>
+                                    {% else %}
+                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <div class="input-group">
+                                                <select name="sts" class="form-control">
+                                                    <option value="Approved" default>Approve</option>
+                                                    <option value="Rejected">Reject</option>
+                                                    <option value="Meet Me">Meet Me</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-success">submit</button>
+                                            </div>
+                                        </form>
+                                    {% endif %}
+                                {% elif i.Mstatus == 'Rejected' %}
+                                    <p><small>Rejected by mentor</small></p>
+                                {% elif i.Astatus == 'Rejected' %}
+                                    <p><small>Rejected by advisor</small></p>
                                 {% else %}
-                                    <span class="badge badge-warning">Pending</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if i.Astatus == "Pending" or i.Mstatus == "Pending" %}
-                                    <form action="{% url 'ahod_action_leave' i.id %}" method="post" style="display:inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="leave_id" value="{{i.id}}">
-                                        <button name="sts" value="Approved" class="btn btn-success btn-sm" onclick="return confirm('Accept this Leave?')">Accept</button>
-                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm" onclick="return confirm('Reject this Leave?')">Reject</button>
-                                    </form>
-                                {% elif i.Astatus == "Approved" and i.Mstatus == "Approved" %}
-                                    <button class="btn btn-success">Approved</button>
-                                {% elif i.Astatus == "Rejected" and i.Mstatus == "Rejected" %}
-                                    <button class="btn btn-danger">Rejected</button>
-                                {% else %}
-                                    <button class="btn btn-warning">Pending</button>
+                                    <button class="btn btn-outline-warning" disabled>Waiting for Advisor Status</button>
                                 {% endif %}
                             </td>
                         </tr>

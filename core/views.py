@@ -47,8 +47,6 @@ def ahod_dash(request):
     students = Student.objects.filter(department=ahod_dept)
     context['all_od'] = OD.objects.filter(user__in=students).distinct()
     context['all_leave'] = LEAVE.objects.filter(user__in=students).distinct()
-    context['all_gatepass'] = GATEPASS.objects.filter(user__in=students).distinct()
-    context['all_bonafide'] = BONAFIDE.objects.filter(user__in=students).distinct()
     return render(request, 'ahod/dash.html', context)
 
 
@@ -198,39 +196,6 @@ def ahod_leave_view(request):
     ]
     return render(request, 'ahod/leaves.html', context)
 
-@login_required
-def ahod_gatepass_view(request):
-    context = set_config(request)
-    ahod = AHOD.objects.get(user=context['duser'])
-    # Mentees: students where AHOD is mentor
-    context['mods'] = [i for i in GATEPASS.objects.all() if i.user.mentor and i.user.mentor.id == ahod.user.id]
-    # Dept gatepasses: all gatepasses where student's hod is AHOD user, or mentor is not AHOD user
-    context['hods'] = [
-        i for i in GATEPASS.objects.all()
-        if (
-            (i.user.hod and i.user.hod.id == ahod.user.id) or
-            (not i.user.mentor or i.user.mentor.id != ahod.user.id)
-        )
-    ]
-    return render(request, 'ahod/gatepasss.html', context)
-
-@login_required
-def ahod_bonafide_view(request):
-    context = set_config(request)
-    ahod = AHOD.objects.get(user=context['duser'])
-    context['bonafides'] = [
-        i for i in BONAFIDE.objects.all()
-        if (
-            (i.user.hod and i.user.hod.id == ahod.user.id) or
-            (i.user.ahod and i.user.ahod.id == ahod.id) or
-            (str(i.user.department) == str(ahod.user.department))
-        )
-    ]
-    return render(request, 'ahod/bonafides.html', context)
-
-
-
-
 # Student Profile View
 @login_required
 def student_profile(request):
@@ -335,16 +300,6 @@ def dash(request):
                 models.Q(user__mentor__in=staff_list) |
                 models.Q(user__hod__in=staff_list)
             ).distinct()
-            context['all_gatepass'] = GATEPASS.objects.filter(
-                models.Q(user__advisor__in=staff_list) |
-                models.Q(user__mentor__in=staff_list) |
-                models.Q(user__hod__in=staff_list)
-            ).distinct()
-            context['all_bonafide'] = BONAFIDE.objects.filter(
-                models.Q(user__advisor__in=staff_list) |
-                models.Q(user__mentor__in=staff_list) |
-                models.Q(user__hod__in=staff_list)
-            ).distinct()
             return render(request, "ahod/dash.html", context)
 
     else:
@@ -397,10 +352,17 @@ def login_user(request):
 
     return render(request, 'auth/login.html', context)
 
+from django.views.decorators.cache import never_cache
+
 @login_required
+@never_cache
 def logout_user(request):
     logout(request)
-    return redirect('dash')
+    response = redirect('dash')
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 # HOD MODULE
 @login_required

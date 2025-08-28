@@ -31,7 +31,13 @@
                         Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
                         Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
                         HOD: 
-                        {% if b.Hstatus == 'Approved' %}
+                        {% if b.Hstatus == 'Approved by AHOD' %}
+                            <span class="badge badge-success">Approved by AHOD</span>
+                            {% if b.ahod_reason %}<div class="text-muted small">Reason: {{ b.ahod_reason }}</div>{% endif %}
+                        {% elif b.Hstatus == 'Rejected by AHOD' %}
+                            <span class="badge badge-danger">Rejected by AHOD</span>
+                            {% if b.ahod_reason %}<div class="text-muted small">Reason: {{ b.ahod_reason }}</div>{% endif %}
+                        {% elif b.Hstatus == 'Approved' %}
                             <span class="badge badge-success">Approved</span>
                         {% elif b.Hstatus == 'Rejected' %}
                             <span class="badge badge-danger">Rejected</span>
@@ -65,7 +71,7 @@
                     </td>
                     <td>
                         {% if b.Hstatus == 'Pending' %}
-                        <form method="post">
+                        <form method="post" action="{% url 'ahod_bonafide_hod' %}">
                             {% csrf_token %}
                             <input type="hidden" name="bonafide_id" value="{{ b.id }}">
                             <div class="form-group">
@@ -74,6 +80,12 @@
                             <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
                             <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
                         </form>
+                        {% elif b.Hstatus == 'Approved by AHOD' %}
+                            <span class="badge badge-success">Approved</span>
+                            {% if b.ahod_reason %}<div class="text-muted small">{{ b.ahod_reason }}</div>{% endif %}
+                        {% elif b.Hstatus == 'Rejected by AHOD' %}
+                            <span class="badge badge-danger">Rejected</span>
+                            {% if b.ahod_reason %}<div class="text-muted small">{{ b.ahod_reason }}</div>{% endif %}
                         {% elif b.Hstatus == 'Approved' %}
                             <span class="badge badge-success">Approved</span>
                         {% elif b.Hstatus == 'Rejected' %}
@@ -150,13 +162,22 @@
                             </td>
                             <td>
                                 {% if b.Mstatus == 'Pending' %}
-                                <form method="post">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="bonafide_id" value="{{ b.id }}">
-                                    <input type="hidden" name="role" value="mentor">
-                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                </form>
+                                    <form method="post" action="{% url 'ahod_bonafide_hod' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="bonafide_id" value="{{ b.id }}">
+                                        <input type="hidden" name="role" value="mentor">
+                                        <div class="form-group mb-0">
+                                            <textarea name="reason" class="form-control" placeholder="Reason for Mentor action (required)" required>{{ b.ahod_reason }}</textarea>
+                                        </div>
+                                        <button name="sts" value="Approved" class="btn btn-success btn-sm mt-2">Approve</button>
+                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm mt-2">Reject</button>
+                                    </form>
+                                {% elif b.Mstatus == 'Approved by AHOD' %}
+                                    <span class="badge badge-success">Approved by AHOD</span>
+                                    {% if b.ahod_reason %}<div class="text-muted small">{{ b.ahod_reason }}</div>{% endif %}
+                                {% elif b.Mstatus == 'Rejected by AHOD' %}
+                                    <span class="badge badge-danger">Rejected by AHOD</span>
+                                    {% if b.ahod_reason %}<div class="text-muted small">{{ b.ahod_reason }}</div>{% endif %}
                                 {% elif b.Mstatus == 'Approved' %}
                                     <span class="badge badge-success">Approved</span>
                                 {% elif b.Mstatus == 'Rejected' %}

@@ -169,24 +169,75 @@
                             </td>
                             <td>
                                 {% if i.Mstatus == "Approved" and i.Astatus == "Approved" %}
-                                    {% if i.AHstatus == "Approved" %}
+                                    {% if i.ahod_hod_action == "Approved_AHOD_HOD" %}
+                                        <button class="btn btn-success">Approved (AHOD &amp; HOD)</button>
+                                        {% if i.ahod_hod_reason %}
+                                            <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                        {% endif %}
+                                    {% elif i.ahod_hod_action == "Rejected_AHOD_HOD" %}
+                                        <button class="btn btn-danger">Rejected (AHOD &amp; HOD)</button>
+                                        {% if i.ahod_hod_reason %}
+                                            <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                        {% endif %}
+                                    {% elif i.AHstatus == "Approved" %}
                                         <button class="btn btn-success">Approved</button>
                                     {% elif i.AHstatus == "Rejected" %}
                                         <button class="btn btn-danger">Rejected</button>
                                     {% elif i.AHstatus == "Meet Me" %}
                                         <button class="btn btn-warning">Meet Me</button>
                                     {% else %}
-                                        <form action="{% url 'ahod_action_od' i.id %}" method="POST">
+                                        {% if i.Hstatus == "Pending" %}
+                                        <form action="{% url 'ahod_action_od' i.id %}" method="POST" onsubmit="return handleAHODHODSelect(this)">
                                             {% csrf_token %}
-                                            <div class="input-group">
-                                                <select name="sts" class="form-control">
+                                            <div class="input-group mb-2">
+                                                <select name="sts" class="form-control" onchange="toggleAHODHODReason(this, '{{i.id}}')">
                                                     <option value="Approved" default>Approve</option>
                                                     <option value="Rejected">Reject</option>
                                                     <option value="Meet Me">Meet Me</option>
+                                                    <option value="Approved_AHOD_HOD">Approve (AHOD &amp; HOD)</option>
+                                                    <option value="Rejected_AHOD_HOD">Reject (AHOD &amp; HOD)</option>
                                                 </select>
                                                 <button type="submit" class="btn btn-success">submit</button>
                                             </div>
+                                            <div class="input-group mb-2" style="display:none;" id="ahod_hod_reason_{{i.id}}">
+                                                <input type="text" name="ahod_hod_reason" class="form-control" placeholder="Reason for taking HOD decision (required)">
+                                            </div>
                                         </form>
+                                        <script>
+                                        function toggleAHODHODReason(selectElem, id) {
+                                            var reasonDiv = document.getElementById('ahod_hod_reason_' + id);
+                                            if (selectElem.value === 'Approved_AHOD_HOD' || selectElem.value === 'Rejected_AHOD_HOD') {
+                                                reasonDiv.style.display = '';
+                                                reasonDiv.querySelector('input').setAttribute('required', 'required');
+                                            } else {
+                                                reasonDiv.style.display = 'none';
+                                                reasonDiv.querySelector('input').removeAttribute('required');
+                                            }
+                                        }
+                                        function handleAHODHODSelect(form) {
+                                            var select = form.querySelector('select[name="sts"]');
+                                            var reasonInput = form.querySelector('input[name="ahod_hod_reason"]');
+                                            if ((select.value === 'Approved_AHOD_HOD' || select.value === 'Rejected_AHOD_HOD') && (!reasonInput.value || reasonInput.value.trim() === '')) {
+                                                alert('Please provide a reason for taking HOD decision.');
+                                                reasonInput.focus();
+                                                return false;
+                                            }
+                                            return true;
+                                        }
+                                        </script>
+                                        {% else %}
+                                            <form action="{% url 'ahod_action_od' i.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <div class="input-group mb-2">
+                                                    <select name="sts" class="form-control">
+                                                        <option value="Approved" default>Approve</option>
+                                                        <option value="Rejected">Reject</option>
+                                                        <option value="Meet Me">Meet Me</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-success">submit</button>
+                                                </div>
+                                            </form>
+                                        {% endif %}
                                     {% endif %}
                                 {% elif i.Mstatus == 'Rejected' %}
                                     <p><small>Rejected by mentor</small></p>

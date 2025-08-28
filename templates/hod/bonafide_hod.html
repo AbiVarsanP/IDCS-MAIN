@@ -81,7 +81,13 @@
                                         Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
                                         Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
                                         HOD: 
-                                        {% if b.Hstatus == 'Approved' %}
+                                        {% if b.Hstatus == 'Approved by AHOD' %}
+                                            <span class="badge badge-success">Approved by AHOD</span>
+                                            {% if b.ahod_reason %}<div class="text-muted small">Reason: {{ b.ahod_reason }}</div>{% endif %}
+                                        {% elif b.Hstatus == 'Rejected by AHOD' %}
+                                            <span class="badge badge-danger">Rejected by AHOD</span>
+                                            {% if b.ahod_reason %}<div class="text-muted small">Reason: {{ b.ahod_reason }}</div>{% endif %}
+                                        {% elif b.Hstatus == 'Approved' %}
                                             <span class="badge badge-success">Approved</span>
                                         {% elif b.Hstatus == 'Rejected' %}
                                             <span class="badge badge-danger">Rejected</span>
@@ -121,6 +127,12 @@
                                                 <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
                                                 <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                             </form>
+                                        {% elif b.Hstatus == 'Approved by AHOD' %}
+                                            <span class="badge badge-success">Approved by AHOD</span>
+                                            {% if b.ahod_reason %}<div class="text-muted small">{{ b.ahod_reason }}</div>{% endif %}
+                                        {% elif b.Hstatus == 'Rejected by AHOD' %}
+                                            <span class="badge badge-danger">Rejected by AHOD</span>
+                                            {% if b.ahod_reason %}<div class="text-muted small">{{ b.ahod_reason }}</div>{% endif %}
                                         {% elif b.Hstatus == 'Approved' %}
                                             <span class="badge badge-success">Approved</span>
                                         {% elif b.Hstatus == 'Rejected' %}

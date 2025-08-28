@@ -149,6 +149,14 @@
                                     <span class="badge badge-danger">REJECTED</span>
                                 {% else %}
                                     <span class="badge badge-warning">PENDING</span>
+                                {% endif %}<br>
+                                HOD:
+                                {% if i.Hstatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.Hstatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
                                 {% endif %}
                             </td>
                             <td>

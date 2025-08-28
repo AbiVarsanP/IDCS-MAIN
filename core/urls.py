@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
 from .views import *
@@ -23,6 +23,7 @@ urlpatterns = [
     path('bonafide/', bonafide_view, name='bonafide'),
     path("dash/", ahod_dash, name="ahod_dash"),
     path('student/timetable/', student_timetable, name='student_timetable'),
+    path("ahod/", include("core.ahod_urls")),
 
 
 ]
@@ -67,6 +68,13 @@ urlpatterns += [
     
         path('hod/notifications/', hod_notification_history, name='hod_notification_history'),
 ]
+
+# #AHOD
+# urlpatterns += [
+#     path("dash/", ahod_dash, name="ahod_dash"),
+#     path("bonafide-hod/", ahod_bonafide_hod, name="ahod_bonafide_hod"),
+#     path("gatepass-hod/", ahod_gatepass_hod, name="ahod_gatepass_hod"),
+# ]
 
 urlpatterns += [
     path("ahod/notifications/", ahod_notification_history, name="ahod_notification_history"),

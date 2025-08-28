@@ -244,9 +244,11 @@ class BONAFIDE(models.Model):
     proof = models.FileField(upload_to='bonafide/proof', blank=True)
     certificate = models.FileField(upload_to='bonafide/proof/certificate', blank=True)
 
+
     # Add these ↓
     sub = models.CharField(max_length=255)   # Purpose
     date = models.DateField(null=True, blank=True)
+    ahod_reason = models.TextField(blank=True, null=True)  # Reason by AHOD for HOD action
 
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
@@ -269,9 +271,11 @@ class GATEPASS(models.Model):
     start = models.DateTimeField(verbose_name="From-Date")
     end = models.DateTimeField(verbose_name="To-Date")
 
+
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    ahod_reason = models.TextField(blank=True, null=True)  # Reason by AHOD for HOD action
 
 
     created = models.DateTimeField(auto_now_add=True)

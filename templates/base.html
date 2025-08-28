@@ -30,6 +30,21 @@
     <link href="https://cdn.jsdelivr.net/npm/chartist@0.11.0/dist/chartist.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/jqvmap@1.5.1/dist/jqvmap.min.css" rel="stylesheet">
 
+
+    {% block extra_headers %}
+    <script>
+        // Prevent back navigation to cached pages after logout
+        if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_BACK_FORWARD) {
+            window.location.reload();
+        }
+        // Set cache control headers (for extra safety, but best set in Django views)
+        (function() {
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.href);
+            }
+        })();
+    </script>
+    {% endblock %}
 </head>
 
 <body>
@@ -52,9 +67,7 @@
                         {% elif duser and duser.position2 == 1 %}
                             <li class="{% if request.resolver_match.url_name == 'ahod_dash' %}active{% endif %}"><a href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li><a href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
-                            <li><a href="{% url 'ahod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li><a href="{% url 'ahod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
-                            <li><a href="{% url 'ahod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_notification_history' %}active{% endif %}"><a href="{% url 'ahod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
                         {% elif duser and request.user.is_staff %}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
@@ -169,7 +182,7 @@
                             {% if duser.profile %}
                                 <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}" alt="Profile">
                             {% else %}
-                                <img class="user-avatar rounded-circle" height="40px" src="/static/default_profile.png" alt="Default Profile">
+                                <img class="user-avatar rounded-circle" height="40px" src="/static/images/dp.jpg" alt="Default Profile">
                             {% endif %}
                         </a>
 

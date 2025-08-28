@@ -22,7 +22,7 @@
                     {% if duser.profile %}
                         <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
                     {% else %}
-                        <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                        <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
                     {% endif %}
                 </div>
                 <div>
@@ -40,11 +40,9 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
+            
             <div class="card-header">
-                <strong class="card-title"><b>Status</b></strong>
-            </div>
-            <div class="card-header">
-                <strong class="card-title">OD's</strong>
+                <strong class="card-title">OD's Status</strong>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">
@@ -111,7 +109,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">Leaves's</strong>
+                <strong class="card-title">Leaves's Status</strong>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">
@@ -170,7 +168,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">Bonafide</strong>
+                <strong class="card-title">Bonafide Status</strong>
 
             </div>
             <div class="table-stats order-table ov-h">
@@ -182,7 +180,6 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
-                            <th>AHOD</th>
                             <th>HOD</th>
                         </tr>
                     </thead>
@@ -198,13 +195,6 @@
                             </td>
                             <td>
                                 <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
-                            </td>
-                            <td>
-                                {% if i.user.ahod %}
-                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
-                                {% else %}
-                                    <span class="badge badge-secondary">N/A</span>
-                                {% endif %}
                             </td>
                             <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
@@ -226,7 +216,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">GATE PASS's</strong>
+                <strong class="card-title">GATE PASS's Status</strong>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">
@@ -237,7 +227,6 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
-                            <th>AHOD</th>
                             <th>HOD</th>
 
                         </tr>
@@ -264,13 +253,6 @@
                             </td>
                             <td>
                                 <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
-                            </td>
-                            <td>
-                                {% if i.user.ahod %}
-                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
-                                {% else %}
-                                    <span class="badge badge-{{i.Astatus}}">N/A</span>
-                                {% endif %}
                             </td>
                             <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>

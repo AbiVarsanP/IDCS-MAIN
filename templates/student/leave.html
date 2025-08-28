@@ -43,7 +43,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">Mentor</div>
@@ -52,7 +52,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">Advisor</div>
@@ -61,12 +61,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">AHOD</div>
+                                        <input type="text" id="ahod" name="ahod" value="{% if duser.ahod %}Mr/Mrs. {{ duser.ahod.user.name }}{% endif %}" disabled class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">HOD</div>
-                                        <input type="text" id="hod" name="hod" value="DR {{duser.hod.name}}" disabled
-                                            class="form-control">
+                                        <input type="text" id="hod" name="hod" value="Mr/Mrs. {{duser.hod.name}}" disabled class="form-control">
                                     </div>
                                 </div>
                             </div>

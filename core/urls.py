@@ -29,17 +29,13 @@ urlpatterns = [
 
 from .ahod_actions import ahod_action_od
 from .ahod_actions_leave import ahod_action_leave
-from .ahod_actions_bonafide import ahod_action_bonafide
-from .ahod_actions_gatepass import ahod_action_gatepass
+
 urlpatterns += [
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
     path("ahleaves/check", ahod_leave_view, name='ahod_leave_view'),
-    path("ahgatepass/check", ahod_gatepass_view, name='ahod_gatepass_view'),
-    path("ahbonafide/", ahod_bonafide_view, name="ahod_bonafide_view"),
     path("ahods/action/<int:id>", ahod_action_od, name="ahod_action_od"),
     path("ahleaves/action/<int:id>", ahod_action_leave, name="ahod_action_leave"),
-    path("ahbonafide/action/<int:id>", ahod_action_bonafide, name="ahod_action_bonafide"),
-    path("ahgatepass/action/<int:id>", ahod_action_gatepass, name="ahod_action_gatepass"),
+
 ]
 # staff
 

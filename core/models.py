@@ -251,7 +251,7 @@ class BONAFIDE(models.Model):
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
-    AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
+
 
     created = models.DateTimeField(auto_now_add=True)
 
@@ -272,7 +272,7 @@ class GATEPASS(models.Model):
     Astatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Mstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
-    AHstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")  # AHOD approval status
+
 
     created = models.DateTimeField(auto_now_add=True)
 

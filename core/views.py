@@ -1,3 +1,71 @@
+
+# AHOD Bonafide (HOD) requests view
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
+from django.db import models
+
+@login_required
+def ahod_bonafide_hod(request):
+    context = set_config(request)
+    ahod = AHOD.objects.filter(user=context['duser']).first()
+    # Get HODs in the same department as AHOD
+    hods = HOD.objects.filter(department=ahod.department) if ahod else HOD.objects.none()
+    hod_staff_ids = [h.user.id for h in hods]
+    # Get bonafide requests assigned to HODs in this department, pending HOD action
+    bonafide_forms = BONAFIDE.objects.filter(user__hod_id__in=hod_staff_ids, Hstatus='Pending').distinct()
+    # Get bonafide requests where mentor is AHOD or any HOD in the department
+    mentor_ids = [context['duser'].id] + [h.user.id for h in hods]
+    mentee_bonafide_forms = BONAFIDE.objects.filter(user__mentor_id__in=mentor_ids).distinct()
+    context['bonafide_forms'] = bonafide_forms
+    context['mentee_bonafide_forms'] = mentee_bonafide_forms
+    if request.method == 'POST':
+        bonafide_id = request.POST.get('bonafide_id')
+        action = request.POST.get('action')
+        reason = request.POST.get('reason')
+        bonafide = BONAFIDE.objects.get(id=bonafide_id)
+        if action == 'approve':
+            bonafide.Hstatus = 'Approved'
+        elif action == 'reject':
+            bonafide.Hstatus = 'Rejected'
+        bonafide.ahod_reason = reason
+        bonafide.save()
+        Notification.objects.create(
+            student=bonafide.user,
+            message=f"Your Bonafide request was {bonafide.Hstatus} by AHOD (Reason: {reason})"
+        )
+        return redirect('ahod_bonafide_hod')
+    return render(request, 'ahod/bonafide_hod.html', context)
+
+# AHOD Gatepass (HOD) requests view
+@login_required
+def ahod_gatepass_hod(request):
+    context = set_config(request)
+    ahod = AHOD.objects.filter(user=context['duser']).first()
+    hods = HOD.objects.filter(department=ahod.department) if ahod else HOD.objects.none()
+    hod_staff_ids = [h.user.id for h in hods]
+    gatepass_forms = GATEPASS.objects.filter(user__hod_id__in=hod_staff_ids, Hstatus='Pending').distinct()
+    mentor_ids = [context['duser'].id] + [h.user.id for h in hods]
+    mentee_gatepass_forms = GATEPASS.objects.filter(user__mentor_id__in=mentor_ids).distinct()
+    context['gatepass_forms'] = gatepass_forms
+    context['mentee_gatepass_forms'] = mentee_gatepass_forms
+    if request.method == 'POST':
+        gatepass_id = request.POST.get('gatepass_id')
+        action = request.POST.get('action')
+        reason = request.POST.get('reason')
+        gatepass = GATEPASS.objects.get(id=gatepass_id)
+        if action == 'approve':
+            gatepass.Hstatus = 'Approved'
+        elif action == 'reject':
+            gatepass.Hstatus = 'Rejected'
+        gatepass.ahod_reason = reason
+        gatepass.save()
+        Notification.objects.create(
+            student=gatepass.user,
+            message=f"Your Gatepass request was {gatepass.Hstatus} by AHOD (Reason: {reason})"
+        )
+        return redirect('ahod_gatepass_hod')
+    return render(request, 'ahod/gatepass_hod.html', context)
 # ...existing code...
 from django.shortcuts import render
 from .models import Notification, Staff

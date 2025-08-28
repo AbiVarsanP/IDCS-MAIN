@@ -22,7 +22,7 @@
                     {% if duser.profile %}
                         <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
                     {% else %}
-                        <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                        <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
                     {% endif %}
                 </div>
                 <div>
@@ -40,7 +40,6 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-          
             <div class="card-header">
                 <strong class="card-title">OD's Status</strong>
             </div>
@@ -83,7 +82,7 @@
                             </td>
                             <td>
                                 {% if i.user.ahod %}
-                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
+                                    <span class="badge badge-{{i.AHstatus}}">{{ i.AHstatus }}</span>
                                 {% else %}
                                     <span class="badge badge-secondary">N/A</span>
                                 {% endif %}
@@ -227,7 +226,7 @@
                             <th>TITLE</th>
                             <th>MENTOR</th>
                             <th>ADVISOR</th>
-                           
+                            <th>AHOD</th>
                             <th>HOD</th>
 
                         </tr>

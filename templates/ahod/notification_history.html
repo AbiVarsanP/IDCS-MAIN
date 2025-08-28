@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4">
+    <h2>AHOD Notification History</h2>
+    {% if notifications %}
+        <ul class="list-group mt-3">
+            {% for n in notifications %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ n.message }}</span>
+                    {% if n.is_read %}
+                        <span class="badge badge-success">{{ n.created_at|date:'Y-m-d H:i' }}</span>
+                    {% else %}
+                        <span class="badge badge-warning">{{ n.created_at|date:'Y-m-d H:i' }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-info mt-3">No notifications found.</div>
+    {% endif %}
+</div>
+{% endblock %}

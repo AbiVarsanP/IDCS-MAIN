@@ -7,11 +7,13 @@ from .helpers import get_post
 def ahod_action_od(request, id):
     od = get_object_or_404(OD, id=id)
     status = request.POST.get('sts')
-    if status == STATUS[1][0]:  # 'Approved'
-        od.Astatus = STATUS[1][0]
-        od.Mstatus = STATUS[1][0]
-    elif status == STATUS[2][0]:  # 'Rejected'
-        od.Astatus = STATUS[2][0]
-        od.Mstatus = STATUS[2][0]
-    od.save()
+    # Only allow AHOD to act if Mentor and Advisor have approved
+    if od.Mstatus == STATUS[1][0] and od.Astatus == STATUS[1][0]:
+        if status == STATUS[1][0]:  # 'Approved'
+            od.AHstatus = STATUS[1][0]
+        elif status == STATUS[2][0]:  # 'Rejected'
+            od.AHstatus = STATUS[2][0]
+        else:
+            od.AHstatus = status  # For 'Meet Me' or other custom status
+        od.save()
     return redirect(request.META.get('HTTP_REFERER', '/'))

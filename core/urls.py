@@ -1,16 +1,15 @@
 from django.urls import path
-
-
+from .timetable_views import staff_timetable
+from .student_timetable_views import student_timetable
 from .views import *
 from .profile_views import staff_profile, hod_profile
 
 
 
 urlpatterns = [
+    path('staff/my_class/', my_class_students, name='staff_my_class'),
     path("",dash,name='dash'),
-
     path("notifications/", notifications_view, name="notifications_view"),
-
     path("profile/", student_profile, name='student_profile'),
     path("staff/profile/", staff_profile, name='staff_profile'),
     path("hod/profile/", hod_profile, name='hod_profile'),
@@ -22,24 +21,21 @@ urlpatterns = [
     path("feedback",student_feedback,name='student_feedback'),
     path("feedbackform/<int:id>/<str:typ>",student_feedback_form,name='student_feedback_form'),
     path('bonafide/', bonafide_view, name='bonafide'),
-
     path("dash/", ahod_dash, name="ahod_dash"),
+    path('student/timetable/', student_timetable, name='student_timetable'),
+
 
 ]
 
 from .ahod_actions import ahod_action_od
 from .ahod_actions_leave import ahod_action_leave
-from .ahod_actions_bonafide import ahod_action_bonafide
-from .ahod_actions_gatepass import ahod_action_gatepass
+
 urlpatterns += [
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
     path("ahleaves/check", ahod_leave_view, name='ahod_leave_view'),
-    path("ahgatepass/check", ahod_gatepass_view, name='ahod_gatepass_view'),
-    path("ahbonafide/", ahod_bonafide_view, name="ahod_bonafide_view"),
     path("ahods/action/<int:id>", ahod_action_od, name="ahod_action_od"),
     path("ahleaves/action/<int:id>", ahod_action_leave, name="ahod_action_leave"),
-    path("ahbonafide/action/<int:id>", ahod_action_bonafide, name="ahod_action_bonafide"),
-    path("ahgatepass/action/<int:id>", ahod_action_gatepass, name="ahod_action_gatepass"),
+
 ]
 # staff
 
@@ -52,8 +48,9 @@ urlpatterns += [
     path("gatepass/action/<int:id>",staff_action_gatepass,name='staff_action_gatepass'),
     path("bonafide/action/<int:id>", staff_action_bonafide, name="staff_action_bonafide"),
     path("bonafides/", staff_bonafides, name="staff_bonafides"),
-
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
+    path("timetable/", staff_timetable, name="staff_timetable"),
+    path("my_class_students/", my_class_students, name="my_class_students"),
 
 ]
 # hod
@@ -69,6 +66,10 @@ urlpatterns += [
     path("hbonafide/", hod_bonafide_view, name="hod_bonafide_view"),
     
         path('hod/notifications/', hod_notification_history, name='hod_notification_history'),
+]
+
+urlpatterns += [
+    path("ahod/notifications/", ahod_notification_history, name="ahod_notification_history"),
 ]
 
 # auth

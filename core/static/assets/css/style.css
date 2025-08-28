@@ -1126,6 +1126,7 @@ Googel Fonts  */
  .right-panel .top-left {
    width: 350px;
    float: left;
+   justify-content: space-between;
  }
 
  .right-panel .top-rigth {

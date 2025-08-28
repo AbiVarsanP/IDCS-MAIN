@@ -122,80 +122,8 @@
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card mb-4">
-            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">All Students' Gatepass Applications</h5>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Subject</th>
-                            <th>From-To</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if all_gatepass %}
-                            {% for i in all_gatepass %}
-                            <tr>
-                                <td>#GP{{i.id}}</td>
-                                <td>{{i.user.name}}</td>
-                                <td>{{i.sub}}</td>
-                                <td>{{i.start}} - {{i.end}}</td>
-                                <td>{{i.Hstatus}}</td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr><td colspan="5" class="text-center">No gatepass applications found</td></tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">All Students' Bonafide Applications</h5>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Subject</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if all_bonafide %}
-                            {% for i in all_bonafide %}
-                            <tr>
-                                <td>#BON{{i.id}}</td>
-                                <td>{{i.user.name}}</td>
-                                <td>{{i.sub}}</td>
-                                <td>{{i.date}}</td>
-                                <td>{{i.Hstatus}}</td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr><td colspan="5" class="text-center">No bonafide applications found</td></tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+
+
 
 {% endblock %}

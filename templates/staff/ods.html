@@ -1,27 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block nav %}
 
-<li class="">
-    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-</li>
-<li class="active">
-    <a href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
-</li>
-<li>
-    <a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
-</li>
-<li>
-    <a href="{% url 'staff_bonafides' %}" ><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
-</li>
-<li class ="">
-    <a href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
-</li>
-<li>
-    <a href="{% url 'staff_notifications' %}"><i class="menu-icon fa fa-bell"></i> Notification History</a>
-</li>
-{% endblock %}
 {% block root %}
 
 <style>
@@ -92,11 +72,13 @@
                                                 {% endif %}
                                         </td>
                                         <td>
-                                            {% if i.Mstatus == "Approved" %}
+                                            {% if i.Mstatus == "Rejected" %}
+                                                <button class="btn btn-danger" disabled>Rejected by mentor</button>
+                                            {% elif i.Astatus == "Rejected" %}
+                                                <button class="btn btn-danger" disabled>Rejected by advisor</button>
+                                            {% elif i.Mstatus == "Approved" %}
                                                 {% if i.Astatus == "Approved" %}
                                                     <button class="btn btn-success ">{{i.Astatus}}</button>
-                                                {% elif i.Astatus == "Rejected" %}
-                                                    <button class="btn btn-danger ">{{i.Astatus}}</button>
                                                 {% else %}
                                                     <form action="{% url 'staff_action_od' i.id %}" method="POST">
                                                         {% csrf_token %}
@@ -110,8 +92,6 @@
                                                         </div>
                                                     </form>
                                                 {% endif %}
-                                            {% elif i.Mstatus == 'Rejected' %}
-                                                <p><small>Rejected by mentor</small></p>
                                             {% else %}
                                                 <button class="btn btn-outline-warning" disabled>Waiting for Mentor Status</button>
                                             {% endif %}

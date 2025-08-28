@@ -1,23 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block nav %}
-<li class="active">
-    <a href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-</li>
-<li>
-    <a href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
-</li>
-<li>
-    <a href="{% url 'ahod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
-</li>
-<li>
-    <a href="{% url 'ahod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
-</li>
-<li>
-    <a href="{% url 'ahod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a>
-</li>
-{% endblock %}
+
 
 {% block root %}
 <div class="row">
@@ -40,7 +24,7 @@
                             {% if duser.profile %}
                                 <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
                             {% else %}
-                                <img src="/static/default_profile.png" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                                <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
                             {% endif %}
                         </div>
                         <div>
@@ -60,139 +44,156 @@
     }
 </style>
 
+
 <!-- All Students' Applications for AHOD (like HOD) -->
 <div class="row mt-4">
     <div class="col-12">
-        <h4>All Students' OD Applications</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Subject</th>
-                        <th>From-To</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if all_od %}
-                        {% for i in all_od %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Students' OD Applications</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td>#OD{{i.id}}</td>
-                            <td>{{i.user.name}}</td>
-                            <td>{{i.sub}}</td>
-                            <td>{{i.start}} - {{i.end}}</td>
-                            <td>{{i.Hstatus}}</td>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>From-To</th>
+                            <th>Status</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="5" class="text-center">No OD applications found</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if all_od %}
+                            {% for i in all_od %}
+                            <tr>
+                                <td>#OD{{i.id}}</td>
+                                <td>{{i.user.name}}</td>
+                                <td>{{i.sub}}</td>
+                                <td>{{i.start}} - {{i.end}}</td>
+                                <td>{{i.Hstatus}}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center">No OD applications found</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="row mt-4">
     <div class="col-12">
-        <h4>All Students' Leave Applications</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Subject</th>
-                        <th>From-To</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if all_leave %}
-                        {% for i in all_leave %}
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Students' Leave Applications</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td>#LE{{i.id}}</td>
-                            <td>{{i.user.name}}</td>
-                            <td>{{i.sub}}</td>
-                            <td>{{i.start}} - {{i.end}}</td>
-                            <td>{{i.Hstatus}}</td>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>From-To</th>
+                            <th>Status</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="5" class="text-center">No leave applications found</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if all_leave %}
+                            {% for i in all_leave %}
+                            <tr>
+                                <td>#LE{{i.id}}</td>
+                                <td>{{i.user.name}}</td>
+                                <td>{{i.sub}}</td>
+                                <td>{{i.start}} - {{i.end}}</td>
+                                <td>{{i.Hstatus}}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center">No leave applications found</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="row mt-4">
     <div class="col-12">
-        <h4>All Students' Gatepass Applications</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Subject</th>
-                        <th>From-To</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if all_gatepass %}
-                        {% for i in all_gatepass %}
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Students' Gatepass Applications</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td>#GP{{i.id}}</td>
-                            <td>{{i.user.name}}</td>
-                            <td>{{i.sub}}</td>
-                            <td>{{i.start}} - {{i.end}}</td>
-                            <td>{{i.Hstatus}}</td>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>From-To</th>
+                            <th>Status</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="5" class="text-center">No gatepass applications found</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if all_gatepass %}
+                            {% for i in all_gatepass %}
+                            <tr>
+                                <td>#GP{{i.id}}</td>
+                                <td>{{i.user.name}}</td>
+                                <td>{{i.sub}}</td>
+                                <td>{{i.start}} - {{i.end}}</td>
+                                <td>{{i.Hstatus}}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center">No gatepass applications found</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="row mt-4">
     <div class="col-12">
-        <h4>All Students' Bonafide Applications</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Subject</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if all_bonafide %}
-                        {% for i in all_bonafide %}
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Students' Bonafide Applications</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td>#BON{{i.id}}</td>
-                            <td>{{i.user.name}}</td>
-                            <td>{{i.sub}}</td>
-                            <td>{{i.date}}</td>
-                            <td>{{i.Hstatus}}</td>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Status</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="5" class="text-center">No bonafide applications found</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if all_bonafide %}
+                            {% for i in all_bonafide %}
+                            <tr>
+                                <td>#BON{{i.id}}</td>
+                                <td>{{i.user.name}}</td>
+                                <td>{{i.sub}}</td>
+                                <td>{{i.date}}</td>
+                                <td>{{i.Hstatus}}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center">No bonafide applications found</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

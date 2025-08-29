@@ -7,11 +7,22 @@ from .helpers import get_post
 def ahod_action_leave(request, id):
     leave = get_object_or_404(LEAVE, id=id)
     status = request.POST.get('sts')
-    if status == STATUS[1][0]:  # 'Approved'
-        leave.Astatus = STATUS[1][0]
-        leave.Mstatus = STATUS[1][0]
+    ahod_hod_reason = request.POST.get('ahod_hod_reason', '').strip()
+    if status == 'Approved_AHOD_HOD':
+        leave.AHstatus = STATUS[1][0]
+        leave.Hstatus = STATUS[1][0]
+        leave.ahod_hod_action = status
+        leave.ahod_hod_reason = ahod_hod_reason
+    elif status == 'Rejected_AHOD_HOD':
+        leave.AHstatus = STATUS[2][0]
+        leave.Hstatus = STATUS[2][0]
+        leave.ahod_hod_action = status
+        leave.ahod_hod_reason = ahod_hod_reason
+    elif status == STATUS[1][0]:  # 'Approved'
+        leave.AHstatus = STATUS[1][0]
     elif status == STATUS[2][0]:  # 'Rejected'
-        leave.Astatus = STATUS[2][0]
-        leave.Mstatus = STATUS[2][0]
+        leave.AHstatus = STATUS[2][0]
+    else:
+        leave.AHstatus = status  # For 'Meet Me' or other custom status
     leave.save()
     return redirect(request.META.get('HTTP_REFERER', '/'))

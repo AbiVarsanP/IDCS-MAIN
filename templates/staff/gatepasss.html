@@ -56,31 +56,83 @@
                                             Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
                                             Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
                                             HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-                                        </td>
-                                        <td>
-                                            {% if i.Mstatus == "Approved" %}
-                                                {% if i.Astatus == "Approved" %}
-                                                    <button class="btn btn-success ">{{i.Astatus}}</button>
-                                                {% elif i.Astatus == "Rejected" %}
-                                                    <button class="btn btn-danger ">{{i.Astatus}}</button>
-                                                {% else %}
-                                                    <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
-                                                        {% csrf_token %}
-                                                        <div class="input-group">
-                                                            <select name="sts" id="" class="form-control">
-                                                                <option value="Approved" default>Approve</option>
-                                                                <option value="Rejected">Reject</option>
-                                                            </select>
-                                                            <button type="submit" class="btn btn-success">submit</button>
+                                            {% if i.body %}
+                                                <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ i.id }}">View Reason</button>
+                                                <!-- Reason Modal -->
+                                                <div class="modal fade" id="reasonModal{{ i.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ i.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="reasonModalLabel{{ i.id }}">Reason for Gatepass</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                {{ i.body }}
+                                                                {% if i.proof %}
+                                                                    <hr>
+                                                                    <a href="{{ i.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                                                                {% endif %}
+                                                            </div>
                                                         </div>
-                                                    </form>
-                                                {% endif %}
-                                            {% elif i.Mstatus == 'Rejected' %}
-                                                <p><small>Rejected by mentor</small></p>
-                                            {% else %}
-                                                <button class="btn btn-outline-warning" disabled>Waiting for Mentor Status</button>
+                                                    </div>
+                                                </div>
                                             {% endif %}
                                         </td>
+                                        <td>
+                                            {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="mentor">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="advisor">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="hod">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% else %}
+                                                {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                                    <span class="text-success">Approved</span>
+                                                {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                                    <span class="text-danger">Rejected</span>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if i.body %}
+                                                <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModalMentee{{ i.id }}">View Reason</button>
+                                                <!-- Reason Modal -->
+                                                <div class="modal fade" id="reasonModalMentee{{ i.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabelMentee{{ i.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="reasonModalLabelMentee{{ i.id }}">Reason for Gatepass</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                {{ i.body }}
+                                                                {% if i.proof %}
+                                                                    <hr>
+                                                                    <a href="{{ i.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </td
                                     </tr>
                                 {% endif %}
                             {% endfor %}
@@ -134,21 +186,33 @@
                                             HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                                         </td>
                                         <td>
-                                            {% if i.Mstatus == "Approved" %}
-                                                <button class="btn btn-success ">{{i.Mstatus}}</button>
-                                            {% elif i.Mstatus == "Rejected" %}
-                                                <button class="btn btn-danger ">{{i.Mstatus}}</button>
-                                            {% else %}
-                                                <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
+                                            {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
                                                     {% csrf_token %}
-                                                    <div class="input-group">
-                                                        <select name="sts" id="" class="form-control">
-                                                            <option value="Approved" default>Approve</option>
-                                                            <option value="Rejected">Reject</option>
-                                                        </select>
-                                                        <button type="submit" class="btn btn-success">submit</button>
-                                                    </div>
+                                                    <input type="hidden" name="role" value="mentor">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                                 </form>
+                                            {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="advisor">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="hod">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% else %}
+                                                {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                                    <span class="text-success">Approved</span>
+                                                {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                                    <span class="text-danger">Rejected</span>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
                                     </tr>

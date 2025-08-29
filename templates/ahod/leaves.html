@@ -27,8 +27,9 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>SUBMITTED AT</th>
+                            <th>STATUS</th>
                             <th>VIEW</th>
-                            <th>ADVISOR STATUS</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -46,10 +47,37 @@
                             <td>{{ i.user.name }}</td>
                             <td>{{ i.sub }}</td>
                             <td>{{ i.start }} - {{ i.end }}</td>
+                            <td>{{ i.created|date:"d M Y H:i" }}</td>
+                            <td>
+                                Mentor:
+                                {% if i.Mstatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.Mstatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% endif %}<br>
+                                Advisor:
+                                {% if i.Astatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.Astatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% endif %}<br>
+                                HOD:
+                                {% if i.Hstatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.Hstatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
-                                    data-sub="{{ i.sub }}" data-name="{{ i.user.name }}"
-                                    data-body="{{ i.body }}"
+                                    data-sub="{{ i.sub|escapejs }}" data-name="{{ i.user.name|escapejs }}"
+                                    data-body="{{ i.body|linebreaksbr|escapejs }}"
                                     {% if i.proof %}
                                         data-url="{{ i.proof.url }}"
                                     {% else %}
@@ -59,13 +87,7 @@
                                 </button>
                             </td>
                             <td>
-                                {% if i.Mstatus == "Approved" %}
-                                    <button class="btn btn-success">{{ i.Mstatus }}</button>
-                                {% elif i.Mstatus == "Rejected" %}
-                                    <button class="btn btn-danger">{{ i.Mstatus }}</button>
-                                {% else %}
-                                    <button class="btn btn-warning">Pending</button>
-                                {% endif %}
+                                <!-- Optionally add actions here if needed -->
                             </td>
                         </tr>
                         {% endfor %}
@@ -94,8 +116,9 @@
                             <th>NAME</th>
                             <th>SUB</th>
                             <th>FROM-TO</th>
+                            <th>SUBMITTED AT</th>
+                            <th>STATUS</th>
                             <th>VIEW</th>
-                            
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -113,10 +136,47 @@
                             <td>{{ i.user.name }}</td>
                             <td>{{ i.sub }}</td>
                             <td>{{ i.start }} - {{ i.end }}</td>
+                            <td>{{ i.created|date:"d M Y H:i" }}</td>
+                            <td>
+                                Mentor:
+                                {% if i.Mstatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.Mstatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% endif %}<br>
+                                Advisor:
+                                {% if i.Astatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.Astatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% endif %}<br>
+                                AHOD:
+                                {% if i.AHstatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.AHstatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% elif i.AHstatus == "Meet Me" %}
+                                    <span class="badge badge-warning">MEET ME</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% endif %}<br>
+                                HOD:
+                                {% if i.Hstatus == "Approved" %}
+                                    <span class="badge badge-success">APPROVED</span>
+                                {% elif i.Hstatus == "Rejected" %}
+                                    <span class="badge badge-danger">REJECTED</span>
+                                {% else %}
+                                    <span class="badge badge-warning">PENDING</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail"
-                                    data-sub="{{ i.sub }}" data-name="{{ i.user.name }}"
-                                    data-body="{{ i.body }}"
+                                    data-sub="{{ i.sub|escapejs }}" data-name="{{ i.user.name|escapejs }}"
+                                    data-body="{{ i.body|linebreaksbr|escapejs }}"
                                     {% if i.proof %}
                                         data-url="{{ i.proof.url }}"
                                     {% else %}
@@ -125,27 +185,62 @@
                                     <small>#LE{{ i.id }}</small>
                                 </button>
                             </td>
-                            
                             <td>
                                 {% if i.Mstatus == "Approved" and i.Astatus == "Approved" %}
-                                    {% if i.AHstatus == "Approved" %}
+                                    {% if i.ahod_hod_action == "Approved_AHOD_HOD" %}
+                                        <button class="btn btn-success">Approved (AHOD &amp; HOD)</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
+                                    {% elif i.ahod_hod_action == "Rejected_AHOD_HOD" %}
+                                        <button class="btn btn-danger">Rejected (AHOD &amp; HOD)</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
+                                    {% elif i.AHstatus == "Approved" %}
                                         <button class="btn btn-success">Approved</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
                                     {% elif i.AHstatus == "Rejected" %}
                                         <button class="btn btn-danger">Rejected</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
                                     {% elif i.AHstatus == "Meet Me" %}
                                         <button class="btn btn-warning">Meet Me</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
                                     {% else %}
                                         <form action="{% url 'ahod_action_leave' i.id %}" method="POST">
                                             {% csrf_token %}
                                             <div class="input-group">
-                                                <select name="sts" class="form-control">
+                                                <select name="sts" class="form-control" onchange="toggleAHODHODReason(this, '{{i.id}}')">
                                                     <option value="Approved" default>Approve</option>
                                                     <option value="Rejected">Reject</option>
                                                     <option value="Meet Me">Meet Me</option>
+                                                    <option value="Approved_AHOD_HOD">Approve (AHOD &amp; HOD)</option>
+                                                    <option value="Rejected_AHOD_HOD">Reject (AHOD &amp; HOD)</option>
                                                 </select>
                                                 <button type="submit" class="btn btn-success">submit</button>
                                             </div>
+                                            <div class="input-group mb-2" style="display:none;" id="ahod_hod_reason_{{i.id}}">
+                                                <input type="text" name="ahod_hod_reason" class="form-control" placeholder="Reason for taking HOD decision (required)">
+                                            </div>
                                         </form>
+                                        <script>
+                                        function toggleAHODHODReason(selectElem, id) {
+                                            var reasonDiv = document.getElementById('ahod_hod_reason_' + id);
+                                            if (selectElem.value === 'Approved_AHOD_HOD' || selectElem.value === 'Rejected_AHOD_HOD') {
+                                                reasonDiv.style.display = '';
+                                                reasonDiv.querySelector('input').setAttribute('required', 'required');
+                                            } else {
+                                                reasonDiv.style.display = 'none';
+                                                reasonDiv.querySelector('input').removeAttribute('required');
+                                            }
+                                        }
+                                        </script>
                                     {% endif %}
                                 {% elif i.Mstatus == 'Rejected' %}
                                     <p><small>Rejected by mentor</small></p>
@@ -166,4 +261,37 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" id="modalBodyContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#detail').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget)
+        var sub = button.data('sub')
+        var name = button.data('name')
+        var body = button.data('body')
+        var url = button.data('url')
+        var modal = $(this)
+        modal.find('.modal-title').html(`<b>${sub}</b> <small>-by ${name}</small>`)
+        var html = `<p><b>Subject:</b> ${sub}</p>`
+        html += `<p><b>Student Name:</b> ${name}</p>`
+        html += `<p><b>Details:</b> ${body}</p>`
+        if (url) {
+            html += `<hr><a href="${url}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>`
+        }
+        modal.find('#modalBodyContent').html(html)
+    })
+</script>
 {% endblock %}

@@ -75,6 +75,7 @@
                             <td>
                                 Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
                                 Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                AHOD: <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span><br>
                                 HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                             </td>
                             <td>
@@ -159,13 +160,30 @@
                             <td>
                                 Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
                                 Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                AHOD: <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span><br>
                                 HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                             </td>
                             <td>
-                                {% if i.Hstatus == "Approved" %}
+                                {% if i.ahod_hod_action == "Approved_AHOD_HOD" %}
+                                    <button class="btn btn-success">Approved (AHOD &amp; HOD)</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
+                                {% elif i.ahod_hod_action == "Rejected_AHOD_HOD" %}
+                                    <button class="btn btn-danger">Rejected (AHOD &amp; HOD)</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
+                                {% elif i.Hstatus == "Approved" %}
                                     <button class="btn btn-success">{{ i.Hstatus }}</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
                                 {% elif i.Hstatus == "Rejected" %}
                                     <button class="btn btn-danger">{{ i.Hstatus }}</button>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
                                 {% else %}
                                     <form action="{% url 'staff_action_leave' i.id %}" method="POST">
                                         {% csrf_token %}
@@ -177,6 +195,9 @@
                                             <button type="submit" class="btn btn-success">Submit</button>
                                         </div>
                                     </form>
+                                    {% if i.ahod_hod_reason %}
+                                        <div class="mt-2"><span class="badge badge-info">AHOD Reason for HOD: {{ i.ahod_hod_reason }}</span></div>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         </tr>

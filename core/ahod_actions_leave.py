@@ -16,12 +16,17 @@ def ahod_action_leave(request, id):
     elif status == 'Rejected_AHOD_HOD':
         leave.AHstatus = STATUS[2][0]
         leave.Hstatus = STATUS[2][0]
+        leave.Mstatus = STATUS[2][0]
+        leave.Astatus = STATUS[2][0]
         leave.ahod_hod_action = status
         leave.ahod_hod_reason = ahod_hod_reason
     elif status == STATUS[1][0]:  # 'Approved'
         leave.AHstatus = STATUS[1][0]
     elif status == STATUS[2][0]:  # 'Rejected'
         leave.AHstatus = STATUS[2][0]
+        leave.Hstatus = STATUS[2][0]  # Rejected
+        leave.Mstatus = STATUS[2][0]  # Rejected
+        leave.Astatus = STATUS[2][0]  # Rejected
     else:
         leave.AHstatus = status  # For 'Meet Me' or other custom status
     leave.save()

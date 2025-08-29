@@ -1,3 +1,147 @@
+
+# AHOD Bonafide (HOD) requests view
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
+from django.db import models
+
+@login_required
+def ahod_bonafide_hod(request):
+    context = set_config(request)
+    ahod = AHOD.objects.filter(user=context['duser']).first()
+    # Get HODs in the same department as AHOD
+    hods = HOD.objects.filter(department=ahod.department) if ahod else HOD.objects.none()
+    hod_staff_ids = [h.user.id for h in hods]
+    # Get bonafide requests assigned to HODs in this department, pending HOD action
+    bonafide_forms = BONAFIDE.objects.filter(user__hod_id__in=hod_staff_ids).distinct()
+    # Get bonafide requests where mentor is AHOD or any HOD in the department
+    mentor_ids = [context['duser'].id] + [h.user.id for h in hods]
+    mentee_bonafide_forms = BONAFIDE.objects.filter(user__mentor_id__in=mentor_ids).distinct()
+    context['bonafide_forms'] = bonafide_forms
+    context['mentee_bonafide_forms'] = mentee_bonafide_forms
+    if request.method == 'POST':
+        bonafide_id = request.POST.get('bonafide_id')
+        action = request.POST.get('action') or request.POST.get('sts')
+        reason = request.POST.get('reason')
+        role = request.POST.get('role')
+        bonafide = BONAFIDE.objects.get(id=bonafide_id)
+        if role == 'mentor':
+            if action == 'Approved':
+                bonafide.Mstatus = 'Approved by AHOD'
+            elif action == 'Rejected':
+                bonafide.Mstatus = 'Rejected by AHOD'
+            bonafide.ahod_reason = reason
+            bonafide.save()
+            Notification.objects.create(
+                student=bonafide.user,
+                message=f"Your Bonafide request was {bonafide.Mstatus} (Reason: {reason})"
+            )
+        else:
+            if action == 'approve':
+                bonafide.Hstatus = 'Approved by AHOD'
+            elif action == 'reject':
+                # If AHOD rejects for HOD role, reject all statuses and notify all
+                bonafide.Hstatus = 'Rejected by AHOD'
+                bonafide.Mstatus = 'Rejected by AHOD'
+                bonafide.Astatus = 'Rejected by AHOD'
+                bonafide.ahod_reason = reason
+                bonafide.save()
+                # Notify student
+                Notification.objects.create(
+                    student=bonafide.user,
+                    message=f"Your Bonafide request was {bonafide.Hstatus} (Reason: {reason})"
+                )
+                # Notify mentor if exists
+                if bonafide.user.mentor:
+                    Notification.objects.create(
+                        staff=bonafide.user.mentor,
+                        role='mentor',
+                        message=f"Bonafide request for {bonafide.user.name} was rejected by AHOD."
+                    )
+                # Notify advisor if exists
+                if bonafide.user.advisor:
+                    Notification.objects.create(
+                        staff=bonafide.user.advisor,
+                        role='advisor',
+                        message=f"Bonafide request for {bonafide.user.name} was rejected by AHOD."
+                    )
+                return redirect('ahod_bonafide_hod')
+            bonafide.ahod_reason = reason
+            bonafide.save()
+            Notification.objects.create(
+                student=bonafide.user,
+                message=f"Your Bonafide request was {bonafide.Hstatus} (Reason: {reason})"
+            )
+        return redirect('ahod_bonafide_hod')
+    return render(request, 'ahod/bonafide_hod.html', context)
+
+# AHOD Gatepass (HOD) requests view
+@login_required
+def ahod_gatepass_hod(request):
+    context = set_config(request)
+    ahod = AHOD.objects.filter(user=context['duser']).first()
+    hods = HOD.objects.filter(department=ahod.department) if ahod else HOD.objects.none()
+    hod_staff_ids = [h.user.id for h in hods]
+    gatepass_forms = GATEPASS.objects.filter(user__hod_id__in=hod_staff_ids).distinct()
+    mentor_ids = [context['duser'].id] + [h.user.id for h in hods]
+    mentee_gatepass_forms = GATEPASS.objects.filter(user__mentor_id__in=mentor_ids).distinct()
+    context['gatepass_forms'] = gatepass_forms
+    context['mentee_gatepass_forms'] = mentee_gatepass_forms
+    if request.method == 'POST':
+        gatepass_id = request.POST.get('gatepass_id')
+        action = request.POST.get('action') or request.POST.get('sts')
+        reason = request.POST.get('reason')
+        role = request.POST.get('role')
+        gatepass = GATEPASS.objects.get(id=gatepass_id)
+        if role == 'mentor':
+            if action == 'Approved':
+                gatepass.Mstatus = 'Approved by AHOD'
+            elif action == 'Rejected':
+                gatepass.Mstatus = 'Rejected by AHOD'
+            gatepass.ahod_reason = reason
+            gatepass.save()
+            Notification.objects.create(
+                student=gatepass.user,
+                message=f"Your Gatepass request was {gatepass.Mstatus} (Reason: {reason})"
+            )
+        else:
+            if action == 'approve':
+                gatepass.Hstatus = 'Approved by AHOD'
+            elif action == 'reject':
+                # If AHOD rejects for HOD role, reject all statuses and notify all
+                gatepass.Hstatus = 'Rejected by AHOD'
+                gatepass.Mstatus = 'Rejected by AHOD'
+                gatepass.Astatus = 'Rejected by AHOD'
+                gatepass.ahod_reason = reason
+                gatepass.save()
+                # Notify student
+                Notification.objects.create(
+                    student=gatepass.user,
+                    message=f"Your Gatepass request was {gatepass.Hstatus} (Reason: {reason})"
+                )
+                # Notify mentor if exists
+                if gatepass.user.mentor:
+                    Notification.objects.create(
+                        staff=gatepass.user.mentor,
+                        role='mentor',
+                        message=f"Gatepass request for {gatepass.user.name} was rejected by AHOD."
+                    )
+                # Notify advisor if exists
+                if gatepass.user.advisor:
+                    Notification.objects.create(
+                        staff=gatepass.user.advisor,
+                        role='advisor',
+                        message=f"Gatepass request for {gatepass.user.name} was rejected by AHOD."
+                    )
+                return redirect('ahod_gatepass_hod')
+            gatepass.ahod_reason = reason
+            gatepass.save()
+            Notification.objects.create(
+                student=gatepass.user,
+                message=f"Your Gatepass request was {gatepass.Hstatus} (Reason: {reason})"
+            )
+        return redirect('ahod_gatepass_hod')
+    return render(request, 'ahod/gatepass_hod.html', context)
 # ...existing code...
 from django.shortcuts import render
 from .models import Notification, Staff
@@ -156,10 +300,8 @@ import qrcode
 def ahod_od_view(request):
     context = set_config(request)
     ahod = AHOD.objects.get(user=context['duser'])
-    # Convert AHOD's department int to string code for Student.department
     from .constants import SDEPT, DEPT
     ahod_dept_int = ahod.user.department
-    # Find the string code for this department
     dept_code = None
     for code, name in DEPT:
         if name == SDEPT[ahod_dept_int][1]:
@@ -178,6 +320,24 @@ def ahod_od_view(request):
     ]
     # Mentees: students where AHOD is mentor
     context['mods'] = [i for i in OD.objects.all() if i.user.mentor and i.user.mentor.id == ahod.user.id]
+
+    # Handle POST for AHOD OD action (approve/reject)
+    if request.method == 'POST':
+        od_id = request.POST.get('od_id')
+        action = request.POST.get('action') or request.POST.get('sts')
+        reason = request.POST.get('reason')
+        od = OD.objects.get(id=od_id)
+        if action == 'approve':
+            od.AHstatus = 'Approved by AHOD'
+        elif action == 'reject':
+            od.AHstatus = 'Rejected by AHOD'
+            od.Mstatus = 'Rejected by AHOD'
+            od.Astatus = 'Rejected by AHOD'
+            od.Hstatus = 'Rejected by AHOD'
+        od.save()
+        # Optionally, add notification logic here
+        return redirect('ahod_od_view')
+
     return render(request, 'ahod/ods.html', context)
 
 @login_required
@@ -589,10 +749,12 @@ def staff_action_od(request, id):
                 od.Mstatus = STATUS[1][0]
                 od.Astatus = STATUS[1][0]
                 od.Hstatus = STATUS[1][0]
+                od.AHstatus = STATUS[1][0]
             elif action_status == STATUS[2][0]:  # 'Rejected'
                 od.Mstatus = STATUS[2][0]
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
+                od.AHstatus = STATUS[2][0]
 
             from .models import Notification
             Notification.objects.create(

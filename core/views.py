@@ -774,66 +774,64 @@ def staff_action_od(request, id):
 @login_required
 def staff_action_leave(request, id):
 
+
     if request.POST:
-        od = LEAVE.objects.get(id=id)
-        role = request.POST.get('role')
-        status = request.POST.get('sts')
-        from .models import Notification
-        if role == 'mentor' and str(od.user.mentor.user.username) == str(request.user):
-            od.Mstatus = status
-            if status == STATUS[2][0]:
-                # If rejected by mentor, reject all
-                od.Astatus = STATUS[2][0]
-                od.Hstatus = STATUS[2][0]
-            Notification.objects.create(                student=od.user,
+        leave = LEAVE.objects.get(id=id)
+        print(leave.user.mentor.user.username, request.user)
 
-                message=f"Your Leave request was {od.Mstatus} by Mentor"
+        if str(leave.user.mentor.user.username) == str(request.user):
+            leave.Mstatus = get_post(request, 'sts')
+            if leave.Mstatus == STATUS[2][0]:
+                leave.Astatus = STATUS[2][0]
+                leave.Hstatus = STATUS[2][0]
+                leave.AHstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                student=leave.user,
+                message=f"Your Leave request was {leave.Mstatus} by Mentor"
             )
-        elif role == 'advisor' and str(od.user.advisor.user.username) == str(request.user):
-            od.Astatus = status
-            if status == STATUS[2][0]:
-                # If rejected by advisor, reject HOD
-                od.Hstatus = STATUS[2][0]
+            print(leave.Mstatus)
 
-        if str(od.user.hod.user.username) == str(request.user):
+        if str(leave.user.advisor.user.username) == str(request.user):
+            leave.Astatus = get_post(request, 'sts')
+            if leave.Astatus == STATUS[2][0]:
+                leave.Hstatus = STATUS[2][0]
+                leave.AHstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                student=leave.user,
+                message=f"Your Leave request was {leave.Astatus} by Advisor"
+            )
+
+        if str(leave.user.hod.user.username) == str(request.user):
             action_status = get_post(request, 'sts')
             if action_status == STATUS[1][0]:  # 'Approved'
-                od.Mstatus = STATUS[1][0]
-                od.Astatus = STATUS[1][0]
-                od.Hstatus = STATUS[1][0]
+                leave.Mstatus = STATUS[1][0]
+                leave.Astatus = STATUS[1][0]
+                leave.Hstatus = STATUS[1][0]
+                leave.AHstatus = STATUS[1][0]
             elif action_status == STATUS[2][0]:  # 'Rejected'
-                od.Mstatus = STATUS[2][0]
-                od.Astatus = STATUS[2][0]
-                od.Hstatus = STATUS[2][0]
-            od.save()
-            print(od.Astatus)
-            # Redirect back to referring page (AHOD or HOD)
-            ref = request.META.get('HTTP_REFERER')
-            if ref:
-                return redirect(ref)
+                leave.Mstatus = STATUS[2][0]
+                leave.Astatus = STATUS[2][0]
+                leave.Hstatus = STATUS[2][0]
+                leave.AHstatus = STATUS[2][0]
 
+            from .models import Notification
             Notification.objects.create(
-                student=od.user,
-
-                message=f"Your Leave request was {od.Astatus} by Advisor"
+                student=leave.user,
+                message=f"Your Leave request was {action_status} by HOD"
             )
-        elif role == 'hod' and str(od.user.hod.user.username) == str(request.user):
-            od.Hstatus = status
-            Notification.objects.create(
-                student=od.user,
 
-                message=f"Your Leave request was {od.Hstatus} by HOD"
-            )
-            od.save()
-
+            leave.save()
+            print(leave.Astatus)
             return redirect("hod_leave_view")
-        od.save()
 
+        leave.save()
         print("Changed")
+
         ref = request.META.get('HTTP_REFERER')
         if ref:
             return redirect(ref)
-
 
     return redirect("staff_leave_view")
 

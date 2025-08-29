@@ -106,12 +106,15 @@ def ahod_gatepass_hod(request):
             )
         else:
             if action == 'approve':
-                gatepass.Hstatus = 'Approved by AHOD'
+                # Set all statuses to 'Approved' so HOD table reflects the change
+                gatepass.Hstatus = 'Approved'
+                gatepass.Mstatus = 'Approved'
+                gatepass.Astatus = 'Approved'
             elif action == 'reject':
                 # If AHOD rejects for HOD role, reject all statuses and notify all
-                gatepass.Hstatus = 'Rejected by AHOD'
-                gatepass.Mstatus = 'Rejected by AHOD'
-                gatepass.Astatus = 'Rejected by AHOD'
+                gatepass.Hstatus = 'Rejected'
+                gatepass.Mstatus = 'Rejected'
+                gatepass.Astatus = 'Rejected'
                 gatepass.ahod_reason = reason
                 gatepass.save()
                 # Notify student
@@ -838,57 +841,55 @@ def staff_action_leave(request, id):
 
 @login_required
 def staff_action_gatepass(request, id):
-
     if request.POST:
-        od = GATEPASS.objects.get(id=id)
-        print(od.user.mentor.user.username, request.user)
-
-        if str(od.user.mentor.user.username) == str(request.user):
-            od.Mstatus = get_post(request, 'sts')
-            if od.Mstatus == STATUS[2][0]:
-                od.Astatus = STATUS[2][0]
-                od.Hstatus = STATUS[2][0]
-            from .models import Notification
+        gatepass = GATEPASS.objects.get(id=id)
+        role = request.POST.get('role')
+        status = request.POST.get('sts')
+        from .models import Notification
+        # Mentor action
+        if role == 'mentor' and str(gatepass.user.mentor.user.username) == str(request.user):
+            gatepass.Mstatus = status
+            if status == STATUS[2][0]:
+                gatepass.Astatus = STATUS[2][0]
+                gatepass.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                student=od.user,
-                message=f"Your Gatepass request was {od.Mstatus} by Mentor"
+                student=gatepass.user,
+                message=f"Your Gatepass request was {gatepass.Mstatus} by Mentor"
             )
-            print(od.Mstatus)
-
-        if str(od.user.advisor.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            if od.Astatus == STATUS[2][0]:
-                od.Hstatus = STATUS[2][0]
-            from .models import Notification
+            gatepass.save()
+            return redirect("staff_gatepass_view")
+        # Advisor action
+        if role == 'advisor' and str(gatepass.user.advisor.user.username) == str(request.user):
+            gatepass.Astatus = status
+            if status == STATUS[2][0]:
+                gatepass.Hstatus = STATUS[2][0]
             Notification.objects.create(
-                student=od.user,
-                message=f"Your Gatepass request was {od.Astatus} by Advisor"
+                student=gatepass.user,
+                message=f"Your Gatepass request was {gatepass.Astatus} by Advisor"
             )
-        if str(od.user.hod.user.username) == str(request.user):
-            action_status = get_post(request, 'sts')
-            if action_status == STATUS[1][0]:  # 'Approved'
-                od.Mstatus = STATUS[1][0]
-                od.Astatus = STATUS[1][0]
-                od.Hstatus = STATUS[1][0]
-            elif action_status == STATUS[2][0]:  # 'Rejected'
-                od.Mstatus = STATUS[2][0]
-                od.Astatus = STATUS[2][0]
-                od.Hstatus = STATUS[2][0]
-
-            from .models import Notification
+            gatepass.save()
+            return redirect("staff_gatepass_view")
+        # HOD action
+        if role == 'hod' and str(gatepass.user.hod.user.username) == str(request.user):
+            if status == STATUS[1][0]:  # Approved
+                gatepass.Mstatus = STATUS[1][0]
+                gatepass.Astatus = STATUS[1][0]
+                gatepass.Hstatus = STATUS[1][0]
+            elif status == STATUS[2][0]:  # Rejected
+                gatepass.Mstatus = STATUS[2][0]
+                gatepass.Astatus = STATUS[2][0]
+                gatepass.Hstatus = STATUS[2][0]
+            else:
+                gatepass.Hstatus = status
             Notification.objects.create(
-                student=od.user,
-                message=f"Your Gatepass request was {action_status} by HOD"
+                student=gatepass.user,
+                message=f"Your Gatepass request was {gatepass.Hstatus} by HOD"
             )
-
-            od.save()
-            print(od.Astatus)
+            gatepass.save()
             return redirect("hod_gatepass_view")
-
-        od.save()
-        print("Changed")
-
-    return redirect("staff_gatepass_view")
+        gatepass.save()
+        # Default: if not mentor/advisor/hod, stay on staff page
+        return redirect("staff_gatepass_view")
 
 
 @login_required
@@ -1206,7 +1207,6 @@ def staff_bonafides(request):
 def staff_action_bonafide(request, id):
     if request.POST:
         bonafide = BONAFIDE.objects.get(id=id)
-
         role = request.POST.get('role')
         status = request.POST.get('sts')
         from .models import Notification
@@ -1220,8 +1220,8 @@ def staff_action_bonafide(request, id):
                 message=f"Your Bonafide request was {bonafide.Mstatus} by Mentor"
             )
             bonafide.save()
-            return redirect("hod_bonafide_view")
-        elif role == 'advisor' and str(bonafide.user.advisor.user.username) == str(request.user):
+            return redirect("staff_bonafides")
+        if role == 'advisor' and str(bonafide.user.advisor.user.username) == str(request.user):
             bonafide.Astatus = status
             if status == STATUS[2][0]:
                 bonafide.Hstatus = STATUS[2][0]
@@ -1231,15 +1231,24 @@ def staff_action_bonafide(request, id):
             )
             bonafide.save()
             return redirect("staff_bonafides")
-        elif role == 'hod' and str(bonafide.user.hod.user.username) == str(request.user):
-            bonafide.Hstatus = status
+        if role == 'hod' and str(bonafide.user.hod.user.username) == str(request.user):
+            if status == STATUS[1][0]:  # Approved
+                bonafide.Mstatus = STATUS[1][0]
+                bonafide.Astatus = STATUS[1][0]
+                bonafide.Hstatus = STATUS[1][0]
+            elif status == STATUS[2][0]:  # Rejected
+                bonafide.Mstatus = STATUS[2][0]
+                bonafide.Astatus = STATUS[2][0]
+                bonafide.Hstatus = STATUS[2][0]
+            else:
+                bonafide.Hstatus = status
             Notification.objects.create(
                 student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
             )
             bonafide.save()
             return redirect("hod_bonafide_view")
-        # If none of the above, still return a redirect
+        bonafide.save()
         return redirect("hod_bonafide_view")
 
 

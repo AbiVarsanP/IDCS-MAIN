@@ -58,18 +58,18 @@
 
                         {% if duser and duser.position == 0 %}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
-                            <li><a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
-                            <li><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_od_view' %}active{% endif %}"><a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
-                            <li><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a></li>
-                            <li><a href="{% url 'hod_feedback_view' %}"><i class="menu-icon ti ti-comments"></i>Feedback </a></li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_feedback' %}active{% endif %}"><a href="#"><i class="menu-icon ti-comments"></i>Feedback</a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}"><a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
                         {% elif duser and duser.position2 == 1 %}
                             <li class="{% if request.resolver_match.url_name == 'ahod_dash' %}active{% endif %}"><a href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_od_view' %}active{% endif %}"><a href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_leave_view' %}active{% endif %}"><a href="{% url 'ahod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
-                                <li class="{% if request.resolver_match.url_name == 'ahod_bonafide_hod' %}active{% endif %}"><a href="{% url 'ahod_bonafide_hod' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide (HOD)</a></li>
-                                <li class="{% if request.resolver_match.url_name == 'ahod_gatepass_hod' %}active{% endif %}"><a href="{% url 'ahod_gatepass_hod' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass (HOD)</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'ahod_bonafide_hod' %}active{% endif %}"><a href="{% url 'ahod_bonafide_hod' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide (HOD)</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'ahod_gatepass_hod' %}active{% endif %}"><a href="{% url 'ahod_gatepass_hod' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass (HOD)</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_notification_history' %}active{% endif %}"><a href="{% url 'ahod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
                         {% elif duser and request.user.is_staff %}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>

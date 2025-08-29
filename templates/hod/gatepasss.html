@@ -67,6 +67,7 @@
                                         {% else %}
                                             <form action="{% url 'staff_action_gatepass' i.id %}" method="POST">
                                                 {% csrf_token %}
+                                                <input type="hidden" name="role" value="hod">
                                                 <div class="input-group">
                                                     <select name="sts" class="form-control">
                                                         <option value="Approved">Approve</option>

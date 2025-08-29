@@ -1,38 +1,6 @@
 
 {% extends 'base.html' %}
 
-{% block nav %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"
-    integrity="sha512-7U4rRB8aGAHGVad3u2jiC7GA5/1YhQcQjxKeaVms/bT66i3LVBMRcBI9KwABNWnxOSwulkuSXxZLGuyfvo7V1A=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<li class="">
-    <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-</li>
-<li>
-    <a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
-</li>
-<li class="active">
-    <a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
-</li>
-<li>
-    <a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
-</li>
-<li>
-    <a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass </a>
-</li>
-
-
-<li>
-    <a href="{% url 'hod_feedback_view' %}"><i class="menu-icon ti ti-comments"></i>Feedback </a>
-</li>
-
-<li>
-    <a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a>
-</li>
-
-{% endblock %}
 {% block root %}
 <!-- Year Filter -->
 <form method="get" class="form-inline mb-3">

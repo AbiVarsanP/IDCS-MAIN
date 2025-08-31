@@ -432,7 +432,7 @@ def dash(request):
             for i in temp:
                 if i.staff.department == context['duser'].department:
                     rating_logs.append(i)
-            context['my_rating'] = ratings[context['duser'].name]
+            context['my_rating'] = ratings.get(context['duser'].name, None)
             context['rating_log'] = rating_logs[:len(ratings)]
             try:
                 hod_staff = Staff.objects.get(user=context['duser'].user)

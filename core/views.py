@@ -705,8 +705,7 @@ def gatepass(request):
                     role=role,
                     message=f"New Gatepass request from {student.name}",
                 )
-
-        return redirect("gatepass")
+        return redirect("dash")
     if action == 'status':
         # Show all gatepasses for this student
         context['gatepasses'] = GATEPASS.objects.filter(user=context['duser']).order_by('-id')

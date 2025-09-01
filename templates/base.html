@@ -193,8 +193,17 @@
                                     class="fa fa- user"></i>{{duser.name}}</a>
                             <a class="nav-link" href="{% url 'student_profile' %}"><i class="fa fa- user"></i>My Profile</a>
 
-                            <a class="nav-link" href="#"><i class="fa fa- user"></i>Notifications <span
-                                    class="count">13</span></a>
+                            {% if request.user.is_authenticated %}
+                                {% if request.user.is_staff and duser.position == 0 %}
+                                    <a class="nav-link" href="{% url 'hod_notification_history' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                                {% elif request.user.is_staff %}
+                                    <a class="nav-link" href="{% url 'staff_notifications' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                                {% else %}
+                                    <a class="nav-link" href="{% url 'notifications_view' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                                {% endif %}
+                            {% else %}
+                                <a class="nav-link" href="#"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                            {% endif %}
 
                             <a class="nav-link" href="#"><i class="fa fa -cog"></i>Settings</a>
 

@@ -75,11 +75,11 @@
                                                                                                     <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                                                                             </form>
                                                                                             {% else %}
-                                                                                                    {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
-                                                                                                            <span class="text-success">Approved</span>
-                                                                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' %}
-                                                                                                            <span class="text-danger">Rejected</span>
-                                                                                                    {% endif %}
+                                                    {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
+                                                        <span class="text-success">Approved</span>
+                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
+                                                        <span class="text-danger">Rejected</span>
+                                                    {% endif %}
                                                                                             {% endif %}
                                                                                             {% if b.body %}
                                                                                                     <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
@@ -176,7 +176,7 @@
                                                 {% else %}
                                                     {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
                                                         <span class="text-success">Approved</span>
-                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' %}
+                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
                                                         <span class="text-danger">Rejected</span>
                                                     {% endif %}
                                                 {% endif %}

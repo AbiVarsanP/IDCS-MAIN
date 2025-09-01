@@ -2,7 +2,9 @@ from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
 from .views import *
+
 from .profile_views import staff_profile, hod_profile
+from .view_mentees import view_mentees
 
 
 
@@ -25,8 +27,10 @@ urlpatterns = [
     path('student/timetable/', student_timetable, name='student_timetable'),
     path("ahod/", include("core.ahod_urls")),
 
+
     # Staff list for HOD
     path('hod/staff-list/', staff_list, name='staff_list'),
+    path('hod/staff/<int:staff_id>/mentees/', view_mentees, name='view_mentees'),
 
 
 ]

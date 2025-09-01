@@ -2,7 +2,9 @@ from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
 from .views import *
+
 from .profile_views import staff_profile, hod_profile
+from .view_mentees import view_mentees
 
 
 
@@ -31,6 +33,11 @@ urlpatterns = [
 
     path('hod/notifications/delete_all/', delete_all_notifications, name='delete_all_notifications'),
     path('hod/notifications/history/', ahod_notification_history, name='hod_notification_history'),
+
+
+    # Staff list for HOD
+    path('hod/staff-list/', staff_list, name='staff_list'),
+    path('hod/staff/<int:staff_id>/mentees/', view_mentees, name='view_mentees'),
 
 
 ]

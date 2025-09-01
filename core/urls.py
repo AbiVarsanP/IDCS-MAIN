@@ -24,6 +24,13 @@ urlpatterns = [
     path("dash/", ahod_dash, name="ahod_dash"),
     path('student/timetable/', student_timetable, name='student_timetable'),
     path("ahod/", include("core.ahod_urls")),
+    path('hod/notifications/delete_all/', delete_all_hod_notifications, name='delete_all_hod_notifications'),
+    path('hod/notifications/history/', hod_notification_history, name='hod_notification_history'),
+    path('student/notifications/delete_all/', delete_all_student_notifications, name='delete_all_student_notifications'),
+    path('staff/notifications/delete_all/', delete_all_staff_notifications, name='delete_all_staff_notifications'),
+
+    path('hod/notifications/delete_all/', delete_all_notifications, name='delete_all_notifications'),
+    path('hod/notifications/history/', ahod_notification_history, name='hod_notification_history'),
 
 
 ]

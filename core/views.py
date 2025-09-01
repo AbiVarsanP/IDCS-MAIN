@@ -161,17 +161,36 @@ def ahod_notification_history(request):
             ahod = None
     # Only allow AHODs
     if not ahod or not hasattr(ahod, 'position2') or ahod.position2 != 1:
-        return render(request, 'ahod/notification_history.html', {'notifications': [], 'duser': ahod})
+        return render(request, 'hod/hod_notification_history.html', {'notifications': [], 'duser': ahod})
     # Query notifications for AHOD
     notifications = Notification.objects.filter(staff=ahod, role__iexact='ahod').order_by('-created_at')
-    if request.method == "POST":
+    if request.method == "POST" and 'delete_all' in request.POST:
+        notifications.delete()
+        return redirect('hod_notification_history')
+    elif request.method == "POST":
         notifications.filter(is_read=False).update(is_read=True)
     recent_notifications = notifications[:5]
-    return render(request, 'ahod/notification_history.html', {
+    return render(request, 'hod/hod_notification_history.html', {
         'notifications': notifications,
         'recent_notifications': recent_notifications,
         'duser': ahod
     })
+
+# View to handle delete all notifications POST
+@login_required
+def delete_all_notifications(request):
+    ahod = None
+    if hasattr(request, 'duser'):
+        ahod = getattr(request, 'duser', None)
+    if not ahod:
+        try:
+            ahod = Staff.objects.get(user=request.user)
+        except Staff.DoesNotExist:
+            ahod = None
+    if not ahod or not hasattr(ahod, 'position2') or ahod.position2 != 1:
+        return redirect('hod_notification_history')
+    Notification.objects.filter(staff=ahod, role__iexact='ahod').delete()
+    return redirect('hod_notification_history')
 
 
 @login_required
@@ -200,7 +219,6 @@ def ahod_dash(request):
 
 @login_required
 def hod_notification_history(request):
-    # Get HOD staff object
     staff = None
     if hasattr(request, 'duser'):
         staff = getattr(request, 'duser', None)
@@ -209,12 +227,13 @@ def hod_notification_history(request):
             staff = Staff.objects.get(user=request.user)
         except Staff.DoesNotExist:
             staff = None
-    # Only allow HODs
     if not staff or not hasattr(staff, 'position') or staff.position != 0:
         return render(request, 'hod/hod_notification_history.html', {'notifications': [], 'duser': staff})
-    # Query notifications for HOD
     notifications = Notification.objects.filter(staff=staff, role__iexact='hod').order_by('-created_at')
-    if request.method == "POST":
+    if request.method == "POST" and 'delete_all' in request.POST:
+        notifications.delete()
+        return redirect('hod_notification_history')
+    elif request.method == "POST":
         notifications.filter(is_read=False).update(is_read=True)
     recent_notifications = notifications[:5]
     return render(request, 'hod/hod_notification_history.html', {
@@ -222,6 +241,22 @@ def hod_notification_history(request):
         'recent_notifications': recent_notifications,
         'duser': staff
     })
+
+# View to handle delete all notifications POST for HOD
+@login_required
+def delete_all_hod_notifications(request):
+    staff = None
+    if hasattr(request, 'duser'):
+        staff = getattr(request, 'duser', None)
+    if not staff:
+        try:
+            staff = Staff.objects.get(user=request.user)
+        except Staff.DoesNotExist:
+            staff = None
+    if not staff or not hasattr(staff, 'position') or staff.position != 0:
+        return redirect('hod_notification_history')
+    Notification.objects.filter(staff=staff, role__iexact='hod').delete()
+    return redirect('hod_notification_history')
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Notification, Student
@@ -234,12 +269,12 @@ def notifications_view(request):
         student = Student.objects.get(user=request.user)
     except Student.DoesNotExist:
         return render(request, "student/notification_history.html", {"error": "No student record found for this user."})
-    # Latest 5 unread notifications for popup/dropdown
     latest_unread = Notification.objects.filter(student=student, is_read=False)[:5]
-    # All notifications for history
     all_notifications = Notification.objects.filter(student=student)
-    # Mark all unread as read when viewing history
-    if request.method == "POST":
+    if request.method == "POST" and 'delete_all' in request.POST:
+        Notification.objects.filter(student=student).delete()
+        return redirect('notifications_view')
+    elif request.method == "POST":
         Notification.objects.filter(student=student, is_read=False).update(is_read=True)
     context = {
         "latest_unread": latest_unread,
@@ -247,6 +282,16 @@ def notifications_view(request):
         "duser": student,
     }
     return render(request, "student/notification_history.html", context)
+
+# View to handle delete all notifications POST for students
+@login_required
+def delete_all_student_notifications(request):
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return redirect('notifications_view')
+    Notification.objects.filter(student=student).delete()
+    return redirect('notifications_view')
 
 # Staff notifications view
 @login_required
@@ -271,15 +316,34 @@ def staff_notifications_view(request):
         latest_unread = Notification.objects.filter(staff=staff, is_read=False).order_by('-created_at')[:5]
         all_notifications = Notification.objects.filter(staff=staff).order_by('-created_at')
         unread_count = Notification.objects.filter(staff=staff, is_read=False).count()
-    # Mark all unread as read when viewing history or clicking 'mark all read'
-    if request.method == "POST":
-        Notification.objects.filter(staff=staff, is_read=False).update(is_read=True)
+        if request.method == "POST" and 'delete_all' in request.POST:
+            Notification.objects.filter(staff=staff).delete()
+            return redirect('staff_notifications')
+        elif request.method == "POST":
+            Notification.objects.filter(staff=staff, is_read=False).update(is_read=True)
     return render(request, "staff/notification_history.html", {
         "latest_unread": latest_unread,
         "all_notifications": all_notifications,
         "unread_count": unread_count,
         "duser": staff,
     })
+
+
+# View to handle delete all notifications POST for staff
+@login_required
+def delete_all_staff_notifications(request):
+    staff = None
+    if hasattr(request, 'duser'):
+        staff = getattr(request, 'duser', None)
+    if not staff:
+        try:
+            staff = Staff.objects.get(user=request.user)
+        except Staff.DoesNotExist:
+            staff = None
+    if not staff:
+        return redirect('login')
+    Notification.objects.filter(staff=staff).delete()
+    return redirect('staff_notifications')
 
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import login, logout, authenticate

@@ -14,9 +14,8 @@ def ahod_bonafide_hod(request):
     hod_staff_ids = [h.user.id for h in hods]
     # Get bonafide requests assigned to HODs in this department, pending HOD action
     bonafide_forms = BONAFIDE.objects.filter(user__hod_id__in=hod_staff_ids).distinct()
-    # Get bonafide requests where mentor is AHOD or any HOD in the department
-    mentor_ids = [context['duser'].id] + [h.user.id for h in hods]
-    mentee_bonafide_forms = BONAFIDE.objects.filter(user__mentor_id__in=mentor_ids).distinct()
+    # Only show requests where the mentor is the current AHOD (not HODs as mentor)
+    mentee_bonafide_forms = BONAFIDE.objects.filter(user__mentor_id=context['duser'].id).distinct()
     context['bonafide_forms'] = bonafide_forms
     context['mentee_bonafide_forms'] = mentee_bonafide_forms
     if request.method == 'POST':
@@ -83,8 +82,8 @@ def ahod_gatepass_hod(request):
     hods = HOD.objects.filter(department=ahod.department) if ahod else HOD.objects.none()
     hod_staff_ids = [h.user.id for h in hods]
     gatepass_forms = GATEPASS.objects.filter(user__hod_id__in=hod_staff_ids).distinct()
-    mentor_ids = [context['duser'].id] + [h.user.id for h in hods]
-    mentee_gatepass_forms = GATEPASS.objects.filter(user__mentor_id__in=mentor_ids).distinct()
+    # Only show requests where the mentor is the current AHOD (not HODs as mentor)
+    mentee_gatepass_forms = GATEPASS.objects.filter(user__mentor_id=context['duser'].id).distinct()
     context['gatepass_forms'] = gatepass_forms
     context['mentee_gatepass_forms'] = mentee_gatepass_forms
     if request.method == 'POST':
@@ -800,6 +799,9 @@ def staff_action_od(request, id):
 
         if str(od.user.advisor.user.username) == str(request.user):
             od.Astatus = get_post(request, 'sts')
+            # If mentor is still pending, set mentor status to advisor's decision
+            if od.Mstatus == STATUS[0][0]:  # Pending
+                od.Mstatus = od.Astatus
             if od.Astatus == STATUS[2][0]:
                 od.Hstatus = STATUS[2][0]
                 od.AHstatus = STATUS[2][0]
@@ -859,6 +861,9 @@ def staff_action_leave(request, id):
 
         if str(leave.user.advisor.user.username) == str(request.user):
             leave.Astatus = get_post(request, 'sts')
+            # If mentor is still pending, set mentor status to advisor's decision
+            if leave.Mstatus == STATUS[0][0]:  # Pending
+                leave.Mstatus = leave.Astatus
             if leave.Astatus == STATUS[2][0]:
                 leave.Hstatus = STATUS[2][0]
                 leave.AHstatus = STATUS[2][0]
@@ -923,6 +928,9 @@ def staff_action_gatepass(request, id):
         # Advisor action
         if role == 'advisor' and str(gatepass.user.advisor.user.username) == str(request.user):
             gatepass.Astatus = status
+            # If mentor is still pending, set mentor status to advisor's decision
+            if gatepass.Mstatus == STATUS[0][0]:  # Pending
+                gatepass.Mstatus = gatepass.Astatus
             if status == STATUS[2][0]:
                 gatepass.Hstatus = STATUS[2][0]
             Notification.objects.create(
@@ -1285,6 +1293,9 @@ def staff_action_bonafide(request, id):
             return redirect("staff_bonafides")
         if role == 'advisor' and str(bonafide.user.advisor.user.username) == str(request.user):
             bonafide.Astatus = status
+            # If mentor is still pending, set mentor status to advisor's decision
+            if bonafide.Mstatus == STATUS[0][0]:  # Pending
+                bonafide.Mstatus = bonafide.Astatus
             if status == STATUS[2][0]:
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(

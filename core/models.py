@@ -152,20 +152,22 @@ class Student(models.Model):
 
 
 class Staff(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='staff')
-    name = models.CharField(max_length=50, blank=True, null=True)
-    profile = models.ImageField(upload_to='profiles', blank=True)
 
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff')
+    name = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=254, blank=True, null=True)
     department = models.PositiveIntegerField(choices=SDEPT, default=0, null=True)
+    mobile = models.CharField(max_length=15, blank=True, null=True)
+    role = models.CharField(max_length=50, blank=True, null=True)
+
+    # Retain other fields for backward compatibility
+    profile = models.ImageField(upload_to='profiles', blank=True)
     address = models.TextField(blank=True, null=True)
-    mobile = models.IntegerField(blank=True, null=True)
     dob = models.DateField(blank=True, null=True)
     age = models.PositiveIntegerField(blank=True, null=True)
-
     position = models.PositiveIntegerField(choices=POS, default=0)
     position2 = models.PositiveIntegerField(choices=POS, default=0, blank=True, null=True)
     position3 = models.PositiveIntegerField(choices=POS, default=0, blank=True, null=True)
-
     my_feedbacks = models.ManyToManyField('IndividualStaffRating', related_name='my_ratings', blank=True)
     created = models.DateTimeField(auto_now_add=True)
 

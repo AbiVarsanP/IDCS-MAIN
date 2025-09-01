@@ -25,6 +25,9 @@ urlpatterns = [
     path('student/timetable/', student_timetable, name='student_timetable'),
     path("ahod/", include("core.ahod_urls")),
 
+    # Staff list for HOD
+    path('hod/staff-list/', staff_list, name='staff_list'),
+
 
 ]
 

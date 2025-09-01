@@ -376,13 +376,12 @@ def ahod_od_view(request):
             break
     if not dept_code:
         dept_code = str(ahod_dept_int)
-    # All ODs where student's hod or ahod is the AHOD user, or department matches
+    # Dept ODs: all ODs where student's hod is AHOD user, or mentor is not AHOD user
     context['hods'] = [
         i for i in OD.objects.all()
         if (
             (i.user.hod and i.user.hod.id == ahod.user.id) or
-            (i.user.ahod and i.user.ahod.id == ahod.id) or
-            (str(i.user.department) == str(ahod.user.department))
+            (not i.user.mentor or i.user.mentor.id != ahod.user.id)
         )
     ]
     # Mentees: students where AHOD is mentor

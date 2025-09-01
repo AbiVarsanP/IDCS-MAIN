@@ -8,6 +8,11 @@
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <span><b>Staff Notification History</b></span>
+                    <form method="post" action="{% url 'delete_all_staff_notifications' %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="delete_all" value="1">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete All</button>
+                    </form>
                     <form method="post" style="margin:0;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-light btn-sm">Mark all as read</button>

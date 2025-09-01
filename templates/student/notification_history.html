@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 {% block root %}
-<div class="container mt-4">
+<div class="container mt-4 position-relative">
     <h2>Notification History</h2>
+    <form method="post" action="{% url 'delete_all_student_notifications' %}" style="position: absolute; top: 0; right: 0;">
+        {% csrf_token %}
+        <input type="hidden" name="delete_all" value="1">
+        <button type="submit" class="btn btn-danger btn-sm">Delete All</button>
+    </form>
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-primary mb-3">Mark all as read</button>

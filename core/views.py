@@ -15,7 +15,7 @@ def staff_list(request):
     try:
         hod_staff = Staff.objects.get(user=user)
         department = hod_staff.department
-        staff_members = Staff.objects.filter(department=department).exclude(id=hod_staff.id)
+        staff_members = Staff.objects.filter(department=department).exclude(id=hod_staff.id).order_by('name')
     except Staff.DoesNotExist:
         staff_members = Staff.objects.none()
     # Ensure each staff has an email, fallback to user.email if not set
@@ -26,7 +26,7 @@ def staff_list(request):
         if (not staff.mobile or staff.mobile == '') and staff.user and hasattr(staff.user, 'mobile') and staff.user.mobile:
             staff.mobile = staff.user.mobile
     context['staff_members'] = staff_members
-    return render(request, 'staff_list.html', context)
+    return render(request, 'hod/staff_list.html', context)
 
 # AHOD Bonafide (HOD) requests view
 

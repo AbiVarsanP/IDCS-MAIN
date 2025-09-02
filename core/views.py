@@ -1,11 +1,98 @@
+
 from django.contrib.auth import get_user_model
 
 # View for HOD to see all staff in their department
 from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
 from django.db import models
+
+# Period-wise attendance view
+from django.http import HttpResponse
+@login_required
+def period_attendance_view(request):
+    context = set_config(request)
+    from .models import Student
+    selected_date = request.GET.get('date')
+    roll = request.GET.get('roll')
+    period_attendance = {}
+    student = None
+    error = None
+    if roll:
+        student = Student.objects.filter(roll=roll).first()
+    else:
+        student = context.get('duser')
+    if not isinstance(student, Student):
+        error = 'Student not found.'
+    elif selected_date:
+        # Show 7 periods for the selected date (placeholder data)
+        period_attendance = {}
+        for i in range(1, 8):
+            period_attendance[f'Period {i}'] = {
+                'status': 'Present' if i % 2 == 1 else 'Absent',
+                'marked_by': f'Staff {chr(64+i)}',
+                'remarks': '' if i != 2 else 'Medical',
+            }
+    context['selected_date'] = selected_date
+    context['student'] = student
+    context['period_attendance'] = period_attendance
+    context['error'] = error
+    return render(request, 'student/period_attendance.html', context)
+
+# Student attendance view for date-wise lookup
+from django.utils import timezone
+@login_required
+def student_attendance_view(request):
+    context = set_config(request)
+    from .models import Attendance, Student
+    attendance_status = None
+    selected_date = request.GET.get('date')
+    roll = request.GET.get('roll')
+    # If roll is provided, get that student, else use logged-in user
+    if roll:
+        student = Student.objects.filter(roll=roll).first()
+    else:
+        student = context.get('duser')
+    if not isinstance(student, Student):
+        context['attendance_status'] = None
+        context['selected_date'] = selected_date
+        context['attendance_map'] = {}
+        context['calendar_month'] = timezone.now().month
+        context['calendar_year'] = timezone.now().year
+        context['student'] = None
+        context['error'] = 'Student not found.'
+        return render(request, 'student/attendance.html', context)
+    # Get all attendance records for the current month for the selected student
+    today = timezone.now().date()
+    month = int(request.GET.get('month', today.month))
+    year = int(request.GET.get('year', today.year))
+    from calendar import monthrange
+    start_date = today.replace(day=1, month=month, year=year)
+    end_date = today.replace(day=monthrange(year, month)[1], month=month, year=year)
+    all_attendance = Attendance.objects.filter(student=student, date__range=[start_date, end_date])
+    attendance_map = {a.date.strftime('%Y-%m-%d'): a.status for a in all_attendance}
+    if selected_date:
+        try:
+            date_obj = timezone.datetime.strptime(selected_date, '%Y-%m-%d').date()
+            record = Attendance.objects.filter(student=student, date=date_obj).first()
+            if record:
+                attendance_status = record.status
+            else:
+                attendance_status = None
+        except Exception:
+            attendance_status = None
+    context['attendance_status'] = attendance_status
+    context['selected_date'] = selected_date
+    context['attendance_map'] = attendance_map
+    context['calendar_month'] = month
+    context['calendar_year'] = year
+    context['student'] = student
+    return render(request, 'student/attendance.html', context)
+
+# AHOD Bonafide (HOD) requests view
+
 
 @login_required
 def staff_list(request):
@@ -219,12 +306,44 @@ def delete_all_notifications(request):
 
 @login_required
 def my_class_students(request):
+    from .models import Attendance
+    from django.utils import timezone
     staff = Staff.objects.get(user=request.user)
     students = Student.objects.filter(advisor=staff).order_by('roll')
     context = {
         'students': students,
         'duser': staff,
     }
+    selected_date = None
+    if request.method == 'POST':
+        date_str = request.POST.get('attendance_date')
+        if date_str:
+            try:
+                selected_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+            except Exception:
+                selected_date = timezone.now().date()
+        else:
+            selected_date = timezone.now().date()
+        # Get list of absent student IDs from POST
+        absent_ids = request.POST.getlist('absent')
+        absent_ids = set(map(int, absent_ids))
+        for student in students:
+            if student.id in absent_ids:
+                Attendance.objects.update_or_create(
+                    student=student,
+                    date=selected_date,
+                    defaults={'status': 'Absent'}
+                )
+            else:
+                Attendance.objects.update_or_create(
+                    student=student,
+                    date=selected_date,
+                    defaults={'status': 'Present'}
+                )
+        context['success'] = 'Attendance marked successfully.'
+        context['selected_date'] = date_str
+    else:
+        context['selected_date'] = ''
     return render(request, 'staff/my_class_students.html', context)
 
 @login_required
@@ -395,7 +514,8 @@ def ahod_od_view(request):
     ahod_dept_int = ahod.user.department
     dept_code = None
     for code, name in DEPT:
-        if name == SDEPT[ahod_dept_int][1]:
+        sdept_entry = SDEPT[ahod_dept_int] if SDEPT and ahod_dept_int is not None and ahod_dept_int < len(SDEPT) else None
+        if sdept_entry and len(sdept_entry) > 1 and name == sdept_entry[1]:
             dept_code = code
             break
     if not dept_code:

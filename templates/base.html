@@ -95,6 +95,9 @@
                             <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
                                 <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
                             </li>
+                            <li class="{% if request.resolver_match.url_name == 'attendance' %}active{% endif %}">
+                                <a href="{% url 'student_attendance' %}"><i class="menu-icon fa fa-check-square-o"></i>Attendance</a>
+                            </li>
                             <li class="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
                                 <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
                             </li>
@@ -126,6 +129,56 @@
                     </li>
 
                 </ul>
+                    <!-- Attendance Sidebar and Overlay (always present for student) -->
+                    <div id="sidebarOverlay" style="display:none;"></div>
+                    <div id="attendanceSidebar" style="left:-300px;">
+                        <h4>View Attendance</h4>
+                        <form method="get" id="attendanceForm" action="{% url 'student_attendance' %}">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Select Date:</label>
+                                <input type="date" id="date" name="date" class="form-control" required value="{{ selected_date|default:'' }}">
+                            </div>
+                            <button type="submit" class="btn btn-success">View</button>
+                        </form>
+                        <div class="mt-4">
+                            {% if attendance_status is not None %}
+                                <h5>Status for {{ selected_date }}:</h5>
+                                <span class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                    {{ attendance_status }}
+                                </span>
+                            {% elif selected_date %}
+                                <div class="alert alert-info">No attendance record found for this date.</div>
+                            {% endif %}
+                        </div>
+                        <button class="btn btn-secondary mt-3" id="closeSidebarBtn">Close</button>
+                    </div>
+                    <style>
+                        #attendanceSidebar {
+                            position: fixed;
+                            top: 0;
+                            left: -300px;
+                            width: 300px;
+                            height: 100%;
+                            background: #f8f9fa;
+                            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                            transition: left 0.3s;
+                            z-index: 1050;
+                            padding: 2rem 1rem;
+                        }
+                        #attendanceSidebar.active {
+                            left: 0;
+                        }
+                        #sidebarOverlay {
+                            display: none;
+                            position: fixed;
+                            top: 0; left: 0; width: 100vw; height: 100vh;
+                            background: rgba(0,0,0,0.2);
+                            z-index: 1040;
+                        }
+                        #sidebarOverlay.active {
+                            display: block;
+                        }
+                    </style>
             </div>
         </nav>
     </aside>
@@ -328,5 +381,33 @@
 
         </script>
 </body>
+<script>
+    // Attendance sidebar logic (always present for student)
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('attendanceSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const attendanceMenuItem = document.getElementById('attendanceMenuItem');
+        if (attendanceMenuItem) {
+            attendanceMenuItem.onclick = function(e) {
+                e.preventDefault();
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            };
+        }
+        const closeBtn = document.getElementById('closeSidebarBtn');
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            };
+        }
+        if (overlay) {
+            overlay.onclick = function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            };
+        }
+    });
+</script>
 
 </html>

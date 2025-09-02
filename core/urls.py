@@ -1,3 +1,32 @@
+# Add period_attendance_view to the main urlpatterns list
+from django.urls import path, include
+from .timetable_views import staff_timetable
+from .student_timetable_views import student_timetable
+from .views import *
+from .profile_views import staff_profile, hod_profile
+
+
+urlpatterns = [
+    path('staff/my_class/', my_class_students, name='staff_my_class'),
+    path('student/attendance/', student_attendance_view, name='student_attendance'),
+    path('student/period_attendance/', period_attendance_view, name='student_period_attendance'),
+    path("",dash,name='dash'),
+    path("notifications/", notifications_view, name="notifications_view"),
+    path("profile/", student_profile, name='student_profile'),
+    path("staff/profile/", staff_profile, name='staff_profile'),
+    path("hod/profile/", hod_profile, name='hod_profile'),
+    path("od/",od,name='od'),
+    path("od/upload_proof_od/<int:id>",upload_proof_od,name='proof_od'),
+    path("leave/",leave,name='leave'),
+    path("leave/upload_proof_od/<int:id>",upload_proof_leave,name='proof_leave'),
+    path("gatepass/",gatepass,name='gatepass'),
+    path("feedback",student_feedback,name='student_feedback'),
+    path("feedbackform/<int:id>/<str:typ>",student_feedback_form,name='student_feedback_form'),
+    path('bonafide/', bonafide_view, name='bonafide'),
+    path("dash/", ahod_dash, name="ahod_dash"),
+    path('student/timetable/', student_timetable, name='student_timetable'),
+    path("ahod/", include("core.ahod_urls")),
+]
 from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
@@ -8,6 +37,7 @@ from .profile_views import staff_profile, hod_profile
 
 urlpatterns = [
     path('staff/my_class/', my_class_students, name='staff_my_class'),
+    path('student/attendance/', student_attendance_view, name='student_attendance'),
     path("",dash,name='dash'),
     path("notifications/", notifications_view, name="notifications_view"),
     path("profile/", student_profile, name='student_profile'),

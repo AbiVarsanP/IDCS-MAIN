@@ -2,6 +2,11 @@ from django.contrib.auth import get_user_model
 
 # View for HOD to see all staff in their department
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
+from django.db import models
+
 @login_required
 def staff_list(request):
     context = set_config(request)
@@ -24,10 +29,6 @@ def staff_list(request):
     return render(request, 'staff_list.html', context)
 
 # AHOD Bonafide (HOD) requests view
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
-from django.db import models
 
 @login_required
 def ahod_bonafide_hod(request):

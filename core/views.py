@@ -10,7 +10,7 @@ def staff_list(request):
     try:
         hod_staff = Staff.objects.get(user=user)
         department = hod_staff.department
-        staff_members = Staff.objects.filter(department=department).exclude(id=hod_staff.id)
+        staff_members = Staff.objects.filter(department=department).exclude(id=hod_staff.id).order_by('name')
     except Staff.DoesNotExist:
         staff_members = Staff.objects.none()
     # Ensure each staff has an email, fallback to user.email if not set

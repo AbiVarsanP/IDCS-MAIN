@@ -6,9 +6,10 @@ except ImportError:
     from django.contrib.postgres.fields import JSONField
 
 # AcademicRecord Model for Section 3.2: Marksheets and Scores
+
 class AcademicRecord(models.Model):
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='academic_records')
-    semester = models.CharField(max_length=20)
+    semester = models.ForeignKey('Semester', on_delete=models.CASCADE, related_name='academic_records')
     academic_year = models.CharField(max_length=20)
     internal_assessment_marks = JSONField(blank=True, null=True, help_text="{subject: marks}")
     university_exam_marks = JSONField(blank=True, null=True, help_text="{subject: marks}")
@@ -338,6 +339,25 @@ class IndividualStaffRating(models.Model):
             return 0
         return round(sum(i.points for i in inr) / len(inr))
 
+
+class Semester(models.Model):
+    department = models.CharField(max_length=50, choices=DEPT, default="001", null=True)
+    semester = models.PositiveIntegerField(choices=SEM, default=1, null=True)
+    subject1 = models.CharField(max_length=100, blank=True, null=True)
+    subject2 = models.CharField(max_length=100, blank=True, null=True)
+    subject3 = models.CharField(max_length=100, blank=True, null=True)
+    subject4 = models.CharField(max_length=100, blank=True, null=True)
+    subject5 = models.CharField(max_length=100, blank=True, null=True)
+    subject6 = models.CharField(max_length=100, blank=True, null=True)
+    subject7 = models.CharField(max_length=100, blank=True, null=True)
+    subject8 = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        unique_together = ("department", "semester")
+        ordering = ["department", "semester"]
+
+    def __str__(self):
+        return f"{self.get_department_display()} - Semester {self.semester}"
 
 class SpotFeedback(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE, related_name='hod_spot')

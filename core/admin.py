@@ -15,7 +15,7 @@ except ImportError:
 	has_openpyxl = False
 
 
-from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE
+from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester
 
 
 def export_students_csv(modeladmin, request, queryset):
@@ -216,7 +216,9 @@ admin.site.register(AHOD, AHODAdmin)
 admin.site.register(StaffRating)
 admin.site.register(RatingQuestions)
 admin.site.register(IndividualStaffRating)
+
 admin.site.register(SpotFeedback)
+admin.site.register(Semester)
 
 # Register AcademicRecord in admin
 from .models import AcademicRecord, Attendance

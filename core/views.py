@@ -21,7 +21,7 @@ def staff_list(request):
         if (not staff.mobile or staff.mobile == '') and staff.user and hasattr(staff.user, 'mobile') and staff.user.mobile:
             staff.mobile = staff.user.mobile
     context['staff_members'] = staff_members
-    return render(request, 'staff_list.html', context)
+    return render(request, 'hod/staff_list.html', context)
 
 # AHOD Bonafide (HOD) requests view
 from django.contrib.auth.decorators import login_required

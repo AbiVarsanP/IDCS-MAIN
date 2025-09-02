@@ -4,7 +4,7 @@ from .student_timetable_views import student_timetable
 from .views import *
 
 from .profile_views import staff_profile, hod_profile
-from .view_mentees import view_mentees
+from .view_mentees import view_mentees, my_mentees
 
 
 
@@ -37,6 +37,7 @@ urlpatterns = [
 
     # Staff list for HOD
     path('hod/staff-list/', staff_list, name='staff_list'),
+    path('hod/my-mentees/', my_mentees, name='my_mentees'),
     path('hod/staff/<int:staff_id>/mentees/', view_mentees, name='view_mentees'),
 
 

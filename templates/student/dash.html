@@ -26,6 +26,7 @@
                     {% endif %}
                 </div>
                 <div>
+                
                     <strong>Student ID:</strong> {{ duser.user.username }}<br>
                     <strong>Name:</strong> {{ duser.name }}<br>
                     <strong>User:</strong> Student
@@ -36,7 +37,33 @@
     </div>
 </div>
 
-
+<!-- Resume Builder Button (moved to top) -->
+<div class="row mb-3">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Resume Builder</strong>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'resumebuilder:rb' %}" class="btn btn-primary">Go to Resume Builder</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Path Pilot Button -->
+<div class="row mb-3">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Path Pilot</strong>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'pathpilot' %}?role=Student" class="btn btn-info mr-2" style="background: linear-gradient(90deg, #27a3e2 60%, #ff9800 100%); color: #fff; border: none;">Go to Path Pilot</a>
+                <a href="{% url 'map_history' %}" class="btn btn-secondary">Map History</a>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
@@ -168,7 +195,7 @@
                             </td>
                             <td>
                                 {% if i.user.ahod %}
-                                    <span class="badge badge-{{i.Astatus}}">{{ i.Astatus }}</span>
+                                    <span class="badge badge-{{i.AHstatus}}">{{ i.AHstatus }}</span>
                                 {% else %}
                                     <span class="badge badge-secondary">N/A</span>
                                 {% endif %}

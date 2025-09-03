@@ -125,7 +125,7 @@ def ahod_bonafide_hod(request):
     hods = HOD.objects.filter(department=ahod.department) if ahod else HOD.objects.none()
     hod_staff_ids = [h.user.id for h in hods]
     # Get bonafide requests assigned to HODs in this department, pending HOD action
-    bonafide_forms = BONAFIDE.objects.filter(user__hod_id__in=hod_staff_ids, Hstatus="Pending").distinct()
+    bonafide_forms = BONAFIDE.objects.filter(user__hod_id__in=hod_staff_ids).distinct()
     # Only show requests where the mentor is the current AHOD (not HODs as mentor)
     mentee_bonafide_forms = BONAFIDE.objects.filter(user__mentor_id=context['duser'].id).distinct()
     context['bonafide_forms'] = bonafide_forms
@@ -511,7 +511,7 @@ def ahod_od_view(request):
     context = set_config(request)
     ahod = AHOD.objects.get(user=context['duser'])
     from .constants import SDEPT, DEPT
-    ahod_dept_int = ahod.department
+    ahod_dept_int = ahod.user.department
     dept_code = None
     for code, name in DEPT:
         sdept_entry = SDEPT[ahod_dept_int] if SDEPT and ahod_dept_int is not None and ahod_dept_int < len(SDEPT) else None

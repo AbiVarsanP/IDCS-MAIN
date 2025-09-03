@@ -75,11 +75,11 @@
                                                                                                     <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
                                                                                             </form>
                                                                                             {% else %}
-                                                                                                    {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
-                                                                                                            <span class="text-success">Approved</span>
-                                                                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' %}
-                                                                                                            <span class="text-danger">Rejected</span>
-                                                                                                    {% endif %}
+                                                    {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
+                                                        <span class="text-success">Approved</span>
+                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
+                                                        <span class="text-danger">Rejected</span>
+                                                    {% endif %}
                                                                                             {% endif %}
                                                                                             {% if b.body %}
                                                                                                     <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
@@ -94,11 +94,27 @@
                                                                                                                     </button>
                                                                                                                 </div>
                                                                                                                 <div class="modal-body">
-                                                                                                                    {{ b.body }}
-                                                                                                                    {% if b.proof %}
-                                                                                                                        <hr>
-                                                                                                                        <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
-                                                                                                                    {% endif %}
+                                                                                                                    <table class="table table-bordered table-striped mb-0">
+                                                                                                                        <tbody>
+                                                                                                                            {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
+                                                                                                                            {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
+                                                                                                                            {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
+                                                                                                                            {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
+                                                                                                                            {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
+                                                                                                                            {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
+                                                                                                                            {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
+                                                                                                                            {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
+                                                                                                                            {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
+                                                                                                                            {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
+                                                                                                                            {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
+                                                                                                                            {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
+                                                                                                                            {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
+                                                                                                                            {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
+                                                                                                                            {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
+                                                                                                                            {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
+                                                                                                                            {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
+                                                                                                                        </tbody>
+                                                                                                                    </table>
                                                                                                                 </div>
                                                                                                             </div>
                                                                                                         </div>
@@ -176,7 +192,7 @@
                                                 {% else %}
                                                     {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
                                                         <span class="text-success">Approved</span>
-                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' %}
+                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
                                                         <span class="text-danger">Rejected</span>
                                                     {% endif %}
                                                 {% endif %}
@@ -193,11 +209,27 @@
                                                                     </button>
                                                                 </div>
                                                                 <div class="modal-body">
-                                                                    {{ b.body }}
-                                                                    {% if b.proof %}
-                                                                        <hr>
-                                                                        <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
-                                                                    {% endif %}
+                                                                    <table class="table table-bordered table-striped mb-0">
+                                                                        <tbody>
+                                                                            {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
+                                                                            {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
+                                                                            {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
+                                                                            {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
+                                                                            {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
+                                                                            {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
+                                                                            {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
+                                                                            {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
+                                                                            {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
+                                                                            {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
+                                                                            {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
+                                                                            {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
+                                                                            {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
+                                                                            {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
+                                                                            {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
+                                                                            {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
+                                                                            {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
+                                                                        </tbody>
+                                                                    </table>
                                                                 </div>
                                                             </div>
                                                         </div>

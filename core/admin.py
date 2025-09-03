@@ -1,5 +1,4 @@
-
-
+from .models import Department
 from django.contrib import admin
 from django.http import HttpResponse
 import csv
@@ -16,6 +15,13 @@ except ImportError:
 
 
 from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+	list_display = ('code', 'name', 'hod', 'ahod')
+	search_fields = ('code', 'name')
+
+
 
 
 def export_students_csv(modeladmin, request, queryset):

@@ -97,12 +97,8 @@
                                             </div>
                                         </td>
                                         <td>
-                                            {% if i.Hstatus == "Rejected" %}
-                                                <button class="btn btn-danger" disabled>Rejected by HOD</button>
-                                            {% elif i.Mstatus == "Rejected" %}
-                                                <button class="btn btn-danger" disabled>Rejected by mentor</button>
-                                            {% elif i.Astatus == "Rejected" %}
-                                                <button class="btn btn-danger" disabled>Rejected by advisor</button>
+                                            {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
+                                                <button class="btn btn-danger" disabled>Rejected</button>
                                             {% elif i.Mstatus == "Approved" %}
                                                 {% if i.Astatus == "Approved" %}
                                                     <button class="btn btn-success ">{{i.Astatus}}</button>
@@ -120,7 +116,17 @@
                                                     </form>
                                                 {% endif %}
                                             {% else %}
-                                                <button class="btn btn-outline-warning" disabled>Waiting for Mentor Status</button>
+                                                <form action="{% url 'staff_action_leave' i.id %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <div class="input-group">
+                                                        <select name="sts" id="" class="form-control">
+                                                            <option value="Approved" default>Approve</option>
+                                                            <option value="Rejected">Reject</option>
+                                                            <option value="Meet Me">Meet Me</option>
+                                                        </select>
+                                                        <button type="submit" class="btn btn-success">submit</button>
+                                                    </div>
+                                                </form>
                                             {% endif %}
                                         </td>
                                 {% endif %}

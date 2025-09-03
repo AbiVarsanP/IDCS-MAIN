@@ -511,15 +511,16 @@ def ahod_od_view(request):
     context = set_config(request)
     ahod = AHOD.objects.get(user=context['duser'])
     from .constants import SDEPT, DEPT
-    ahod_dept_int = ahod.user.department
+    ahod_dept_obj = ahod.user.department
+    ahod_dept_id = ahod_dept_obj.id if ahod_dept_obj else None
     dept_code = None
     for code, name in DEPT:
-        sdept_entry = SDEPT[ahod_dept_int] if SDEPT and ahod_dept_int is not None and ahod_dept_int < len(SDEPT) else None
+        sdept_entry = SDEPT[ahod_dept_id] if SDEPT and ahod_dept_id is not None and ahod_dept_id < len(SDEPT) else None
         if sdept_entry and len(sdept_entry) > 1 and name == sdept_entry[1]:
             dept_code = code
             break
     if not dept_code:
-        dept_code = str(ahod_dept_int)
+        dept_code = str(ahod_dept_id)
     # Dept ODs: all ODs where student's hod is AHOD user, or mentor is not AHOD user
     context['hods'] = [
         i for i in OD.objects.all()

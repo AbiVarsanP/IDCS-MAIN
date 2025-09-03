@@ -1,9 +1,23 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from .constants import *
 try:
     from django.db.models import JSONField
 except ImportError:
     from django.contrib.postgres.fields import JSONField
+class Department(models.Model):
+    code = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=100)
+    hod = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='department_hod')
+    ahod = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='department_ahod')
+    staffs = models.ManyToManyField('Staff', blank=True, related_name='department_staffs')
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+    
 
 # AcademicRecord Model for Section 3.2: Marksheets and Scores
 
@@ -49,17 +63,8 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.date} - {self.status}"
-from django.urls import reverse
-from django.contrib.auth import get_user_model
-from .constants import *
-try:
-    from django.contrib.postgres.fields import ArrayField
-except ImportError:
-    ArrayField = None
-try:
-    from django.db.models import JSONField
-except ImportError:
-    from django.contrib.postgres.fields import JSONField
+
+
 
 User = get_user_model()
 
@@ -153,20 +158,22 @@ class Student(models.Model):
 
 
 class Staff(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='staff')
-    name = models.CharField(max_length=50, blank=True, null=True)
-    profile = models.ImageField(upload_to='profiles', blank=True)
 
-    department = models.PositiveIntegerField(choices=SDEPT, default=0, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff')
+    name = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=254, blank=True, null=True)
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='staffsstaff_members')
+    mobile = models.CharField(max_length=15, blank=True, null=True)
+    role = models.CharField(max_length=50, blank=True, null=True)
+
+    # Retain other fields for backward compatibility
+    profile = models.ImageField(upload_to='profiles', blank=True)
     address = models.TextField(blank=True, null=True)
-    mobile = models.IntegerField(blank=True, null=True)
     dob = models.DateField(blank=True, null=True)
     age = models.PositiveIntegerField(blank=True, null=True)
-
     position = models.PositiveIntegerField(choices=POS, default=0)
     position2 = models.PositiveIntegerField(choices=POS, default=0, blank=True, null=True)
     position3 = models.PositiveIntegerField(choices=POS, default=0, blank=True, null=True)
-
     my_feedbacks = models.ManyToManyField('IndividualStaffRating', related_name='my_ratings', blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -174,14 +181,15 @@ class Staff(models.Model):
         ordering = ['-id']
 
     def __str__(self) -> str:
-        return f"{self.name} {self.user.username} {SDEPT[self.department][1]}"
+        dept_name = self.department.name if self.department else "No Department"
+        return f"{self.name} {self.user.username} {dept_name}"
 
 
 class HOD(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE)
     get_feedback = models.BooleanField(default=False)
     get_spot_feedback = models.BooleanField(default=False)
-    department = models.PositiveIntegerField(choices=SDEPT, default=2, null=True)
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='hods')
 
     staffs = models.ManyToManyField('Staff', related_name='my_staffs', blank=True)
     students = models.ManyToManyField('Student', related_name='students', blank=True)

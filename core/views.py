@@ -1,12 +1,14 @@
-
 from django.contrib.auth import get_user_model
+import random
+from django.core.mail import send_mail
+from django.conf import settings
 
 # View for HOD to see all staff in their department
 from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
+from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification, Student
 from django.db import models
 
 # Period-wise attendance view
@@ -14,7 +16,6 @@ from django.http import HttpResponse
 @login_required
 def period_attendance_view(request):
     context = set_config(request)
-    from .models import Student
     selected_date = request.GET.get('date')
     roll = request.GET.get('roll')
     period_attendance = {}
@@ -42,11 +43,9 @@ def period_attendance_view(request):
     return render(request, 'student/period_attendance.html', context)
 
 # Student attendance view for date-wise lookup
-from django.utils import timezone
 @login_required
 def student_attendance_view(request):
     context = set_config(request)
-    from .models import Attendance, Student
     attendance_status = None
     selected_date = request.GET.get('date')
     roll = request.GET.get('roll')
@@ -577,7 +576,6 @@ def student_profile(request):
     if hasattr(student, 'ahod') and student.ahod:
         dept_ahod = student.ahod
     if hasattr(student, 'hod') and student.hod:
-        from .models import HOD
         dept_hod = HOD.objects.filter(user=student.hod).first()
     # Fallback to department match if not set
     if not dept_ahod or not dept_hod:
@@ -1458,8 +1456,6 @@ def staff_action_bonafide(request, id):
                 bonafide.Mstatus = STATUS[2][0]
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
-            else:
-                bonafide.Hstatus = status
             Notification.objects.create(
                 student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
@@ -1468,5 +1464,81 @@ def staff_action_bonafide(request, id):
             return redirect("hod_bonafide_view")
         bonafide.save()
         return redirect("hod_bonafide_view")
+def forgot_password(request):
+    message = None
+    error_message = None
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        user_obj = None
+        # Check Student model
+        try:
+            user_obj = Student.objects.get(user__email=email)
+        except Student.DoesNotExist:
+            # Check Staff model
+            try:
+                user_obj = Staff.objects.get(email=email)
+            except Staff.DoesNotExist:
+                error_message = 'Email not registered.'
+        if user_obj:
+            otp = str(random.randint(100000, 999999))
+            request.session['reset_email'] = email
+            request.session['reset_otp'] = otp
+            send_mail(
+                'Your OTP Code',
+                f'Your OTP code is {otp}',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            return redirect('otp_verification')
+    return render(request, 'auth/forgot_password.html', {'message': message, 'error_message': error_message})
+
+def otp_verification(request):
+    error_message = None
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        session_otp = request.session.get('reset_otp')
+        if entered_otp == session_otp:
+            # OTP correct, proceed to password reset
+            request.session['otp_verified'] = True
+            return redirect('reset_password')
+        else:
+            error_message = 'Invalid OTP. Please try again.'
+    return render(request, 'auth/otp_verification.html', {'error_message': error_message})
+
+def reset_password(request):
+    error_message = None
+    if not request.session.get('otp_verified'):
+        return redirect('forgot_password')
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        if new_password != confirm_password:
+            error_message = 'Passwords do not match.'
+        else:
+            email = request.session.get('reset_email')
+            user_obj = None
+            try:
+                user_obj = Student.objects.get(user__email=email)
+                user_obj.user.set_password(new_password)
+                user_obj.user.save()
+            except Student.DoesNotExist:
+                try:
+                    user_obj = Staff.objects.get(email=email)
+                    user_obj.user.set_password(new_password)
+                    user_obj.user.save()
+                except Staff.DoesNotExist:
+                    error_message = 'User not found.'
+            if not error_message:
+                # Clear session
+                request.session.pop('reset_email', None)
+                request.session.pop('reset_otp', None)
+                request.session.pop('otp_verified', None)
+                return redirect('login')
+    return render(request, 'auth/reset_password.html', {'error_message': error_message})
+
+def student_timetable(request):
+    # TODO: Implement student timetable view
+    return render(request, 'student/timetable.html')
 
 

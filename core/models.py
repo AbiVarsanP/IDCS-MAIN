@@ -108,7 +108,7 @@ class Student(models.Model):
     profile = models.ImageField(upload_to='profiles', blank=True)
     name = models.CharField(max_length=50, blank=True, null=True)
 
-    department = models.CharField(choices=DEPT, default="001", max_length=50, null=True)
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
     semester = models.PositiveIntegerField(choices=SEM, default=1, null=True)
     year = models.PositiveIntegerField(choices=YEAR, default=1, null=True)
     # Batch: Enter start year, display as 'start year - start year+4'

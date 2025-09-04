@@ -1,110 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Attendance</title>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-	<style>
-		#attendanceSidebar {
-			position: fixed;
-			top: 0;
-			left: -300px;
-			width: 300px;
-			height: 100%;
-			background: #f8f9fa;
-			box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-			transition: left 0.3s;
-			z-index: 1050;
-			padding: 2rem 1rem;
-		}
-		#attendanceSidebar.active {
-			left: 0;
-		}
-		#sidebarOverlay {
-			display: none;
-			position: fixed;
-			top: 0; left: 0; width: 100vw; height: 100vh;
-			background: rgba(0,0,0,0.2);
-			z-index: 1040;
-		}
-		#sidebarOverlay.active {
-			display: block;
-		}
-	</style>
-</head>
-<body>
-	<button class="btn btn-primary m-3" id="toggleSidebarBtn" {% if selected_date %}style="display:none;"{% endif %}>Attendance</button>
-	<div id="sidebarOverlay" {% if selected_date %}class="active" style="display:block;"{% endif %}></div>
-	<div id="attendanceSidebar" class="{% if selected_date %}active{% endif %}">
-		<h4>View Attendance</h4>
-		{% if error %}
-			<div class="alert alert-danger">{{ error }}</div>
-		{% else %}
-			<form method="get" id="attendanceForm">
-				<div class="mb-3">
-					<label for="date" class="form-label">Select Date:</label>
-					<input type="date" id="date" name="date" class="form-control" required value="{{ selected_date|default:'' }}">
-					{% if student %}
-						<input type="hidden" name="roll" value="{{ student.roll }}">
-					{% endif %}
-				</div>
-				<button type="submit" class="btn btn-success">View</button>
-			</form>
-			<div class="mt-4">
-				{% if attendance_status is not None %}
-					<h5>Status for {{ selected_date }}:</h5>
-					<span class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-						{{ attendance_status }}
-					</span>
-					{% if selected_date and student %}
-						{% for a_date, status in attendance_map.items %}
-							{% if a_date == selected_date %}
-								{% for a in student.attendances.all %}
-									{% if a.date|stringformat:'Y-m-d' == selected_date %}
-										<div class="mt-2">
-											<strong>Attendance Percentage:</strong> {{ a.percentage }}%
-										</div>
-									{% endif %}
-								{% endfor %}
-							{% endif %}
-						{% endfor %}
-					{% endif %}
-				{% elif selected_date %}
-					<div class="alert alert-info">No attendance record found for this date.</div>
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4">
+	<h3>Attendance</h3>
+	{% if error %}
+		<div class="alert alert-danger">{{ error }}</div>
+	{% else %}
+		<form method="get" id="attendanceForm">
+			<div class="mb-3">
+				<label for="date" class="form-label">Select Date:</label>
+				<input type="date" id="date" name="date" class="form-control" required value="{{ selected_date|default:'' }}">
+				{% if student %}
+					<input type="hidden" name="roll" value="{{ student.roll }}">
 				{% endif %}
 			</div>
-		{% endif %}
-		<button class="btn btn-secondary mt-3" id="closeSidebarBtn">Close</button>
-	</div>
-	<script>
-		   const sidebar = document.getElementById('attendanceSidebar');
-		   const overlay = document.getElementById('sidebarOverlay');
-		   const toggleBtn = document.getElementById('toggleSidebarBtn');
-		   if (toggleBtn) {
-			   toggleBtn.onclick = function() {
-				   sidebar.classList.add('active');
-				   overlay.classList.add('active');
-			   };
-		   }
-		   document.getElementById('closeSidebarBtn').onclick = function() {
-			   sidebar.classList.remove('active');
-			   overlay.classList.remove('active');
-			   if (toggleBtn) toggleBtn.style.display = '';
-		   };
-		   overlay.onclick = function() {
-			   sidebar.classList.remove('active');
-			   overlay.classList.remove('active');
-			   if (toggleBtn) toggleBtn.style.display = '';
-		   };
-		   // Auto-open sidebar if a date is selected (after form submit)
-		   {% if selected_date %}
-		   window.addEventListener('DOMContentLoaded', function() {
-			   sidebar.classList.add('active');
-			   overlay.classList.add('active');
-			   if (toggleBtn) toggleBtn.style.display = 'none';
-		   });
-		   {% endif %}
-	</script>
-</body>
-</html>
+			<button type="submit" class="btn btn-success">View</button>
+		</form>
+		<div class="mt-4">
+			<h5>Subjects for your Department, Semester, and Electives:</h5>
+			{% if subjects %}
+			<ul class="list-group mb-3">
+				{% for subject in subjects %}
+					<li class="list-group-item">{{ subject.name }}</li>
+				{% endfor %}
+			</ul>
+			{% else %}
+				<div class="alert alert-warning">No subjects found for your department and semester.</div>
+			{% endif %}
+			{% if attendance_status is not None %}
+				<h5>Status for {{ selected_date }}:</h5>
+				<span class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+					{{ attendance_status }}
+				</span>
+				{% if selected_date and student %}
+					{% for a_date, status in attendance_map.items %}
+						{% if a_date == selected_date %}
+							{% for a in student.attendances.all %}
+								{% if a.date|stringformat:'Y-m-d' == selected_date %}
+									<div class="mt-2">
+										<strong>Attendance Percentage:</strong> {{ a.percentage }}%
+									</div>
+								{% endif %}
+							{% endfor %}
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			{% elif selected_date %}
+				<div class="alert alert-info">No attendance record found for this date.</div>
+			{% endif %}
+		</div>
+	{% endif %}
+</div>
+{% endblock %}

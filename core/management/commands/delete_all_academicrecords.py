@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.models import AcademicRecord
+# AcademicRecord model removed
 
 class Command(BaseCommand):
     help = 'Delete all AcademicRecord rows (for migration recovery)'

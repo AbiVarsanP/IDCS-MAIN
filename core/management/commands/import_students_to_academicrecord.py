@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.models import Student, AcademicRecord, Semester
+from core.models import Student, Semester
 
 class Command(BaseCommand):
     help = 'Import all students from core_student to core_academicrecord (one record per student, semester left blank).'
@@ -24,6 +24,5 @@ class Command(BaseCommand):
                 continue
             # Only create if not already present for this student and semester
             if not AcademicRecord.objects.filter(student=student, semester=semester_obj).exists():
-                AcademicRecord.objects.create(student=student, semester=semester_obj, academic_year=str(student.academic_year))
-                count += 1
-        self.stdout.write(self.style.SUCCESS(f'Imported {count} students into AcademicRecord.'))
+        # AcademicRecord creation removed
+    self.stdout.write(self.style.SUCCESS(f'AcademicRecord import skipped (model removed).'))

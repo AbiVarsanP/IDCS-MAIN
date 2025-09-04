@@ -46,7 +46,7 @@ from django.utils import timezone
 @login_required
 def student_attendance_view(request):
     context = set_config(request)
-    from .models import Attendance, Student
+    from .models import Attendance, Student, SemesterSubject
     attendance_status = None
     selected_date = request.GET.get('date')
     roll = request.GET.get('roll')
@@ -63,6 +63,7 @@ def student_attendance_view(request):
         context['calendar_year'] = timezone.now().year
         context['student'] = None
         context['error'] = 'Student not found.'
+        context['subjects'] = []
         return render(request, 'student/attendance.html', context)
     # Get all attendance records for the current month for the selected student
     today = timezone.now().date()
@@ -83,12 +84,24 @@ def student_attendance_view(request):
                 attendance_status = None
         except Exception:
             attendance_status = None
+    # Get subjects for this student: department+semester (non-electives) + assigned electives only
+    subjects_qs = SemesterSubject.objects.filter(
+        semester__department=student.department,
+        semester__semester=student.semester,
+        is_elective=False
+    )
+    electives = [student.elective1, student.elective2, student.elective3]
+    electives = [e for e in electives if e]
+    subjects = list(subjects_qs) + electives
+    # Remove duplicates
+    subjects = list({s.id: s for s in subjects}.values())
     context['attendance_status'] = attendance_status
     context['selected_date'] = selected_date
     context['attendance_map'] = attendance_map
     context['calendar_month'] = month
     context['calendar_year'] = year
     context['student'] = student
+    context['subjects'] = subjects
     return render(request, 'student/attendance.html', context)
 
 # AHOD Bonafide (HOD) requests view

@@ -41,6 +41,7 @@ class Department(models.Model):
 
 
 # Attendance Model for Section 3.2: Track attendance, link to events/workshops/training, integrate with Leaves/ODs for deductions
+
 class Attendance(models.Model):
     STATUS_CHOICES = [
         ('Present', 'Present'),
@@ -49,6 +50,7 @@ class Attendance(models.Model):
         ('On Duty', 'On Duty'),
     ]
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='attendances')
+    subject = models.ForeignKey('SemesterSubject', on_delete=models.CASCADE, related_name='attendances', null=True, blank=True)
     date = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     reason = models.TextField(blank=True, null=True, help_text="If absent/on leave/on duty, link to Leave/OD/Bonafide/Gatepass")
@@ -64,7 +66,7 @@ class Attendance(models.Model):
     # event_attendance = models.ForeignKey('EventAttendance', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_events')
 
     def __str__(self):
-        return f"{self.student} - {self.date} - {self.status}"
+        return f"{self.student} - {self.subject} - {self.date} - {self.status}"
 
 
 

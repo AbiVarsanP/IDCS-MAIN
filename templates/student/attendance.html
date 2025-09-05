@@ -26,6 +26,29 @@
 			{% else %}
 				<div class="alert alert-warning">No subjects found for your department and semester.</div>
 			{% endif %}
+
+			<h5 class="mt-4">Attendance Percentage by Subject</h5>
+			{% if subject_percentages %}
+				<div class="mb-3">
+				{% for sp in subject_percentages %}
+					<div class="mb-2">
+						<div class="d-flex justify-content-between">
+							<span><strong>{{ sp.subject.name }}</strong></span>
+							<span>{{ sp.percentage|floatformat:1 }}%</span>
+						</div>
+						<div class="progress" style="height: 20px;">
+							<div class="progress-bar {% if sp.percentage >= 75 %}bg-success{% elif sp.percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+								 role="progressbar" style="width: {{ sp.percentage }}%;" aria-valuenow="{{ sp.percentage }}" aria-valuemin="0" aria-valuemax="100">
+								{{ sp.percentage|floatformat:1 }}%
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+				</div>
+			{% else %}
+				<div class="alert alert-info">No attendance data available for subjects.</div>
+			{% endif %}
+
 			{% if attendance_status is not None %}
 				<h5>Status for {{ selected_date }}:</h5>
 				<span class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">

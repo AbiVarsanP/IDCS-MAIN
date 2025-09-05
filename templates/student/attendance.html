@@ -5,27 +5,9 @@
 	{% if error %}
 		<div class="alert alert-danger">{{ error }}</div>
 	{% else %}
-		<form method="get" id="attendanceForm">
-			<div class="mb-3">
-				<label for="date" class="form-label">Select Date:</label>
-				<input type="date" id="date" name="date" class="form-control" required value="{{ selected_date|default:'' }}">
-				{% if student %}
-					<input type="hidden" name="roll" value="{{ student.roll }}">
-				{% endif %}
-			</div>
-			<button type="submit" class="btn btn-success">View</button>
-		</form>
+		{# Date selection form removed as per request #}
 		<div class="mt-4">
-			<h5>Subjects for your Department, Semester, and Electives:</h5>
-			{% if subjects %}
-			<ul class="list-group mb-3">
-				{% for subject in subjects %}
-					<li class="list-group-item">{{ subject.name }}</li>
-				{% endfor %}
-			</ul>
-			{% else %}
-				<div class="alert alert-warning">No subjects found for your department and semester.</div>
-			{% endif %}
+			{# Subjects heading and table removed as per request #}
 
 			<h5 class="mt-4">Attendance Percentage by Subject</h5>
 			{% if subject_percentages %}
@@ -49,27 +31,7 @@
 				<div class="alert alert-info">No attendance data available for subjects.</div>
 			{% endif %}
 
-			{% if attendance_status is not None %}
-				<h5>Status for {{ selected_date }}:</h5>
-				<span class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-					{{ attendance_status }}
-				</span>
-				{% if selected_date and student %}
-					{% for a_date, status in attendance_map.items %}
-						{% if a_date == selected_date %}
-							{% for a in student.attendances.all %}
-								{% if a.date|stringformat:'Y-m-d' == selected_date %}
-									<div class="mt-2">
-										<strong>Attendance Percentage:</strong> {{ a.percentage }}%
-									</div>
-								{% endif %}
-							{% endfor %}
-						{% endif %}
-					{% endfor %}
-				{% endif %}
-			{% elif selected_date %}
-				<div class="alert alert-info">No attendance record found for this date.</div>
-			{% endif %}
+			{# Date-based attendance status display removed as per request #}
 		</div>
 	{% endif %}
 </div>

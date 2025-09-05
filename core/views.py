@@ -95,6 +95,16 @@ def student_attendance_view(request):
     subjects = list(subjects_qs) + electives
     # Remove duplicates
     subjects = list({s.id: s for s in subjects}.values())
+    # Calculate overall attendance percentage for this student (by total days marked and present)
+    total_days = Attendance.objects.filter(student=student).count()
+    present_days = Attendance.objects.filter(student=student, status='Present').count()
+    overall_percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+    subject_percentages = []
+    for subject in subjects:
+        subject_percentages.append({
+            'subject': subject,
+            'percentage': overall_percentage
+        })
     context['attendance_status'] = attendance_status
     context['selected_date'] = selected_date
     context['attendance_map'] = attendance_map
@@ -102,6 +112,7 @@ def student_attendance_view(request):
     context['calendar_year'] = year
     context['student'] = student
     context['subjects'] = subjects
+    context['subject_percentages'] = subject_percentages
     return render(request, 'student/attendance.html', context)
 
 # AHOD Bonafide (HOD) requests view
@@ -330,6 +341,8 @@ def my_class_students(request):
     selected_date = None
     if request.method == 'POST':
         date_str = request.POST.get('attendance_date')
+        error_msg = None
+        success_msg = None
         if date_str:
             try:
                 selected_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -337,25 +350,62 @@ def my_class_students(request):
                 selected_date = timezone.now().date()
         else:
             selected_date = timezone.now().date()
-        # Get list of absent student IDs from POST
-        absent_ids = request.POST.getlist('absent')
-        absent_ids = set(map(int, absent_ids))
-        for student in students:
-            if student.id in absent_ids:
+
+        # Debug: print students
+        print('DEBUG: students:', list(students))
+
+        if not students:
+            error_msg = 'No students found for your class.'
+        else:
+            # Parse last 3 digits input for absent students
+            absent_last3 = request.POST.get('absent_last3', '')
+            absent_last3 = absent_last3.replace(',', ' ').split()
+            absent_last3 = [x.strip() for x in absent_last3 if x.strip().isdigit() and len(x.strip()) == 3]
+            absent_set = set(absent_last3)
+
+            # Find students whose roll ends with any of the absent last 3 digits
+            absent_students = [s for s in students if s.roll and s.roll[-3:] in absent_set]
+            absent_ids = set(s.id for s in absent_students)
+
+            # Mark attendance for each student (no subject)
+            for student in students:
                 Attendance.objects.update_or_create(
                     student=student,
                     date=selected_date,
-                    defaults={'status': 'Absent'}
+                    defaults={'status': 'Absent' if student.id in absent_ids else 'Present'}
                 )
-            else:
-                Attendance.objects.update_or_create(
-                    student=student,
-                    date=selected_date,
-                    defaults={'status': 'Present'}
-                )
-        context['success'] = 'Attendance marked successfully.'
+
+            # Recalculate present percentage for each student (overall)
+            for student in students:
+                total_days = Attendance.objects.filter(student=student).count()
+                present_days = Attendance.objects.filter(student=student, status='Present').count()
+                percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+                latest_attendance = Attendance.objects.filter(student=student).order_by('-date').first()
+                if latest_attendance:
+                    latest_attendance.percentage = percentage
+                    latest_attendance.save(update_fields=['percentage'])
+
+            # Now recalculate student_percentages for display
+            student_percentages = {}
+            for student in students:
+                total_days = Attendance.objects.filter(student=student).count()
+                present_days = Attendance.objects.filter(student=student, status='Present').count()
+                percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+                student_percentages[student.id] = percentage
+            context['student_percentages'] = student_percentages
+            success_msg = 'Attendance marked successfully.'
+        context['error'] = error_msg
+        context['success'] = success_msg
         context['selected_date'] = date_str
     else:
+        # GET: recalculate student_percentages for display
+        student_percentages = {}
+        for student in students:
+            total_days = Attendance.objects.filter(student=student).count()
+            present_days = Attendance.objects.filter(student=student, status='Present').count()
+            percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+            student_percentages[student.id] = percentage
+        context['student_percentages'] = student_percentages
         context['selected_date'] = ''
     return render(request, 'staff/my_class_students.html', context)
 

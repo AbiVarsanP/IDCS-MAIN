@@ -97,7 +97,7 @@
                             <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
                                 <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
                             </li>
-                            <li class="{% if request.resolver_match.url_name == 'attendance' %}active{% endif %}">
+                            <li id="attendanceMenuItem" class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
                                 <a href="{% url 'student_attendance' %}"><i class="menu-icon fa fa-check-square-o"></i>Attendance</a>
                             </li>
                             <li class="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
@@ -394,31 +394,7 @@
 </body>
 <script>
     // Attendance sidebar logic (always present for student)
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.getElementById('attendanceSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        const attendanceMenuItem = document.getElementById('attendanceMenuItem');
-        if (attendanceMenuItem) {
-            attendanceMenuItem.onclick = function(e) {
-                e.preventDefault();
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-            };
-        }
-        const closeBtn = document.getElementById('closeSidebarBtn');
-        if (closeBtn) {
-            closeBtn.onclick = function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            };
-        }
-        if (overlay) {
-            overlay.onclick = function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            };
-        }
-    });
+    // Removed sidebar override for Attendance menu so it navigates normally
 </script>
 
 </html>

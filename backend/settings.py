@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import os
 
@@ -115,3 +114,12 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 LOGIN_REDIRECT_URL = 'dash'
 LOGIN_URL = 'login'
+
+# Email settings for Gmail SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'website2k5@gmail.com'
+EMAIL_HOST_PASSWORD = 'oqto rbin gdwz ydnw'
+DEFAULT_FROM_EMAIL = 'website2k5@gmail.com'

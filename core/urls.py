@@ -1,4 +1,3 @@
-# Add period_attendance_view to the main urlpatterns list
 from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
@@ -12,8 +11,8 @@ def principal_department(request):
     return render(request, 'principal/department.html', {'departments': departments})
 from .profile_views import staff_profile, hod_profile
 
+from .view_mentees import view_mentees, my_mentees
 
-# Only keep one urlpatterns definition, and ensure principal_dashboard and principal_department are present once
 from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
@@ -35,6 +34,9 @@ urlpatterns = [
     path("od/",od,name='od'),
     path("od/upload_proof_od/<int:id>",upload_proof_od,name='proof_od'),
     path("leave/",leave,name='leave'),
+    path('forgot-password/', forgot_password, name='forgot_password'),
+    path('otp-verification/', otp_verification, name='otp_verification'),
+    path('reset-password/', reset_password, name='reset_password'),
     path("leave/upload_proof_od/<int:id>",upload_proof_leave,name='proof_leave'),
     path("gatepass/",gatepass,name='gatepass'),
     path("feedback",student_feedback,name='student_feedback'),
@@ -43,13 +45,6 @@ urlpatterns = [
     path("dash/", ahod_dash, name="ahod_dash"),
     path('student/timetable/', student_timetable, name='student_timetable'),
     path("ahod/", include("core.ahod_urls")),
-    path('hod/notifications/delete_all/', delete_all_hod_notifications, name='delete_all_hod_notifications'),
-    path('hod/notifications/history/', hod_notification_history, name='hod_notification_history'),
-    path('student/notifications/delete_all/', delete_all_student_notifications, name='delete_all_student_notifications'),
-    path('staff/notifications/delete_all/', delete_all_staff_notifications, name='delete_all_staff_notifications'),
-
-    path('hod/notifications/delete_all/', delete_all_notifications, name='delete_all_notifications'),
-    path('hod/notifications/history/', ahod_notification_history, name='hod_notification_history'),
 
 
     # Staff list for HOD

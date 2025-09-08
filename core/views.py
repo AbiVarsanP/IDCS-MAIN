@@ -1470,11 +1470,9 @@ def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         user_obj = None
-        # Check Student model
         try:
             user_obj = Student.objects.get(user__email=email)
         except Student.DoesNotExist:
-            # Check Staff model
             try:
                 user_obj = Staff.objects.get(email=email)
             except Staff.DoesNotExist:
@@ -1490,21 +1488,25 @@ def forgot_password(request):
                 [email],
                 fail_silently=False,
             )
+            request.session['otp_sent'] = True
             return redirect('otp_verification')
     return render(request, 'auth/forgot_password.html', {'message': message, 'error_message': error_message})
 
 def otp_verification(request):
     error_message = None
+    success_message = None
+    if request.session.get('otp_sent'):
+        success_message = 'OTP has been sent to your registered email.'
+        request.session.pop('otp_sent')
     if request.method == 'POST':
         entered_otp = request.POST.get('otp')
         session_otp = request.session.get('reset_otp')
         if entered_otp == session_otp:
-            # OTP correct, proceed to password reset
             request.session['otp_verified'] = True
             return redirect('reset_password')
         else:
             error_message = 'Invalid OTP. Please try again.'
-    return render(request, 'auth/otp_verification.html', {'error_message': error_message})
+    return render(request, 'auth/otp_verification.html', {'error_message': error_message, 'success_message': success_message})
 
 def reset_password(request):
     error_message = None

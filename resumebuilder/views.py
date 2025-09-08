@@ -36,8 +36,12 @@ def create_resume(request, id):
 	if not is_student(request.user):
 		return HttpResponseForbidden()
 	form = ResumeForm(request.POST or None, request.FILES or None, instance=resume)
-	if request.method == 'POST' and form.is_valid():
-		form.save()
+	if request.method == 'POST':
+		if form.is_valid():
+			form.save()
+			# ...existing code...
+		else:
+			print(form.errors)
 		# Save skills
 		resume.skills.all().delete()
 		skills = request.POST.getlist('skills[]')

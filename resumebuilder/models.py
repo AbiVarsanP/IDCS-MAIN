@@ -15,6 +15,11 @@ class Resume(models.Model):
 	bio = models.TextField(blank=True)
 	template_id = models.IntegerField(default=1)
 	created_at = models.DateTimeField(default=timezone.now)
+	declaration_text = models.TextField(blank=True, null=True)
+	declaration_signature = models.ImageField(upload_to='resume/signatures/', blank=True, null=True)
+	declaration_place = models.CharField(max_length=100, blank=True)
+	declaration_date = models.DateField(blank=True, null=True)
+	
 	@property
 	def profile_pic_url(self):
 		if self.img and self.img.name:

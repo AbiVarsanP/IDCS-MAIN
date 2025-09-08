@@ -197,22 +197,20 @@ body, html {
       <span class="text-muted">No socials added</span>
     {% endfor %}
   </div>
-  {% if resume.declaration_content or resume.signature_image or resume.declaration_date or resume.declaration_place %}
-  <div class="resume-section" style="display:flex;align-items:flex-start;justify-content:space-between;">
-    <div style="flex:1;">
-      <div class="resume-section-title">DECLARATION</div>
-      <div style="white-space:pre-line;">{{ resume.declaration_content }}</div>
-      <div style="margin-top:16px;">
-        <strong>Date:</strong> {{ resume.declaration_date }}<br>
-        <strong>Place:</strong> {{ resume.declaration_place }}
+  {% if resume.declaration_text or resume.declaration_signature or resume.declaration_date or resume.declaration_place %}
+  <div class="resume-section">
+    <div class="resume-section-title">DECLARATION</div>
+    <div style="white-space:pre-line;">{{ resume.declaration_text }}</div>
+    {% if resume.declaration_signature %}
+      <div style="margin-top:12px;text-align:left;">
+        <img src="{{ resume.declaration_signature.url }}" alt="Signature" style="max-width:160px;max-height:80px;object-fit:contain;">
+        <div style="font-size:0.95rem;color:#888;">Signature</div>
       </div>
-    </div>
-    {% if resume.signature_image %}
-    <div style="flex:0 0 180px;text-align:right;">
-      <img src="{{ resume.signature_image.url }}" alt="Signature" style="max-width:160px;max-height:80px;object-fit:contain;">
-      <div style="font-size:0.95rem;color:#888;">Signature</div>
-    </div>
     {% endif %}
+    <div style="margin-top:16px;">
+      <strong>Date:</strong> {{ resume.declaration_date }}<br>
+      <strong>Place:</strong> {{ resume.declaration_place }}
+    </div>
   </div>
   {% endif %}
   <div style="text-align:center;">

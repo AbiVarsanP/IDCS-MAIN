@@ -3,6 +3,7 @@ from .models import Staff, Student
 from django.contrib.auth.decorators import login_required
 
 @login_required
+
 def my_mentees(request):
     staff = get_object_or_404(Staff, user=request.user)
     mentees = Student.objects.filter(mentor=staff).order_by('name')
@@ -16,3 +17,4 @@ def view_mentees(request, staff_id=None, self_view=False):
         staff = get_object_or_404(Staff, id=staff_id)
     mentees = Student.objects.filter(mentor=staff).order_by('name')
     return render(request, 'hod/mentees_list.html', {'staff': staff, 'mentees': mentees, 'duser': staff})
+

@@ -3,6 +3,33 @@
 <html>
 
 <head>
+        <style>
+        @media print {
+            body > header, body > nav, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .footer, .page-header, .page-title, .main-header, .main-footer,
+            .resume-footer, .copyright, .print-hide, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
+            #header, #main-header, #main-footer, #footer, #logo, #idcs-logo, #idcs-header, #idcs-footer, .header, .footer, .top-bar, .bottom-bar, .site-header, .site-footer, .nav, .nav-bar, .navbar-fixed-top,
+            .navbar-fixed-bottom, .page-link, .page-links, .pagination, .copyright, .resume-footer, .print-header, .print-footer, .print-page-link, .print-copyright, .fa, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
+            .page-header, .page-footer, .footer, .copyright, .print-footer, .print-header, .print-page-link, .print-copyright, .site-header, .site-footer, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .main-header, .main-footer, .top-bar, .bottom-bar {
+                display: none !important;
+                height: 0 !important;
+                width: 0 !important;
+                visibility: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+            html, body {
+                background: #fff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+            @page {
+                margin: 20mm 10mm 20mm 10mm;
+                size: auto;
+            }
+        }
+        </style>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>IDCS</title>
@@ -32,6 +59,9 @@
 
 
     {% block extra_headers %}
+    {% if 'resumebuilder' in request.resolver_match.app_name or 'resumebuilder' in request.path %}
+        <link rel="stylesheet" href="{% static 'css/resume.css' %}">
+    {% endif %}
     <script>
         // Prevent back navigation to cached pages after logout
         if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_BACK_FORWARD) {
@@ -66,9 +96,11 @@
                             <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_feedback' %}active{% endif %}"><a href="#"><i class="menu-icon ti-comments"></i>Feedback</a></li>
+
                             <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}"><a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
+
                         {% elif duser and duser.position2 == 1 %}
                             <li class="{% if request.resolver_match.url_name == 'ahod_dash' %}active{% endif %}"><a href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_od_view' %}active{% endif %}"><a href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
@@ -278,8 +310,8 @@
             <!-- Animated -->
             <div class="animated fadeIn">
 
-                {% block root %}
-
+                {% block content %}
+                    {% block root %}{% endblock %}
                 {% endblock %}
             </div>
             <!-- /.content -->

@@ -4,6 +4,7 @@
 
 
 {% block root %}
+
 <div class="row">
     <div class="col-md-12 d-flex justify-content-center align-items-center">
         <div class="card mb-4" style="width: 100%;">
@@ -30,6 +31,20 @@
                     <strong>Name:</strong> {{ duser.name }}<br>
                     <strong>User:</strong> Staff
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Path Pilot Button -->
+<div class="row mb-3">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Path Pilot</strong>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'pathpilot' %}?role=Staff" class="btn btn-info mr-2" style="background: linear-gradient(90deg, #27a3e2 60%, #ff9800 100%); color: #fff; border: none;">Go to Path Pilot</a>
+                <a href="{% url 'map_history' %}" class="btn btn-secondary">Map History</a>
             </div>
         </div>
     </div>

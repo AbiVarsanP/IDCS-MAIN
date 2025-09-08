@@ -1,3 +1,27 @@
+from django.contrib.auth import get_user_model
+
+# View for HOD to see all staff in their department
+from django.contrib.auth.decorators import login_required
+@login_required
+def staff_list(request):
+    context = set_config(request)
+    user = request.user
+    # Get HOD staff object
+    try:
+        hod_staff = Staff.objects.get(user=user)
+        department = hod_staff.department
+        staff_members = Staff.objects.filter(department=department).exclude(id=hod_staff.id)
+    except Staff.DoesNotExist:
+        staff_members = Staff.objects.none()
+    # Ensure each staff has an email, fallback to user.email if not set
+    for staff in staff_members:
+        if not staff.email and staff.user and hasattr(staff.user, 'email') and staff.user.email:
+            staff.email = staff.user.email
+        # Fallback for mobile
+        if (not staff.mobile or staff.mobile == '') and staff.user and hasattr(staff.user, 'mobile') and staff.user.mobile:
+            staff.mobile = staff.user.mobile
+    context['staff_members'] = staff_members
+    return render(request, 'staff_list.html', context)
 
 from django.contrib.auth.decorators import user_passes_test
 
@@ -596,7 +620,9 @@ def ahod_od_view(request):
             dept_code = code
             break
     if not dept_code:
+
         dept_code = str(ahod_dept_id)
+
     # Dept ODs: all ODs where student's hod is AHOD user, or mentor is not AHOD user
     context['hods'] = [
         i for i in OD.objects.all()

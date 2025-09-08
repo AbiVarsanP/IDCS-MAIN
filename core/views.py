@@ -1,4 +1,4 @@
-
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import get_user_model
 
 # View for HOD to see all staff in their department
@@ -8,6 +8,13 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
 from django.db import models
+# Principal dashboard view
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
+def principal_dashboard(request):
+    return render(request, 'principal/dashboard.html', {})
+
+
 
 # Period-wise attendance view
 from django.http import HttpResponse

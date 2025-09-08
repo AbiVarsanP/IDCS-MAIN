@@ -5,6 +5,39 @@ import csv
 from .models import Semester, SemesterSubject, Student
 # Custom form for Student to filter elective fields
 from django import forms
+from django.contrib.auth import get_user_model
+# Add principal_status to User admin
+User = get_user_model()
+from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
+# Principal admin: show only users with principal_status=True
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
+from .models import Principal
+
+class PrincipalAdmin(DefaultUserAdmin):
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		return qs.filter(principal_status=True)
+
+	list_display = DefaultUserAdmin.list_display + ('principal_status',)
+	list_filter = DefaultUserAdmin.list_filter + ('principal_status',)
+	fieldsets = DefaultUserAdmin.fieldsets + (
+		('Principal Status', {'fields': ('principal_status',)}),
+	)
+
+admin.site.register(Principal, PrincipalAdmin)
+
+
+class CustomUserAdmin(DefaultUserAdmin):
+	list_display = DefaultUserAdmin.list_display + ('principal_status',)
+	list_filter = DefaultUserAdmin.list_filter + ('principal_status',)
+	fieldsets = DefaultUserAdmin.fieldsets + (
+		('Principal Status', {'fields': ('principal_status',)}),
+	)
+
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
 
 class StudentAdminForm(forms.ModelForm):
 	class Meta:
@@ -52,6 +85,7 @@ except ImportError:
 
 
 from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester
+
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):

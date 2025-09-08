@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Principal - Departments</h1>
+<p>Manage and view all departments here.</p>
+
+<table class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<th>Code</th>
+			<th>Name (HOD)</th>
+			<th>AHOD</th>
+			<th>Staff Count</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for dept in departments %}
+		<tr>
+			<td>{{ dept.code }}</td>
+			<td>
+				{{ dept.name }}
+				<span class="text-muted small">
+					{% if dept.hod %} (HOD: {{ dept.hod.name }}){% endif %}
+				</span>
+			</td>
+			<td>{% if dept.ahod %}{{ dept.ahod.name }}{% else %}-{% endif %}</td>
+			<td>{{ dept.staffs.count }}</td>
+		</tr>
+		{% empty %}
+		<tr><td colspan="5">No departments found.</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

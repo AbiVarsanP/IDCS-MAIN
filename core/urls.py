@@ -3,30 +3,17 @@ from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
 from .views import *
+
+from .views import principal_dashboard
+def principal_department(request):
+    from django.shortcuts import render
+    from .models import Department
+    departments = Department.objects.all()
+    return render(request, 'principal/department.html', {'departments': departments})
 from .profile_views import staff_profile, hod_profile
 
 
-urlpatterns = [
-    path('staff/my_class/', my_class_students, name='staff_my_class'),
-    path('student/attendance/', student_attendance_view, name='student_attendance'),
-    path('student/period_attendance/', period_attendance_view, name='student_period_attendance'),
-    path("",dash,name='dash'),
-    path("notifications/", notifications_view, name="notifications_view"),
-    path("profile/", student_profile, name='student_profile'),
-    path("staff/profile/", staff_profile, name='staff_profile'),
-    path("hod/profile/", hod_profile, name='hod_profile'),
-    path("od/",od,name='od'),
-    path("od/upload_proof_od/<int:id>",upload_proof_od,name='proof_od'),
-    path("leave/",leave,name='leave'),
-    path("leave/upload_proof_od/<int:id>",upload_proof_leave,name='proof_leave'),
-    path("gatepass/",gatepass,name='gatepass'),
-    path("feedback",student_feedback,name='student_feedback'),
-    path("feedbackform/<int:id>/<str:typ>",student_feedback_form,name='student_feedback_form'),
-    path('bonafide/', bonafide_view, name='bonafide'),
-    path("dash/", ahod_dash, name="ahod_dash"),
-    path('student/timetable/', student_timetable, name='student_timetable'),
-    path("ahod/", include("core.ahod_urls")),
-]
+# Only keep one urlpatterns definition, and ensure principal_dashboard and principal_department are present once
 from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
@@ -97,6 +84,10 @@ urlpatterns += [
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
     path("timetable/", staff_timetable, name="staff_timetable"),
     path("my_class_students/", my_class_students, name="my_class_students"),
+
+    # Principal URLs
+    path('principal/dashboard/', principal_dashboard, name='principal_dashboard'),
+    path('principal/department/', principal_department, name='principal_department'),
 
 ]
 # hod

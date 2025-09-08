@@ -2,7 +2,19 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+
 from .constants import *
+
+
+User = get_user_model()
+
+# Principal proxy model for admin
+class Principal(User):
+    class Meta:
+        proxy = True
+        verbose_name = 'Principal'
+        verbose_name_plural = 'Principals'
+
 # AcademicRecord model and related imports removed
 class Department(models.Model):
     code = models.CharField(max_length=10, unique=True)
@@ -70,7 +82,13 @@ class Attendance(models.Model):
 
 
 
+
 User = get_user_model()
+
+# Add principal_status to User via monkey patch if not present
+if not hasattr(User, 'principal_status'):
+    from django.db.models import BooleanField
+    User.add_to_class('principal_status', BooleanField(default=False))
 
 
 class AHOD(models.Model):

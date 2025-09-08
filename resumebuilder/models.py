@@ -17,7 +17,7 @@ class Resume(models.Model):
 	created_at = models.DateTimeField(default=timezone.now)
 	declaration_text = models.TextField(blank=True, null=True)
 	declaration_signature = models.ImageField(upload_to='resume/signatures/', blank=True, null=True)
-	declaration_place = models.CharField(max_length=100, blank=True)
+	declaration_place = models.CharField(max_length=100, blank=True, null=True)
 	declaration_date = models.DateField(blank=True, null=True)
 	
 	@property
@@ -62,6 +62,7 @@ class Education(models.Model):
 	field = models.CharField(max_length=100, blank=True)
 	start_year = models.CharField(max_length=4, blank=True)
 	end_year = models.CharField(max_length=4, blank=True)
+	grade = models.CharField(max_length=50, blank=True)
 
 	def __str__(self):
 		return f"{self.degree} at {self.institution}"

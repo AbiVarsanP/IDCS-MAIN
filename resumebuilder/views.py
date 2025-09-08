@@ -39,99 +39,124 @@ def create_resume(request, id):
 	if request.method == 'POST':
 		if form.is_valid():
 			form.save()
-			# ...existing code...
-		else:
-			print(form.errors)
-		# Save skills
-		resume.skills.all().delete()
-		skills = request.POST.getlist('skills[]')
-		for skill_name in skills:
-			if skill_name.strip():
-				Skill.objects.create(resume=resume, name=skill_name.strip())
-		# Save education
-		resume.education.all().delete()
-		edu_institution = request.POST.getlist('edu_institution[]')
-		edu_degree = request.POST.getlist('edu_degree[]')
-		edu_field = request.POST.getlist('edu_field[]')
-		edu_start_year = request.POST.getlist('edu_start_year[]')
-		edu_end_year = request.POST.getlist('edu_end_year[]')
-		for i in range(len(edu_institution)):
-			if edu_institution[i].strip():
-				Education.objects.create(
-					resume=resume,
-					institution=edu_institution[i].strip(),
-					degree=edu_degree[i].strip() if i < len(edu_degree) else '',
-					field=edu_field[i].strip() if i < len(edu_field) else '',
-					start_year=edu_start_year[i].strip() if i < len(edu_start_year) else '',
-					end_year=edu_end_year[i].strip() if i < len(edu_end_year) else '',
-				)
-		# Save achievements
-		resume.achievements.all().delete()
-		ach_title = request.POST.getlist('ach_title[]')
-		ach_description = request.POST.getlist('ach_description[]')
-		ach_date = request.POST.getlist('ach_date[]')
-		for i in range(len(ach_title)):
-			if ach_title[i].strip():
-				Achievement.objects.create(
-					resume=resume,
-					title=ach_title[i].strip(),
-					description=ach_description[i].strip() if i < len(ach_description) else '',
-					date=ach_date[i] if i < len(ach_date) and ach_date[i] else None,
-				)
-		# Save projects
-		resume.projects.all().delete()
-		pro_name = request.POST.getlist('pro_name[]')
-		pro_description = request.POST.getlist('pro_description[]')
-		pro_link = request.POST.getlist('pro_link[]')
-		for i in range(len(pro_name)):
-			if pro_name[i].strip():
-				Project.objects.create(
-					resume=resume,
-					name=pro_name[i].strip(),
-					description=pro_description[i].strip() if i < len(pro_description) else '',
-					link=pro_link[i].strip() if i < len(pro_link) else '',
-				)
-		# Save socials
-		resume.socials.all().delete()
-		soc_platform = request.POST.getlist('soc_platform[]')
-		soc_url = request.POST.getlist('soc_url[]')
-		for i in range(len(soc_platform)):
-			if soc_platform[i].strip() and i < len(soc_url):
-				Social.objects.create(
-					resume=resume,
-					platform=soc_platform[i].strip(),
-					url=soc_url[i].strip(),
-				)
-		# Save languages
-		resume.languages.all().delete()
-		lang_name = request.POST.getlist('lang_name[]')
-		lang_proficiency = request.POST.getlist('lang_proficiency[]')
-		for i in range(len(lang_name)):
-			if lang_name[i].strip():
-				Language.objects.create(
-					resume=resume,
-					name=lang_name[i].strip(),
-					proficiency=lang_proficiency[i].strip() if i < len(lang_proficiency) else '',
-				)
-		resume.refresh_from_db()
-		form = ResumeForm(instance=resume)
-	context = {
-		'resume': resume,
-		'form': form,
-		'skills': resume.get_skills(),
-		'education': resume.get_education(),
-		'achievements': resume.get_achievements(),
-		'projects': resume.get_projects(),
-		'socials': resume.get_socials(),
-		'languages': resume.get_languages(),
-		'skill_form': SkillForm(),
-		'edu_form': EducationForm(),
-		'ach_form': AchievementForm(),
-		'pro_form': ProjectForm(),
-		'soc_form': SocialForm(),
-		'lang_form': LanguageForm(),
-	}
-	return render(request, 'resumebuilder/create.html', context)
+			# Save skills
+			resume.skills.all().delete()
+			skills = request.POST.getlist('skills[]')
+			for skill_name in skills:
+				if skill_name.strip():
+					Skill.objects.create(resume=resume, name=skill_name.strip())
+			# Save education
+			resume.education.all().delete()
+			edu_institution = request.POST.getlist('edu_institution[]')
+			edu_degree = request.POST.getlist('edu_degree[]')
+			edu_field = request.POST.getlist('edu_field[]')
+			edu_start_year = request.POST.getlist('edu_start_year[]')
+			edu_end_year = request.POST.getlist('edu_end_year[]')
+			edu_grade = request.POST.getlist('edu_grade[]')
+			for i in range(len(edu_institution)):
+				if edu_institution[i].strip():
+					Education.objects.create(
+						resume=resume,
+						institution=edu_institution[i].strip(),
+						degree=edu_degree[i].strip() if i < len(edu_degree) else '',
+						field=edu_field[i].strip() if i < len(edu_field) else '',
+						start_year=edu_start_year[i].strip() if i < len(edu_start_year) else '',
+						end_year=edu_end_year[i].strip() if i < len(edu_end_year) else '',
+						grade=edu_grade[i].strip() if i < len(edu_grade) else '',
+					)
+			# Save achievements
+			import datetime
+			resume.achievements.all().delete()
+			ach_title = request.POST.getlist('ach_title[]')
+			ach_description = request.POST.getlist('ach_description[]')
+			ach_date = request.POST.getlist('ach_date[]')
+			for i in range(len(ach_title)):
+				if ach_title[i].strip():
+					# Validate and parse date
+					ach_date_val = None
+					if i < len(ach_date):
+						date_str = ach_date[i].strip()
+						if date_str:
+							try:
+								ach_date_val = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+							except Exception:
+								ach_date_val = None
+					Achievement.objects.create(
+						resume=resume,
+						title=ach_title[i].strip(),
+						description=ach_description[i].strip() if i < len(ach_description) else '',
+						date=ach_date_val,
+					)
+			# Save projects
+			resume.projects.all().delete()
+			pro_name = request.POST.getlist('pro_name[]')
+			pro_description = request.POST.getlist('pro_description[]')
+			pro_link = request.POST.getlist('pro_link[]')
+			for i in range(len(pro_name)):
+				if pro_name[i].strip():
+					Project.objects.create(
+						resume=resume,
+						name=pro_name[i].strip(),
+						description=pro_description[i].strip() if i < len(pro_description) else '',
+						link=pro_link[i].strip() if i < len(pro_link) else '',
+					)
+			# Save socials
+			resume.socials.all().delete()
+			soc_platform = request.POST.getlist('soc_platform[]')
+			soc_url = request.POST.getlist('soc_url[]')
+			for i in range(len(soc_platform)):
+				if soc_platform[i].strip() and i < len(soc_url):
+					Social.objects.create(
+						resume=resume,
+						platform=soc_platform[i].strip(),
+						url=soc_url[i].strip(),
+					)
+			# Save languages
+			resume.languages.all().delete()
+			lang_name = request.POST.getlist('lang_name[]')
+			lang_proficiency = request.POST.getlist('lang_proficiency[]')
+			for i in range(len(lang_name)):
+				if lang_name[i].strip():
+					Language.objects.create(
+						resume=resume,
+						name=lang_name[i].strip(),
+						proficiency=lang_proficiency[i].strip() if i < len(lang_proficiency) else '',
+					)
+		context = {
+			'resume': resume,
+			'form': form,
+			'skills': resume.get_skills(),
+			'education': resume.get_education(),
+			'achievements': resume.get_achievements(),
+			'projects': resume.get_projects(),
+			'socials': resume.get_socials(),
+			'languages': resume.get_languages(),
+			'skill_form': SkillForm(),
+			'edu_form': EducationForm(),
+			'ach_form': AchievementForm(),
+			'pro_form': ProjectForm(),
+			'soc_form': SocialForm(),
+			'lang_form': LanguageForm(),
+		}
+		return render(request, 'resumebuilder/create.html', context)
+	else:
+		context = {
+			'resume': resume,
+			'form': form,
+			'skills': resume.get_skills(),
+			'education': resume.get_education(),
+			'achievements': resume.get_achievements(),
+			'projects': resume.get_projects(),
+			'socials': resume.get_socials(),
+			'languages': resume.get_languages(),
+			'skill_form': SkillForm(),
+			'edu_form': EducationForm(),
+			'ach_form': AchievementForm(),
+			'pro_form': ProjectForm(),
+			'soc_form': SocialForm(),
+			'lang_form': LanguageForm(),
+		}
+		return render(request, 'resumebuilder/create.html', context)
 
 @login_required
 def resume_templates(request, id):

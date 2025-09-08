@@ -6,6 +6,7 @@ from .models import Semester, SemesterSubject, Student
 # Custom form for Student to filter elective fields
 from django import forms
 
+
 class StudentAdminForm(forms.ModelForm):
 	class Meta:
 		model = Student
@@ -271,5 +272,49 @@ class SemesterAdmin(admin.ModelAdmin):
 	inlines = [SemesterSubjectInline]
 	list_display = ("department", "semester")
 	search_fields = ("department__name", "semester")
+
+# Transportation admin registration
+
+from .transport_models import BusRoute, BoardingPoint, Driver, BusApplication
+
+
+
+# Inline for BoardingPoint
+class BoardingPointInline(admin.TabularInline):
+	model = BoardingPoint
+	extra = 1
+	show_change_link = True
+
+# Inline for Driver
+class DriverInline(admin.StackedInline):
+	model = Driver
+	extra = 0
+	max_num = 1  # Only one driver per route
+	show_change_link = True
+
+@admin.register(BusRoute)
+class BusRouteAdmin(admin.ModelAdmin):
+	list_display = ("name", "bus_no", "total_seat")
+	search_fields = ("name", "bus_no")
+	inlines = [BoardingPointInline, DriverInline]
+
+@admin.register(BoardingPoint)
+class BoardingPointAdmin(admin.ModelAdmin):
+	list_display = ("name", "route")
+	search_fields = ("name",)
+	list_filter = ("route",)
+
+@admin.register(Driver)
+class DriverAdmin(admin.ModelAdmin):
+	list_display = ("name", "number", "route")
+	search_fields = ("name", "number")
+	list_filter = ("route",)
+
+@admin.register(BusApplication)
+class BusApplicationAdmin(admin.ModelAdmin):
+	list_display = ("name", "register_no", "mobile_number", "route", "boarding_point", "submitted_at", "is_approved")
+	search_fields = ("name", "register_no", "mobile_number")
+	list_filter = ("route", "boarding_point", "is_approved")
+
 from .models import Attendance
 admin.site.register(Attendance)

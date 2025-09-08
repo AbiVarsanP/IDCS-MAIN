@@ -1,3 +1,5 @@
+def home(request):
+    return render(request, 'home.html')
 
 from django.contrib.auth import get_user_model
 

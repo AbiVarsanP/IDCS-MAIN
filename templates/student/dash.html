@@ -37,29 +37,26 @@
     </div>
 </div>
 
-<!-- Resume Builder Button (moved to top) -->
+<!-- Resume Builder & Path Pilot Horizontal Cards -->
 <div class="row mb-3">
-    <div class="col-lg-12">
-        <div class="card">
+    <div class="col-lg-6">
+        <div class="card h-100">
             <div class="card-header">
                 <strong class="card-title">Resume Builder</strong>
             </div>
-            <div class="card-body">
-                <a href="{% url 'resumebuilder:rb' %}" class="btn btn-primary">Go to Resume Builder</a>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <a href="{% url 'resumebuilder:rb' %}" class="btn btn-primary w-75">Go to Resume Builder</a>
             </div>
         </div>
     </div>
-</div>
-<!-- Path Pilot Button -->
-<div class="row mb-3">
-    <div class="col-lg-12">
-        <div class="card">
+    <div class="col-lg-6">
+        <div class="card h-100">
             <div class="card-header">
                 <strong class="card-title">Path Pilot</strong>
             </div>
-            <div class="card-body">
-                <a href="{% url 'pathpilot' %}?role=Student" class="btn btn-info mr-2" style="background: linear-gradient(90deg, #27a3e2 60%, #ff9800 100%); color: #fff; border: none;">Go to Path Pilot</a>
-                <a href="{% url 'map_history' %}" class="btn btn-secondary">Map History</a>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <a href="{% url 'pathpilot' %}?role=Student" class="btn btn-info mb-2 w-75" style="background: linear-gradient(90deg, #27a3e2 60%, #ff9800 100%); color: #fff; border: none;">Go to Path Pilot</a>
+                <a href="{% url 'map_history' %}" class="btn btn-secondary w-75">Map History</a>
             </div>
         </div>
     </div>

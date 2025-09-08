@@ -5,7 +5,16 @@ from .models import Resume, Skill, Education, Achievement, Project, Social, Lang
 class ResumeForm(forms.ModelForm):
 	class Meta:
 		model = Resume
-		fields = ['img', 'role', 'bio', 'template_id']
+		fields = [
+			'img', 'role', 'bio', 'template_id',
+			'declaration_text', 'declaration_signature', 'declaration_place', 'declaration_date'
+		]
+		widgets = {
+			'declaration_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+			'declaration_signature': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+			'declaration_place': forms.TextInput(attrs={'class': 'form-control'}),
+			'declaration_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+		}
 
 class SkillForm(forms.ModelForm):
 	class Meta:

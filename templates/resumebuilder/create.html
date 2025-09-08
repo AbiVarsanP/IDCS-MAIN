@@ -538,7 +538,39 @@
         </div>
       </div>
     </div>
-      <!-- Declaration Section -->
+
+    <!-- Declaration Section -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingDeclaration">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapseDeclaration" aria-expanded="false" aria-controls="collapseDeclaration">
+            <i class="fa fa-file-signature mr-2"></i>Declaration
+          </button>
+        </h5>
+      </div>
+      <div id="collapseDeclaration" class="collapse" aria-labelledby="headingDeclaration" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div class="form-group">
+            <label for="id_declaration_text">Declaration Text</label>
+            {{ form.declaration_text }}
+          </div>
+          <div class="form-group">
+            <label for="id_declaration_signature">Signature Image (optional)</label>
+            {{ form.declaration_signature }}
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="id_declaration_place">Place</label>
+              {{ form.declaration_place }}
+            </div>
+            <div class="form-group col-md-6">
+              <label for="id_declaration_date">Date</label>
+              {{ form.declaration_date }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
     <div class="d-flex justify-content-end mt-4">

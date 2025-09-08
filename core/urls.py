@@ -4,6 +4,7 @@ from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
 from .views import *
 from .profile_views import staff_profile, hod_profile
+from .views_transportation import staff_transportation
 
 
 urlpatterns = [
@@ -96,7 +97,9 @@ urlpatterns += [
     path("bonafides/", staff_bonafides, name="staff_bonafides"),
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
     path("timetable/", staff_timetable, name="staff_timetable"),
+
     path("my_class_students/", my_class_students, name="my_class_students"),
+    path("staff/transportation/", staff_transportation, name="staff_transportation"),
 
 ]
 # hod

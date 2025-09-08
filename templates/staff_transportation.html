@@ -1,9 +1,8 @@
-
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
 <div class="container" style="max-width: 900px; margin: 30px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px 24px;">
-    <h1 style="color: #0a2e5a; font-size: 2.5em; font-weight: bold; margin-bottom: 5px;">Transportation</h1>
+    <h1 style="color: #0a2e5a; font-size: 2.5em; font-weight: bold; margin-bottom: 5px;">Transportation (Staff View)</h1>
     <div class="divider" style="height: 5px; background-color: #007bff; margin: 20px 0; border-radius: 3px;"></div>
 
     <!-- Tabs for campuses (if needed, only one for now) -->
@@ -37,7 +36,6 @@
                 <li>Enrollment to the transport facility is on first come first serve basis only. No further requests will be entertained in this matter.</li>
                 <li>Bus fee once paid will not be refunded/adjusted under any circumstances from 1st September 2025. However during the month of August, refund is available with a 10% deduction as processing fee.</li>
                 <li>For the convenience of students and staff, <b>shuttle bus service (free of cost) to the Metro Station.</b> Timings of the pickup and drop are as below...
-                
                 </li>
                 <li>Students/ Parents can call the driver to enquire about the exact location of the pickup points.</li>
                 <li>The routes mentioned are final and there will not be any changes. Requests for new routes will not be entertained.</li>
@@ -46,61 +44,42 @@
                 <li>Cash/Cheque Not Accepted.</li>
             </ul>
         </div>
-        <div style="margin-top: 20px; text-align: right;">
-            <button class="online-form-button" style="background: linear-gradient(90deg, #00bcd4 0%, #007bff 100%); color: #fff; border: none; padding: 10px 28px; border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background 0.3s, box-shadow 0.3s; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.10);" onclick="showEnrollmentFormView()">Online Form</button>
-        </div>
     </div>
 
-    <!-- Route Details View (hidden by default) -->
-    <div id="details-view" style="display: none;">
-        <div class="route-details-card" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <div class="route-details-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 id="route-name" style="color: #0a2e5a; margin: 0;"></h2>
-                <button class="back-button" style="background-color: #007bff; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;" onclick="showMainView()">Back to Routes</button>
-            </div>
-            <div id="route-info"></div>
-            <table class="boarding-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <thead>
-                    <tr>
-                        <th>BOARDING POINTS</th>
-                        <th>TIMINGS</th>
-                    </tr>
-                </thead>
-                <tbody id="boarding-points-table"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Enrollment Form View (hidden by default) -->
-    <div id="enrollment-view" style="display: none;">
-        <div class="enrollment-form-container" style="background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            <h2 style="color: #0a2e5a; text-align: center;">Enroll For Transportation</h2>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="form-grid" style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                    {{ form.as_p }}
-                </div>
-                <div class="form-buttons" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button class="back-form-button" style="background-color: #ccc; color: #333; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;" type="button" onclick="showMainView()">Back</button>
-                    <button class="submit-button" style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;" type="submit">Submit</button>
-                </div>
-            </form>
-            {% if messages %}
-                <ul class="mt-3">
-                {% for message in messages %}
-                    <li class="text-success">{{ message }}</li>
+    <!-- Staff: Applications Table -->
+    <div style="margin-top: 40px;">
+        <h2 style="color: #0a2e5a; font-size: 1.5em; font-weight: bold;">Recent Applications</h2>
+        <table class="table table-bordered table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Reg. No</th>
+                    <th>Mobile</th>
+                    <th>Route</th>
+                    <th>Boarding Point</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>{{ app.name }}</td>
+                    <td>{{ app.register_no }}</td>
+                    <td>{{ app.mobile_number }}</td>
+                    <td>{{ app.route.name }}</td>
+                    <td>{{ app.boarding_point.name }}</td>
+                    <td>{{ app.submitted_at|date:'Y-m-d H:i' }}</td>
+                    <td>{% if app.is_approved %}<span class="text-success">Approved</span>{% else %}<span class="text-warning">Pending</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No applications yet.</td></tr>
                 {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<script>
-    // Prepare route data for JS (for details view)
-    // (routeData will be defined below after parsing JSON)
-        // ...existing code...
-</script>
 <!-- Pass route data as JSON for JavaScript -->
 {% regroup routes by id as route_list %}
 <script id="route-data-json" type="application/json">
@@ -131,7 +110,6 @@ routeArray.forEach(r => { routeData[r.id] = r; });
     function showMainView() {
         document.getElementById('main-campus-routes').style.display = 'block';
         document.getElementById('details-view').style.display = 'none';
-        document.getElementById('enrollment-view').style.display = 'none';
     }
 
     function showRouteDetails(routeId) {
@@ -156,13 +134,6 @@ routeArray.forEach(r => { routeData[r.id] = r; });
         });
         document.getElementById('main-campus-routes').style.display = 'none';
         document.getElementById('details-view').style.display = 'block';
-        document.getElementById('enrollment-view').style.display = 'none';
-    }
-
-    function showEnrollmentFormView() {
-        document.getElementById('main-campus-routes').style.display = 'none';
-        document.getElementById('details-view').style.display = 'none';
-        document.getElementById('enrollment-view').style.display = 'block';
     }
 
     document.addEventListener('DOMContentLoaded', () => {

@@ -1,3 +1,8 @@
+
+def staff_transportation(request):
+    routes = BusRoute.objects.all().prefetch_related('boarding_points')
+    applications = BusApplication.objects.all().order_by('-submitted_at')
+    return render(request, 'staff_transportation.html', {'routes': routes, 'applications': applications})
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import BusApplicationForm

@@ -11,49 +11,39 @@ body, html {
 }
 .resume-preview-custom {
   max-width: 800px;
-  margin: 0;
+  margin: 0 auto;
   background: #fff;
   box-shadow: none;
   border-radius: 0;
-  padding: 0 0 0 20px;
+  padding: 0;
   font-family: 'Lato', 'Roboto', Arial, sans-serif;
   text-align: left;
+  width: 100%;
 }
 @media print {
-  body > header, body > nav, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .footer, .page-header, .page-title, .main-header, .main-footer,
-  .resume-footer, .copyright, .print-hide, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
-  #header, #main-header, #main-footer, #footer, #logo, #idcs-logo, #idcs-header, #idcs-footer, .header, .footer, .top-bar, .bottom-bar, .site-header, .site-footer, .nav, .nav-bar, .navbar-fixed-top,
-  .navbar-fixed-bottom, .page-link, .page-links, .pagination, .copyright, .resume-footer, .print-header, .print-footer, .print-page-link, .print-copyright, .fa, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
-  .page-header, .page-footer, .footer, .copyright, .print-footer, .print-header, .print-page-link, .print-copyright, .site-header, .site-footer, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .main-header, .main-footer, .top-bar, .bottom-bar {
-    display: none !important;
-    height: 0 !important;
-    width: 0 !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    left: -9999px !important;
-  }
-  .resume-print-btn, .resume-back-link {
-    display: none !important;
-  }
-  .resume-preview-custom {
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 0 0 20px !important;
-    border-radius: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    text-align: left !important;
-  }
-  html, body {
+  body, html {
     background: #fff !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
     height: auto !important;
     overflow: visible !important;
   }
+  .resume-preview-custom {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    text-align: left !important;
+  }
   @page {
-    margin: 20mm 10mm 20mm 10mm;
-    size: auto;
+    margin: 0;
+    size: A4;
+  }
+  .resume-print-btn, .resume-back-link {
+    display: none !important;
   }
 }
 .resume-section-title {

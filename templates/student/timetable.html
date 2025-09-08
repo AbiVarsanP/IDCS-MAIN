@@ -26,18 +26,5 @@
         {% endfor %}
     </tbody>
 </table>
-<hr>
-<div class="alert alert-info">
-    <b>Debug Info:</b><br>
-    User: {{ debug_user }}<br>
-    duser: {{ debug_duser }}<br>
-    {% if not debug_duser or debug_duser == 'None' %}
-        <div class="alert alert-danger mt-2">
-            <b>Problem:</b> No student record (duser) found for this user.<br>
-            <b>How to fix:</b> In Django admin, ensure there is a <b>Student</b> object whose <b>user</b> field is set to this user.<br>
-            If you recently changed your password or user, the Student-User link may be missing.<br>
-            <b>Admin path:</b> <code>/admin/core/student/</code> → Edit or create a Student and set the correct user.<br>
-        </div>
-    {% endif %}
-</div>
+
 {% endblock %}

@@ -20,7 +20,7 @@ class PrincipalAdmin(DefaultUserAdmin):
 		return qs.filter(principal_status=True)
 
 	list_display = DefaultUserAdmin.list_display + ('principal_status',)
-	list_filter = DefaultUserAdmin.list_filter + ('principal_status',)
+	list_filter = DefaultUserAdmin.list_filter
 	fieldsets = DefaultUserAdmin.fieldsets + (
 		('Principal Status', {'fields': ('principal_status',)}),
 	)
@@ -30,7 +30,7 @@ admin.site.register(Principal, PrincipalAdmin)
 
 class CustomUserAdmin(DefaultUserAdmin):
 	list_display = DefaultUserAdmin.list_display + ('principal_status',)
-	list_filter = DefaultUserAdmin.list_filter + ('principal_status',)
+	list_filter = DefaultUserAdmin.list_filter
 	fieldsets = DefaultUserAdmin.fieldsets + (
 		('Principal Status', {'fields': ('principal_status',)}),
 	)

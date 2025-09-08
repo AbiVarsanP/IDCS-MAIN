@@ -1618,7 +1618,8 @@ def reset_password(request):
     return render(request, 'auth/reset_password.html', {'error_message': error_message})
 
 def student_timetable(request):
-    # TODO: Implement student timetable view
-    return render(request, 'student/timetable.html')
+    # Delegate to the actual student timetable view implementation
+    from .student_timetable_views import student_timetable as real_student_timetable
+    return real_student_timetable(request)
 
 

@@ -28,6 +28,7 @@ urlpatterns = [
     path('student/attendance/', student_attendance_view, name='student_attendance'),
     path("",dash,name='dash'),
     path("notifications/", notifications_view, name="notifications_view"),
+    path("notifications/delete_all/", delete_all_student_notifications, name="delete_all_student_notifications"),
     path("profile/", student_profile, name='student_profile'),
     path("staff/profile/", staff_profile, name='staff_profile'),
     path("hod/profile/", hod_profile, name='hod_profile'),

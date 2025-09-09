@@ -672,6 +672,7 @@ def ahod_leave_view(request):
 # Student Profile View
 @login_required
 def student_profile(request):
+    from .models import AHOD, HOD
     context = set_config(request)
     student = context.get('duser')
     dept_ahod = None
@@ -684,7 +685,6 @@ def student_profile(request):
     # Fallback to department match if not set
     if not dept_ahod or not dept_hod:
         if hasattr(student, 'department') and student.department is not None:
-            from .models import AHOD, HOD
             try:
                 dept_code = int(student.department)
                 if not dept_ahod:

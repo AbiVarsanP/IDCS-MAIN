@@ -10,6 +10,10 @@ class ResumeForm(forms.ModelForm):
 			'declaration_text', 'declaration_signature', 'declaration_place', 'declaration_date'
 		]
 		widgets = {
+			'img': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+			'role': forms.TextInput(attrs={'class': 'form-control'}),
+			'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+			'template_id': forms.NumberInput(attrs={'class': 'form-control'}),
 			'declaration_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
 			'declaration_signature': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
 			'declaration_place': forms.TextInput(attrs={'class': 'form-control'}),

@@ -16,5 +16,10 @@ def view_mentees(request, staff_id=None, self_view=False):
     else:
         staff = get_object_or_404(Staff, id=staff_id)
     mentees = Student.objects.filter(mentor=staff).order_by('name')
-    return render(request, 'hod/mentees_list.html', {'staff': staff, 'mentees': mentees, 'duser': staff})
+    logged_in_staff = get_object_or_404(Staff, user=request.user)
+    return render(request, 'hod/mentees_list.html', {
+        'staff': staff,
+        'mentees': mentees,
+        'duser': logged_in_staff
+    })
 

@@ -1,8 +1,15 @@
 
 def staff_transportation(request):
     routes = BusRoute.objects.all().prefetch_related('boarding_points')
-    applications = BusApplication.objects.all().order_by('-submitted_at')
-    return render(request, 'staff_transportation.html', {'routes': routes, 'applications': applications})
+    if request.method == 'POST':
+        form = BusApplicationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Application submitted successfully!')
+            return redirect('staff_transportation')
+    else:
+        form = BusApplicationForm()
+    return render(request, 'staff_transportation.html', {'routes': routes, 'form': form})
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import BusApplicationForm

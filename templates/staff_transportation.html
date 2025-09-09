@@ -1,25 +1,47 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block content %}
-<div class="container" style="max-width: 900px; margin: 30px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px 24px;">
-    <h1 style="color: #0a2e5a; font-size: 2.5em; font-weight: bold; margin-bottom: 5px;">Transportation (Staff View)</h1>
+{% block root %}
+
+<div class="container" style="max-width: 1000px; margin: 30px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px 24px;">
+    <h1 style="color: #0a2e5a; font-size: 2.5em; font-weight: bold; margin-bottom: 5px;">Bus Routes (Staff View)</h1>
     <div class="divider" style="height: 5px; background-color: #007bff; margin: 20px 0; border-radius: 3px;"></div>
 
-    <!-- Tabs for campuses (if needed, only one for now) -->
-    <div class="tab-container" style="display: flex; margin-bottom: 20px; border-bottom: 2px solid #ccc;">
-        <div class="tab active" data-campus="main-campus" style="padding: 12px 25px; cursor: pointer; font-size: 1.1em; font-weight: bold; color: #0a2e5a; background-color: #e9ecef; border: 1px solid #e9ecef; border-bottom: none; border-top-left-radius: 5px; border-top-right-radius: 5px;">Main Campus</div>
-    </div>
-
-    <!-- Route List -->
-    <ul class="route-list" id="main-campus-routes" style="list-style: none; padding: 0; margin: 0;">
-        {% for route in routes %}
-        <li class="route-item" data-route="{{ route.id }}" style="background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%); color: #fff; padding: 15px 30px; margin-bottom: 15px; border-radius: 30px; font-size: 1.2em; font-weight: bold; border: none; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15); cursor: pointer; display: inline-block; letter-spacing: 1px;">{{ route.name }}</li>
-        {% empty %}
-        <li class="route-item">No routes available.</li>
-        {% endfor %}
-    </ul>
-
-    <!-- Enrollment Information Card -->
+    <!-- Bus Routes Table -->
+    <table class="table table-bordered table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Bus No</th>
+                <th>Total Seats</th>
+                <th>Driver</th>
+                <th>Driver Mobile</th>
+                <th>Boarding Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for route in routes %}
+            <tr>
+                <td>{{ route.name }}</td>
+                <td>{{ route.bus_no }}</td>
+                <td>{{ route.total_seat }}</td>
+                <td>{% if route.driver %}{{ route.driver.name }}{% else %}-{% endif %}</td>
+                <td>{% if route.driver %}{{ route.driver.number }}{% else %}-{% endif %}</td>
+                <td>
+                    <ul style="margin:0; padding-left:18px;">
+                        {% for bp in route.boarding_points.all %}
+                        <li>{{ bp.name }}</li>
+                        {% empty %}
+                        <li>No boarding points</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No routes available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+ <!-- Enrollment Information Card -->
     <div class="enrollment-info-card" style="background: linear-gradient(120deg, #e0f7fa 0%, #f8fafc 100%); border-left: 8px solid #00bcd4; box-shadow: 0 4px 16px rgba(0, 188, 212, 0.10); border-radius: 12px; padding: 32px 28px 28px 28px; margin-top: 30px; margin-bottom: 10px; position: relative;">
         <h2 style="color: #00838f; font-size: 2em; margin-top: 0; margin-bottom: 18px; font-weight: 700; letter-spacing: 1px;">Enrollment Information</h2>
         <div class="procedure-section" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #00bcd4; margin-top: 18px; padding: 18px 20px 14px 20px;">
@@ -30,56 +52,81 @@
             <p>3. Payment confirmation notification will be sent after payment is verified.</p>
             <p>4. The payment receipt (hard copy) will be issued on a particular schedule starting from 15th September 2025.</p>
         </div>
-        <div class="note-section" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #00bcd4; margin-top: 18px; padding: 18px 20px 14px 20px;">
-            <h3 style="color: #00838f;">Note</h3>
-            <ul>
-                <li>Enrollment to the transport facility is on first come first serve basis only. No further requests will be entertained in this matter.</li>
-                <li>Bus fee once paid will not be refunded/adjusted under any circumstances from 1st September 2025. However during the month of August, refund is available with a 10% deduction as processing fee.</li>
-                <li>For the convenience of students and staff, <b>shuttle bus service (free of cost) to the Metro Station.</b> Timings of the pickup and drop are as below...
-                </li>
-                <li>Students/ Parents can call the driver to enquire about the exact location of the pickup points.</li>
-                <li>The routes mentioned are final and there will not be any changes. Requests for new routes will not be entertained.</li>
-                <li>In case of any queries, contact the Transport In-Charge.<br>Email: transport@college.edu.<br>Mobile: 9113804054.</li>
-                <li>Payments can be made Online and by DD in favour of 'College General Fund' payable at City.</li>
-                <li>Cash/Cheque Not Accepted.</li>
-            </ul>
-        </div>
+       
     </div>
 
-    <!-- Staff: Applications Table -->
-    <div style="margin-top: 40px;">
-        <h2 style="color: #0a2e5a; font-size: 1.5em; font-weight: bold;">Recent Applications</h2>
-        <table class="table table-bordered table-striped mt-3">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Reg. No</th>
-                    <th>Mobile</th>
-                    <th>Route</th>
-                    <th>Boarding Point</th>
-                    <th>Submitted</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>{{ app.name }}</td>
-                    <td>{{ app.register_no }}</td>
-                    <td>{{ app.mobile_number }}</td>
-                    <td>{{ app.route.name }}</td>
-                    <td>{{ app.boarding_point.name }}</td>
-                    <td>{{ app.submitted_at|date:'Y-m-d H:i' }}</td>
-                    <td>{% if app.is_approved %}<span class="text-success">Approved</span>{% else %}<span class="text-warning">Pending</span>{% endif %}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="7">No applications yet.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 </div>
 
+    
+    <!-- Online Application Button and Form -->
+    <div style="margin: 30px 0 10px 0; text-align: right;">
+        <button id="show-application-form-btn" class="btn btn-success" type="button" style="font-weight:bold;">Apply Online for Bus Seat</button>
+    </div>
+    <div id="application-form-container" style="display:none; margin-bottom: 30px;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% if form and form.errors %}
+            <div class="alert alert-danger">
+                <ul style="margin-bottom:0;">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_name">Name</label>
+                    <input type="text" name="name" maxlength="100" class="form-control" id="id_name" required value="{{ form.name.value|default_if_none:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_register_no">Register No</label>
+                    <input type="text" name="register_no" maxlength="30" class="form-control" id="id_register_no" required value="{{ form.register_no.value|default_if_none:'' }}">
+                </div>
+            </div>
+            <div class="row">
+            <div class="col-md-6 mb-3">
+                    <label for="id_register_no">Mobile</label>
+                    <input type="text" name="mobile_number" maxlength="30" class="form-control" id="id_mobile_number" required value="{{ form.mobile_number.value|default_if_none:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_email">Email</label>
+                    <input type="email" name="email" maxlength="254" class="form-control" id="id_email" required value="{{ form.email.value|default_if_none:'' }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_route">Bus Route</label>
+                    <select name="route" class="form-control" id="id_route" required>
+                        <option value="">---------</option>
+                        {% for route in routes %}
+                        <option value="{{ route.id }}" {% if form.route.value|stringformat:'s' == route.id|stringformat:'s' %}selected{% endif %}>{{ route.name }} ({{ route.bus_no }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_boarding_point">Boarding Point</label>
+                    <select name="boarding_point" class="form-control" id="id_boarding_point" required>
+                        <option value="">---------</option>
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Submit Application</button>
+        </form>
+    </div>
+
+    
 <!-- Pass route data as JSON for JavaScript -->
 {% regroup routes by id as route_list %}
 <script id="route-data-json" type="application/json">
@@ -102,6 +149,63 @@
 ]
 </script>
 <script>
+
+// Bus route to boarding points mapping (generated as JSON)
+const routeToBoardingPoints = JSON.parse(`{
+{% for route in routes %}
+    "{{ route.id }}": [
+        {% for bp in route.boarding_points.all %}{"id": "{{ bp.id }}", "name": "{{ bp.name|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}
+    ]{% if not forloop.last %},
+{% endif %}
+{% endfor %}
+}`);
+
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('show-application-form-btn');
+    var form = document.getElementById('application-form-container');
+    if (btn && form) {
+        btn.addEventListener('click', function() {
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+                btn.style.display = 'none';
+            }
+        });
+    }
+
+    // Boarding point filtering
+    var routeSelect = document.getElementById('id_route');
+    var bpSelect = document.getElementById('id_boarding_point');
+    function updateBoardingPoints() {
+        var routeId = routeSelect.value;
+        bpSelect.innerHTML = '<option value="">---------</option>';
+        if (routeId && routeToBoardingPoints[routeId]) {
+            routeToBoardingPoints[routeId].forEach(function(bp) {
+                var opt = document.createElement('option');
+                opt.value = bp.id;
+                opt.textContent = bp.name;
+                bpSelect.appendChild(opt);
+            });
+        }
+    }
+    if (routeSelect && bpSelect) {
+        routeSelect.addEventListener('change', updateBoardingPoints);
+        // Optionally, update on page load if a route is pre-selected
+        updateBoardingPoints();
+    }
+});
+// Show/hide application form
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('show-application-form-btn');
+    var form = document.getElementById('application-form-container');
+    if (btn && form) {
+        btn.addEventListener('click', function() {
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+                btn.style.display = 'none';
+            }
+        });
+    }
+});
 // Convert array to object for fast lookup
 const routeArray = JSON.parse(document.getElementById('route-data-json').textContent);
 const routeData = {};

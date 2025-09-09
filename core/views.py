@@ -23,11 +23,160 @@ def staff_list(request):
     context['staff_members'] = staff_members
     return render(request, 'staff_list.html', context)
 
-# AHOD Bonafide (HOD) requests view
+from django.contrib.auth.decorators import user_passes_test
+
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+import random
+from django.core.mail import send_mail
+from django.conf import settings
+
+# View for HOD to see all staff in their department
+from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
+from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification, Student
 from django.db import models
+# Principal dashboard view
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
+def principal_dashboard(request):
+    return render(request, 'principal/dashboard.html', {})
+
+
+
+# Period-wise attendance view
+from django.http import HttpResponse
+@login_required
+def period_attendance_view(request):
+    context = set_config(request)
+    selected_date = request.GET.get('date')
+    roll = request.GET.get('roll')
+    period_attendance = {}
+    student = None
+    error = None
+    if roll:
+        student = Student.objects.filter(roll=roll).first()
+    else:
+        student = context.get('duser')
+    if not isinstance(student, Student):
+        error = 'Student not found.'
+    elif selected_date:
+        # Show 7 periods for the selected date (placeholder data)
+        period_attendance = {}
+        for i in range(1, 8):
+            period_attendance[f'Period {i}'] = {
+                'status': 'Present' if i % 2 == 1 else 'Absent',
+                'marked_by': f'Staff {chr(64+i)}',
+                'remarks': '' if i != 2 else 'Medical',
+            }
+    context['selected_date'] = selected_date
+    context['student'] = student
+    context['period_attendance'] = period_attendance
+    context['error'] = error
+    return render(request, 'student/period_attendance.html', context)
+
+# Student attendance view for date-wise lookup
+@login_required
+def student_attendance_view(request):
+    context = set_config(request)
+
+    from .models import Attendance, Student, SemesterSubject
+
+    attendance_status = None
+    selected_date = request.GET.get('date')
+    roll = request.GET.get('roll')
+    # If roll is provided, get that student, else use logged-in user
+    if roll:
+        student = Student.objects.filter(roll=roll).first()
+    else:
+        student = context.get('duser')
+    if not isinstance(student, Student):
+        context['attendance_status'] = None
+        context['selected_date'] = selected_date
+        context['attendance_map'] = {}
+        context['calendar_month'] = timezone.now().month
+        context['calendar_year'] = timezone.now().year
+        context['student'] = None
+        context['error'] = 'Student not found.'
+        context['subjects'] = []
+        return render(request, 'student/attendance.html', context)
+    # Get all attendance records for the current month for the selected student
+    today = timezone.now().date()
+    month = int(request.GET.get('month', today.month))
+    year = int(request.GET.get('year', today.year))
+    from calendar import monthrange
+    start_date = today.replace(day=1, month=month, year=year)
+    end_date = today.replace(day=monthrange(year, month)[1], month=month, year=year)
+    all_attendance = Attendance.objects.filter(student=student, date__range=[start_date, end_date])
+    attendance_map = {a.date.strftime('%Y-%m-%d'): a.status for a in all_attendance}
+    if selected_date:
+        try:
+            date_obj = timezone.datetime.strptime(selected_date, '%Y-%m-%d').date()
+            record = Attendance.objects.filter(student=student, date=date_obj).first()
+            if record:
+                attendance_status = record.status
+            else:
+                attendance_status = None
+        except Exception:
+            attendance_status = None
+    # Get subjects for this student: department+semester (non-electives) + assigned electives only
+    subjects_qs = SemesterSubject.objects.filter(
+        semester__department=student.department,
+        semester__semester=student.semester,
+        is_elective=False
+    )
+    electives = [student.elective1, student.elective2, student.elective3]
+    electives = [e for e in electives if e]
+    subjects = list(subjects_qs) + electives
+    # Remove duplicates
+    subjects = list({s.id: s for s in subjects}.values())
+    # Calculate overall attendance percentage for this student (by total days marked and present)
+    total_days = Attendance.objects.filter(student=student).count()
+    present_days = Attendance.objects.filter(student=student, status='Present').count()
+    overall_percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+    subject_percentages = []
+    for subject in subjects:
+        subject_percentages.append({
+            'subject': subject,
+            'percentage': overall_percentage
+        })
+    context['attendance_status'] = attendance_status
+    context['selected_date'] = selected_date
+    context['attendance_map'] = attendance_map
+    context['calendar_month'] = month
+    context['calendar_year'] = year
+    context['student'] = student
+    context['subjects'] = subjects
+    context['subject_percentages'] = subject_percentages
+    return render(request, 'student/attendance.html', context)
+
+# AHOD Bonafide (HOD) requests view
+
+
+@login_required
+def staff_list(request):
+    context = set_config(request)
+    user = request.user
+    # Get HOD staff object
+    try:
+        hod_staff = Staff.objects.get(user=user)
+        department = hod_staff.department
+        staff_members = Staff.objects.filter(department=department).exclude(id=hod_staff.id).order_by('name')
+    except Staff.DoesNotExist:
+        staff_members = Staff.objects.none()
+    # Ensure each staff has an email, fallback to user.email if not set
+    for staff in staff_members:
+        if not staff.email and staff.user and hasattr(staff.user, 'email') and staff.user.email:
+            staff.email = staff.user.email
+        # Fallback for mobile
+        if (not staff.mobile or staff.mobile == '') and staff.user and hasattr(staff.user, 'mobile') and staff.user.mobile:
+            staff.mobile = staff.user.mobile
+    context['staff_members'] = staff_members
+    return render(request, 'hod/staff_list.html', context)
+
+# AHOD Bonafide (HOD) requests view
 
 @login_required
 def ahod_bonafide_hod(request):
@@ -218,12 +367,83 @@ def delete_all_notifications(request):
 
 @login_required
 def my_class_students(request):
+    from .models import Attendance
+    from django.utils import timezone
     staff = Staff.objects.get(user=request.user)
     students = Student.objects.filter(advisor=staff).order_by('roll')
     context = {
         'students': students,
         'duser': staff,
     }
+    selected_date = None
+    if request.method == 'POST':
+        date_str = request.POST.get('attendance_date')
+        error_msg = None
+        success_msg = None
+        if date_str:
+            try:
+                selected_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+            except Exception:
+                selected_date = timezone.now().date()
+        else:
+            selected_date = timezone.now().date()
+
+        # Debug: print students
+        print('DEBUG: students:', list(students))
+
+        if not students:
+            error_msg = 'No students found for your class.'
+        else:
+            # Parse last 3 digits input for absent students
+            absent_last3 = request.POST.get('absent_last3', '')
+            absent_last3 = absent_last3.replace(',', ' ').split()
+            absent_last3 = [x.strip() for x in absent_last3 if x.strip().isdigit() and len(x.strip()) == 3]
+            absent_set = set(absent_last3)
+
+            # Find students whose roll ends with any of the absent last 3 digits
+            absent_students = [s for s in students if s.roll and s.roll[-3:] in absent_set]
+            absent_ids = set(s.id for s in absent_students)
+
+            # Mark attendance for each student (no subject)
+            for student in students:
+                Attendance.objects.update_or_create(
+                    student=student,
+                    date=selected_date,
+                    defaults={'status': 'Absent' if student.id in absent_ids else 'Present'}
+                )
+
+            # Recalculate present percentage for each student (overall)
+            for student in students:
+                total_days = Attendance.objects.filter(student=student).count()
+                present_days = Attendance.objects.filter(student=student, status='Present').count()
+                percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+                latest_attendance = Attendance.objects.filter(student=student).order_by('-date').first()
+                if latest_attendance:
+                    latest_attendance.percentage = percentage
+                    latest_attendance.save(update_fields=['percentage'])
+
+            # Now recalculate student_percentages for display
+            student_percentages = {}
+            for student in students:
+                total_days = Attendance.objects.filter(student=student).count()
+                present_days = Attendance.objects.filter(student=student, status='Present').count()
+                percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+                student_percentages[student.id] = percentage
+            context['student_percentages'] = student_percentages
+            success_msg = 'Attendance marked successfully.'
+        context['error'] = error_msg
+        context['success'] = success_msg
+        context['selected_date'] = date_str
+    else:
+        # GET: recalculate student_percentages for display
+        student_percentages = {}
+        for student in students:
+            total_days = Attendance.objects.filter(student=student).count()
+            present_days = Attendance.objects.filter(student=student, status='Present').count()
+            percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+            student_percentages[student.id] = percentage
+        context['student_percentages'] = student_percentages
+        context['selected_date'] = ''
     return render(request, 'staff/my_class_students.html', context)
 
 @login_required
@@ -391,14 +611,18 @@ def ahod_od_view(request):
     context = set_config(request)
     ahod = AHOD.objects.get(user=context['duser'])
     from .constants import SDEPT, DEPT
-    ahod_dept_int = ahod.user.department
+    ahod_dept_obj = ahod.user.department
+    ahod_dept_id = ahod_dept_obj.id if ahod_dept_obj else None
     dept_code = None
     for code, name in DEPT:
-        if name == SDEPT[ahod_dept_int][1]:
+        sdept_entry = SDEPT[ahod_dept_id] if SDEPT and ahod_dept_id is not None and ahod_dept_id < len(SDEPT) else None
+        if sdept_entry and len(sdept_entry) > 1 and name == sdept_entry[1]:
             dept_code = code
             break
     if not dept_code:
-        dept_code = str(ahod_dept_int)
+
+        dept_code = str(ahod_dept_id)
+
     # Dept ODs: all ODs where student's hod is AHOD user, or mentor is not AHOD user
     context['hods'] = [
         i for i in OD.objects.all()
@@ -448,6 +672,7 @@ def ahod_leave_view(request):
 # Student Profile View
 @login_required
 def student_profile(request):
+    from .models import AHOD, HOD
     context = set_config(request)
     student = context.get('duser')
     dept_ahod = None
@@ -456,12 +681,10 @@ def student_profile(request):
     if hasattr(student, 'ahod') and student.ahod:
         dept_ahod = student.ahod
     if hasattr(student, 'hod') and student.hod:
-        from .models import HOD
         dept_hod = HOD.objects.filter(user=student.hod).first()
     # Fallback to department match if not set
     if not dept_ahod or not dept_hod:
         if hasattr(student, 'department') and student.department is not None:
-            from .models import AHOD, HOD
             try:
                 dept_code = int(student.department)
                 if not dept_ahod:
@@ -557,6 +780,7 @@ def dash(request):
         now = timezone.now()
         one_day_ago = now - timedelta(days=1)
         staff = context['duser']
+        # Fetch all mentee requests for all forms where user is mentor, advisor, or HOD
         context['recent_od'] = OD.objects.filter(
             models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff),
             created__gte=one_day_ago
@@ -573,10 +797,20 @@ def dash(request):
             models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff),
             created__gte=one_day_ago
         ).order_by('-created')[:5]
-        context['aods'] = [i for i in OD.objects.all() if i.user.advisor.id == context['duser'].id]
-        context['mods'] = [i for i in OD.objects.all() if i.user.mentor.id == context['duser'].id]
-        context['hods'] = [i for i in OD.objects.all() if i.user.hod.id == context['duser'].id]
-        return render(request, "staff/dash.html", context)
+        # All mentee requests for all forms
+        context['mentee_ods'] = OD.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff)
+        ).distinct()
+        context['mentee_leaves'] = LEAVE.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff)
+        ).distinct()
+        context['mentee_gatepasses'] = GATEPASS.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff)
+        ).distinct()
+        context['mentee_bonafides'] = BONAFIDE.objects.filter(
+            models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff)
+        ).distinct()
+        return render(request, 'staff/dash.html', context)
 
 
 
@@ -770,10 +1004,12 @@ def staff_gatepass_view(request):
 def hod_od_view(request):
     context = set_config(request)
 
-    context['mods'] = [i for i in OD.objects.all() if i.user.mentor.id ==
-                       context['duser'].id]
-    context['hods'] = [i for i in OD.objects.all() if i.user.hod.id ==
-                       context['duser'].id or i.user.mentor.id != context['duser'].id]
+    context['mods'] = [i for i in OD.objects.all() if i.user.mentor.id == context['duser'].id]
+    context['hods'] = [i for i in OD.objects.all() if i.user.hod.id == context['duser'].id or i.user.mentor.id != context['duser'].id]
+    # Ensure OD body is always set for all entries
+    for od in context['mods'] + context['hods']:
+        if not od.body:
+            od.body = "No details provided."
     print(context)
     return render(request, 'hod/ods.html', context)
 
@@ -781,8 +1017,7 @@ def hod_od_view(request):
 def hod_leave_view(request):
     context = set_config(request)
 
-    context['mods'] = [i for i in LEAVE.objects.all(
-    ) if i.user.mentor.id == context['duser'].id]
+    context['mods'] = [i for i in LEAVE.objects.all() if i.user.mentor.id == context['duser'].id]
     context['hods'] = [i for i in LEAVE.objects.all() if i.user.hod.id ==
                        context['duser'].id or i.user.mentor.id != context['duser'].id]
     print(context)
@@ -792,8 +1027,7 @@ def hod_leave_view(request):
 def hod_gatepass_view(request):
     context = set_config(request)
 
-    context['mods'] = [i for i in GATEPASS.objects.all(
-    ) if i.user.mentor.id == context['duser'].id]
+    context['mods'] = [i for i in GATEPASS.objects.all() if i.user.mentor.id == context['duser'].id]
     context['hods'] = [i for i in GATEPASS.objects.all() if i.user.hod.id ==
                        context['duser'].id or i.user.mentor.id != context['duser'].id]
     print(context)
@@ -807,10 +1041,10 @@ def staff_action_od(request, id):
     if request.POST:
         od = OD.objects.get(id=id)
         print(od.user.mentor.user.username, request.user)
-
+        # Mentor action
         if str(od.user.mentor.user.username) == str(request.user):
             od.Mstatus = get_post(request, 'sts')
-            if od.Mstatus == STATUS[2][0]:
+            if od.Mstatus == STATUS[2][0]:  # Rejected
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
                 od.AHstatus = STATUS[2][0]
@@ -820,20 +1054,9 @@ def staff_action_od(request, id):
                 message=f"Your OD request was {od.Mstatus} by Mentor"
             )
             print(od.Mstatus)
-
-        if str(od.user.advisor.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            # If mentor is still pending, set mentor status to advisor's decision
-            if od.Mstatus == STATUS[0][0]:  # Pending
-                od.Mstatus = od.Astatus
-            if od.Astatus == STATUS[2][0]:
-                od.Hstatus = STATUS[2][0]
-                od.AHstatus = STATUS[2][0]
-            from .models import Notification
-            Notification.objects.create(
-                student=od.user,
-                message=f"Your OD request was {od.Astatus} by Advisor"
-            )
+            od.save()
+            return redirect("staff_od_view")
+        # HOD action (allow HOD to act at any stage)
         if str(od.user.hod.user.username) == str(request.user):
             action_status = get_post(request, 'sts')
             if action_status == STATUS[1][0]:  # 'Approved'
@@ -846,20 +1069,31 @@ def staff_action_od(request, id):
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
                 od.AHstatus = STATUS[2][0]
-
             from .models import Notification
             Notification.objects.create(
                 student=od.user,
                 message=f"Your OD request was {action_status} by HOD"
             )
-
             od.save()
             print(od.Astatus)
             return redirect("hod_od_view")
-
+        # Advisor action
+        if str(od.user.advisor.user.username) == str(request.user):
+            od.Astatus = get_post(request, 'sts')
+            if od.Mstatus == STATUS[0][0]:  # Rejected
+                od.Mstatus = od.Astatus
+            if od.Astatus == STATUS[2][0]:
+                od.Hstatus = STATUS[2][0]
+                od.AHstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                student=od.user,
+                message=f"Your OD request was {od.Astatus} by Advisor"
+            )
+            od.save()
+            return redirect("staff_od_view")
         od.save()
         print("Changed")
-
     return redirect("staff_od_view")
 
 @login_required
@@ -872,7 +1106,8 @@ def staff_action_leave(request, id):
 
         if str(leave.user.mentor.user.username) == str(request.user):
             leave.Mstatus = get_post(request, 'sts')
-            if leave.Mstatus == STATUS[2][0]:
+            # Only set other statuses if rejected, not approved
+            if leave.Mstatus == STATUS[2][0]:  # Rejected
                 leave.Astatus = STATUS[2][0]
                 leave.Hstatus = STATUS[2][0]
                 leave.AHstatus = STATUS[2][0]
@@ -940,7 +1175,8 @@ def staff_action_gatepass(request, id):
         # Mentor action
         if role == 'mentor' and str(gatepass.user.mentor.user.username) == str(request.user):
             gatepass.Mstatus = status
-            if status == STATUS[2][0]:
+            # Only set other statuses if rejected, not approved
+            if status == STATUS[2][0]:  # Rejected
                 gatepass.Astatus = STATUS[2][0]
                 gatepass.Hstatus = STATUS[2][0]
             Notification.objects.create(
@@ -1306,7 +1542,8 @@ def staff_action_bonafide(request, id):
         from .models import Notification
         if role == 'mentor' and str(bonafide.user.mentor.user.username) == str(request.user):
             bonafide.Mstatus = status
-            if status == STATUS[2][0]:
+            # Only set other statuses if rejected, not approved
+            if status == STATUS[2][0]:  # Rejected
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
@@ -1337,8 +1574,6 @@ def staff_action_bonafide(request, id):
                 bonafide.Mstatus = STATUS[2][0]
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
-            else:
-                bonafide.Hstatus = status
             Notification.objects.create(
                 student=bonafide.user,
                 message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
@@ -1347,5 +1582,212 @@ def staff_action_bonafide(request, id):
             return redirect("hod_bonafide_view")
         bonafide.save()
         return redirect("hod_bonafide_view")
+def forgot_password(request):
+    message = None
+    error_message = None
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        user_obj = None
+        try:
+            user_obj = Student.objects.get(user__email=email)
+        except Student.DoesNotExist:
+            try:
+                user_obj = Staff.objects.get(email=email)
+            except Staff.DoesNotExist:
+                error_message = 'Email not registered.'
+        if user_obj:
+            otp = str(random.randint(100000, 999999))
+            request.session['reset_email'] = email
+            request.session['reset_otp'] = otp
+            send_mail(
+                'Your OTP Code',
+                f'Your OTP code is {otp}',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            request.session['otp_sent'] = True
+            return redirect('otp_verification')
+    return render(request, 'auth/forgot_password.html', {'message': message, 'error_message': error_message})
+
+def otp_verification(request):
+    error_message = None
+    success_message = None
+    if request.session.get('otp_sent'):
+        success_message = 'OTP has been sent to your registered email.'
+        request.session.pop('otp_sent')
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        session_otp = request.session.get('reset_otp')
+        if entered_otp == session_otp:
+            request.session['otp_verified'] = True
+            return redirect('reset_password')
+        else:
+            error_message = 'Invalid OTP. Please try again.'
+    return render(request, 'auth/otp_verification.html', {'error_message': error_message, 'success_message': success_message})
+
+def reset_password(request):
+    error_message = None
+    if not request.session.get('otp_verified'):
+        return redirect('forgot_password')
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        if new_password != confirm_password:
+            error_message = 'Passwords do not match.'
+        else:
+            email = request.session.get('reset_email')
+            user_obj = None
+            try:
+                user_obj = Student.objects.get(user__email=email)
+                user_obj.user.set_password(new_password)
+                user_obj.user.save()
+            except Student.DoesNotExist:
+                try:
+                    user_obj = Staff.objects.get(email=email)
+                    user_obj.user.set_password(new_password)
+                    user_obj.user.save()
+                except Staff.DoesNotExist:
+                    error_message = 'User not found.'
+            if not error_message:
+                # Clear session
+                request.session.pop('reset_email', None)
+                request.session.pop('reset_otp', None)
+                request.session.pop('otp_verified', None)
+                return redirect('login')
+    return render(request, 'auth/reset_password.html', {'error_message': error_message})
+
+def student_timetable(request):
+    # Delegate to the actual student timetable view implementation
+    from .student_timetable_views import student_timetable as real_student_timetable
+    return real_student_timetable(request)
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@login_required
+def hod_action_od(request, id):
+    if request.method == 'POST':
+        od = OD.objects.get(id=id)
+        action_status = request.POST.get('sts')
+        role = request.POST.get('role')
+        if role == 'mentor':
+            od.Mstatus = action_status
+            if action_status == STATUS[2][0]:  # Rejected
+                od.Astatus = STATUS[2][0]
+                od.Hstatus = STATUS[2][0]
+                od.AHstatus = STATUS[2][0]
+        elif role == 'hod':
+            if action_status == STATUS[1][0]:  # 'Approved'
+                od.Mstatus = STATUS[1][0]
+                od.Astatus = STATUS[1][0]
+                od.Hstatus = STATUS[1][0]
+                od.AHstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                od.Mstatus = STATUS[2][0]
+                od.Astatus = STATUS[2][0]
+                od.Hstatus = STATUS[2][0]
+                od.AHstatus = STATUS[2][0]
+        from .models import Notification
+        Notification.objects.create(
+            student=od.user,
+            message=f"Your OD request was {action_status} by {'Mentor' if role == 'mentor' else 'HOD'}"
+        )
+        od.save()
+        return redirect('hod_od_view')
+    return redirect('hod_od_view')
+
+@csrf_exempt
+@login_required
+def hod_action_leave(request, id):
+    if request.method == 'POST':
+        leave = LEAVE.objects.get(id=id)
+        action_status = request.POST.get('sts')
+        role = request.POST.get('role')
+        if role == 'mentor':
+            leave.Mstatus = action_status
+            if action_status == STATUS[2][0]:  # Rejected
+                leave.Astatus = STATUS[2][0]
+                leave.Hstatus = STATUS[2][0]
+                leave.AHstatus = STATUS[2][0]
+        elif role == 'hod':
+            if action_status == STATUS[1][0]:  # 'Approved'
+                leave.Mstatus = STATUS[1][0]
+                leave.Astatus = STATUS[1][0]
+                leave.Hstatus = STATUS[1][0]
+                leave.AHstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                leave.Mstatus = STATUS[2][0]
+                leave.Astatus = STATUS[2][0]
+                leave.Hstatus = STATUS[2][0]
+                leave.AHstatus = STATUS[2][0]
+        from .models import Notification
+        Notification.objects.create(
+            student=leave.user,
+            message=f"Your Leave request was {action_status} by {'Mentor' if role == 'mentor' else 'HOD'}"
+        )
+        leave.save()
+        return redirect('hod_leave_view')
+    return redirect('hod_leave_view')
+
+@csrf_exempt
+@login_required
+def hod_action_gatepass(request, id):
+    if request.method == 'POST':
+        gatepass = GATEPASS.objects.get(id=id)
+        action_status = request.POST.get('sts')
+        role = request.POST.get('role')
+        if role == 'mentor':
+            gatepass.Mstatus = action_status
+            if action_status == STATUS[2][0]:  # Rejected
+                gatepass.Astatus = STATUS[2][0]
+                gatepass.Hstatus = STATUS[2][0]
+        elif role == 'hod':
+            if action_status == STATUS[1][0]:  # 'Approved'
+                gatepass.Mstatus = STATUS[1][0]
+                gatepass.Astatus = STATUS[1][0]
+                gatepass.Hstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                gatepass.Mstatus = STATUS[2][0]
+                gatepass.Astatus = STATUS[2][0]
+                gatepass.Hstatus = STATUS[2][0]
+        from .models import Notification
+        Notification.objects.create(
+            student=gatepass.user,
+            message=f"Your Gatepass request was {action_status} by {'Mentor' if role == 'mentor' else 'HOD'}"
+        )
+        gatepass.save()
+        return redirect('hod_gatepass_view')
+    return redirect('hod_gatepass_view')
+
+@csrf_exempt
+@login_required
+def hod_action_bonafide(request, id):
+    if request.method == 'POST':
+        bonafide = BONAFIDE.objects.get(id=id)
+        action_status = request.POST.get('sts')
+        role = request.POST.get('role')
+        if role == 'mentor':
+            bonafide.Mstatus = action_status
+            if action_status == STATUS[2][0]:  # Rejected
+                bonafide.Astatus = STATUS[2][0]
+                bonafide.Hstatus = STATUS[2][0]
+        elif role == 'hod':
+            if action_status == STATUS[1][0]:  # 'Approved'
+                bonafide.Mstatus = STATUS[1][0]
+                bonafide.Astatus = STATUS[1][0]
+                bonafide.Hstatus = STATUS[1][0]
+            elif action_status == STATUS[2][0]:  # 'Rejected'
+                bonafide.Mstatus = STATUS[2][0]
+                bonafide.Astatus = STATUS[2][0]
+                bonafide.Hstatus = STATUS[2][0]
+        from .models import Notification
+        Notification.objects.create(
+            student=bonafide.user,
+            message=f"Your Bonafide request was {action_status} by {'Mentor' if role == 'mentor' else 'HOD'}"
+        )
+        bonafide.save()
+        return redirect('hod_bonafide_view')
+    return redirect('hod_bonafide_view')
 
 

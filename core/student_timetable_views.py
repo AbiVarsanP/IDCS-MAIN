@@ -27,4 +27,7 @@ def student_timetable(request):
     context['periods'] = periods
     context['table'] = table
     context['staff'] = staff
+    # Debug info
+    context['debug_user'] = str(request.user)
+    context['debug_duser'] = str(context.get('duser'))
     return render(request, 'student/timetable.html', context)

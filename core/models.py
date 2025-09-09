@@ -1,29 +1,59 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-try:
-    from django.db.models import JSONField
-except ImportError:
-    from django.contrib.postgres.fields import JSONField
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 
-# AcademicRecord Model for Section 3.2: Marksheets and Scores
-class AcademicRecord(models.Model):
-    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='academic_records')
-    semester = models.CharField(max_length=20)
-    academic_year = models.CharField(max_length=20)
-    internal_assessment_marks = JSONField(blank=True, null=True, help_text="{subject: marks}")
-    university_exam_marks = JSONField(blank=True, null=True, help_text="{subject: marks}")
-    cia_test_scores = JSONField(blank=True, null=True, help_text="{test_type: score}")
-    practice_test_scores = JSONField(blank=True, null=True, help_text="{test_type: score}")
-    gpa = models.FloatField(blank=True, null=True)
-    cgpa = models.FloatField(blank=True, null=True)
-    arrear_subjects = JSONField(blank=True, null=True, help_text="List of arrear subjects (as a list)")
-    marksheet_file = models.FileField(upload_to='marksheets/', blank=True, null=True)
+from .constants import *
+
+
+User = get_user_model()
+
+# Principal proxy model for admin
+class Principal(User):
+    class Meta:
+        proxy = True
+        verbose_name = 'Principal'
+        verbose_name_plural = 'Principals'
+
+# AcademicRecord model and related imports removed
+class Department(models.Model):
+    code = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=100)
+    hod = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='department_hod')
+    ahod = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='department_ahod')
+    staffs = models.ManyToManyField('Staff', blank=True, related_name='department_staffs')
+
 
     def __str__(self):
-        return f"{self.student} - {self.semester} - {self.academic_year}"
+        return f"{self.code} - {self.name}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Update HOD model when hod is set
+        from .models import HOD, AHOD, Student
+        if self.hod:
+            hod_obj, created = HOD.objects.get_or_create(user=self.hod, defaults={"department": self})
+            if not created:
+                hod_obj.department = self
+                hod_obj.save()
+            Student.objects.filter(department=self).update(hod=self.hod)
+        # Update AHOD model when ahod is set
+        if self.ahod and self.pk and self.ahod.pk:
+            try:
+                ahod_obj, created = AHOD.objects.get_or_create(user=self.ahod, defaults={"department": self})
+                if not created:
+                    ahod_obj.department = self
+                    ahod_obj.save()
+            except Exception:
+                pass
+
+    
+
+# ...existing code...
 
 
 # Attendance Model for Section 3.2: Track attendance, link to events/workshops/training, integrate with Leaves/ODs for deductions
+
 class Attendance(models.Model):
     STATUS_CHOICES = [
         ('Present', 'Present'),
@@ -32,6 +62,7 @@ class Attendance(models.Model):
         ('On Duty', 'On Duty'),
     ]
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='attendances')
+    subject = models.ForeignKey('SemesterSubject', on_delete=models.CASCADE, related_name='attendances', null=True, blank=True)
     date = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     reason = models.TextField(blank=True, null=True, help_text="If absent/on leave/on duty, link to Leave/OD/Bonafide/Gatepass")
@@ -47,27 +78,24 @@ class Attendance(models.Model):
     # event_attendance = models.ForeignKey('EventAttendance', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_events')
 
     def __str__(self):
-        return f"{self.student} - {self.date} - {self.status}"
-from django.urls import reverse
-from django.contrib.auth import get_user_model
-from .constants import *
-try:
-    from django.contrib.postgres.fields import ArrayField
-except ImportError:
-    ArrayField = None
-try:
-    from django.db.models import JSONField
-except ImportError:
-    from django.contrib.postgres.fields import JSONField
+        return f"{self.student} - {self.subject} - {self.date} - {self.status}"
+
+
+
 
 User = get_user_model()
+
+# Add principal_status to User via monkey patch if not present
+if not hasattr(User, 'principal_status'):
+    from django.db.models import BooleanField
+    User.add_to_class('principal_status', BooleanField(default=False))
 
 
 class AHOD(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE)
     get_feedback = models.BooleanField(default=False)
     get_spot_feedback = models.BooleanField(default=False)
-    department = models.PositiveIntegerField(choices=SDEPT, default=2, null=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="ahod_departments")
 
     staffs = models.ManyToManyField('Staff', related_name='ahod_my_staffs', blank=True)
     students = models.ManyToManyField('Student', related_name='ahod_students', blank=True)
@@ -102,7 +130,8 @@ class Student(models.Model):
     profile = models.ImageField(upload_to='profiles', blank=True)
     name = models.CharField(max_length=50, blank=True, null=True)
 
-    department = models.CharField(choices=DEPT, default="001", max_length=50, null=True)
+
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="students")
     semester = models.PositiveIntegerField(choices=SEM, default=1, null=True)
     year = models.PositiveIntegerField(choices=YEAR, default=1, null=True)
     # Batch: Enter start year, display as 'start year - start year+4'
@@ -135,6 +164,9 @@ class Student(models.Model):
     ahod = models.ForeignKey('AHOD', blank=True, on_delete=models.DO_NOTHING, related_name='AHOD', null=True)
 
     teaching_staffs = models.ManyToManyField('Staff', blank=True)
+    elective1 = models.ForeignKey('SemesterSubject', null=True, blank=True, on_delete=models.SET_NULL, related_name='elective1_students', help_text="Select the first elective relevant to the student's department and semester.")
+    elective2 = models.ForeignKey('SemesterSubject', null=True, blank=True, on_delete=models.SET_NULL, related_name='elective2_students', help_text="Select the second elective relevant to the student's department and semester.")
+    elective3 = models.ForeignKey('SemesterSubject', null=True, blank=True, on_delete=models.SET_NULL, related_name='elective3_students', help_text="Select the third elective relevant to the student's department and semester.")
     feedback_for = models.ManyToManyField('IndividualStaffRating', related_name='for_staff_rating', blank=True)
     feedback_history = models.ManyToManyField('IndividualStaffRating', related_name='for_staff_rating_history', blank=True)
 
@@ -146,6 +178,19 @@ class Student(models.Model):
     def __str__(self) -> str:
         return f"{self.user.username} {self.department}-{self.year}"
 
+
+    def save(self, *args, **kwargs):
+        # Auto-set hod and ahod fields to department's hod and ahod if department is assigned
+        if self.department:
+            if self.department.hod:
+                self.hod = self.department.hod
+            if self.department.ahod:
+                from core.models import AHOD
+                ahod_instance = AHOD.objects.filter(user=self.department.ahod).first()
+                if ahod_instance:
+                    self.ahod = ahod_instance
+        super().save(*args, **kwargs)
+
     def feedback_clear(self):
         self.feedback_for.clear()
         return True
@@ -156,7 +201,9 @@ class Staff(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff')
     name = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(max_length=254, blank=True, null=True)
-    department = models.PositiveIntegerField(choices=SDEPT, default=0, null=True)
+
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='staffsstaff_members')
+
     mobile = models.CharField(max_length=15, blank=True, null=True)
     role = models.CharField(max_length=50, blank=True, null=True)
 
@@ -175,14 +222,15 @@ class Staff(models.Model):
         ordering = ['-id']
 
     def __str__(self) -> str:
-        return f"{self.name} {self.user.username} {SDEPT[self.department][1]}"
+        dept_name = self.department.name if self.department else "No Department"
+        return f"{self.name} {self.user.username} {dept_name}"
 
 
 class HOD(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE)
     get_feedback = models.BooleanField(default=False)
     get_spot_feedback = models.BooleanField(default=False)
-    department = models.PositiveIntegerField(choices=SDEPT, default=2, null=True)
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='hods')
 
     staffs = models.ManyToManyField('Staff', related_name='my_staffs', blank=True)
     students = models.ManyToManyField('Student', related_name='students', blank=True)
@@ -340,6 +388,28 @@ class IndividualStaffRating(models.Model):
             return 0
         return round(sum(i.points for i in inr) / len(inr))
 
+
+class Semester(models.Model):
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='semesters')
+    semester = models.PositiveIntegerField(choices=SEM, default=1, null=True)
+    # Subjects are now managed by SemesterSubject model
+
+class SemesterSubject(models.Model):
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='subjects')
+    name = models.CharField(max_length=100)
+    staff = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='semester_subject_staff')
+    is_elective = models.BooleanField(default=False, help_text="Check if this subject is an elective.")
+
+    def __str__(self):
+        return f"{self.name} ({self.semester})"
+
+    class Meta:
+        unique_together = ("semester", "name")
+        ordering = ["semester"]
+
+    def __str__(self):
+        dept_name = self.semester.department.name if self.semester and self.semester.department else "No Department"
+        return f"{dept_name} - Semester {self.semester.semester} - {self.name}"
 
 class SpotFeedback(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE, related_name='hod_spot')

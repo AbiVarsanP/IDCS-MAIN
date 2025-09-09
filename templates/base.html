@@ -86,15 +86,21 @@
 
                     {% block nav %}
 
-                        {% if duser and duser.position == 0 %}
+                        {% if request.user.is_authenticated and request.user.principal_status %}
+                            <li class="{% if request.resolver_match.url_name == 'principal_dashboard' %}active{% endif %}"><a href="{% url 'principal_dashboard' %}"><i class="menu-icon fa fa-laptop"></i>Principal Dashboard</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'principal_department' %}active{% endif %}"><a href="{% url 'principal_department' %}"><i class="menu-icon fa fa-building"></i>Departments</a></li>
+                        {% elif duser and duser.position == 0 %}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_od_view' %}active{% endif %}"><a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_feedback' %}active{% endif %}"><a href="#"><i class="menu-icon ti-comments"></i>Feedback</a></li>
-                                <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
-                                <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}"><a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
+
+                            <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}"><a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
+
                         {% elif duser and duser.position2 == 1 %}
                             <li class="{% if request.resolver_match.url_name == 'ahod_dash' %}active{% endif %}"><a href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_od_view' %}active{% endif %}"><a href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
@@ -125,6 +131,9 @@
                             </li>
                             <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
                                 <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+                            </li>
+                            <li id="attendanceMenuItem" class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
+                                <a href="{% url 'student_attendance' %}"><i class="menu-icon fa fa-check-square-o"></i>Attendance</a>
                             </li>
                             <li class="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
                                 <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
@@ -157,6 +166,56 @@
                     </li>
 
                 </ul>
+                    <!-- Attendance Sidebar and Overlay (always present for student) -->
+                    <div id="sidebarOverlay" style="display:none;"></div>
+                    <div id="attendanceSidebar" style="left:-300px;">
+                        <h4>View Attendance</h4>
+                        <form method="get" id="attendanceForm" action="{% url 'student_attendance' %}">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Select Date:</label>
+                                <input type="date" id="date" name="date" class="form-control" required value="{{ selected_date|default:'' }}">
+                            </div>
+                            <button type="submit" class="btn btn-success">View</button>
+                        </form>
+                        <div class="mt-4">
+                            {% if attendance_status is not None %}
+                                <h5>Status for {{ selected_date }}:</h5>
+                                <span class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                    {{ attendance_status }}
+                                </span>
+                            {% elif selected_date %}
+                                <div class="alert alert-info">No attendance record found for this date.</div>
+                            {% endif %}
+                        </div>
+                        <button class="btn btn-secondary mt-3" id="closeSidebarBtn">Close</button>
+                    </div>
+                    <style>
+                        #attendanceSidebar {
+                            position: fixed;
+                            top: 0;
+                            left: -300px;
+                            width: 300px;
+                            height: 100%;
+                            background: #f8f9fa;
+                            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                            transition: left 0.3s;
+                            z-index: 1050;
+                            padding: 2rem 1rem;
+                        }
+                        #attendanceSidebar.active {
+                            left: 0;
+                        }
+                        #sidebarOverlay {
+                            display: none;
+                            position: fixed;
+                            top: 0; left: 0; width: 100vw; height: 100vh;
+                            background: rgba(0,0,0,0.2);
+                            z-index: 1040;
+                        }
+                        #sidebarOverlay.active {
+                            display: block;
+                        }
+                    </style>
             </div>
         </nav>
     </aside>
@@ -368,5 +427,9 @@
 
         </script>
 </body>
+<script>
+    // Attendance sidebar logic (always present for student)
+    // Removed sidebar override for Attendance menu so it navigates normally
+</script>
 
 </html>

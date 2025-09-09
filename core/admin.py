@@ -1,8 +1,77 @@
-
-
+from .models import Department
 from django.contrib import admin
 from django.http import HttpResponse
 import csv
+from .models import Semester, SemesterSubject, Student
+# Custom form for Student to filter elective fields
+from django import forms
+from django.contrib.auth import get_user_model
+# Add principal_status to User admin
+User = get_user_model()
+from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
+# Principal admin: show only users with principal_status=True
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
+from .models import Principal
+
+class PrincipalAdmin(DefaultUserAdmin):
+	def get_queryset(self, request):
+		qs = super().get_queryset(request)
+		return qs.filter(principal_status=True)
+
+	list_display = DefaultUserAdmin.list_display + ('principal_status',)
+	list_filter = DefaultUserAdmin.list_filter
+	fieldsets = DefaultUserAdmin.fieldsets + (
+		('Principal Status', {'fields': ('principal_status',)}),
+	)
+
+admin.site.register(Principal, PrincipalAdmin)
+
+
+class CustomUserAdmin(DefaultUserAdmin):
+	list_display = DefaultUserAdmin.list_display + ('principal_status',)
+	list_filter = DefaultUserAdmin.list_filter
+	fieldsets = DefaultUserAdmin.fieldsets + (
+		('Principal Status', {'fields': ('principal_status',)}),
+	)
+
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
+
+class StudentAdminForm(forms.ModelForm):
+	class Meta:
+		model = Student
+		fields = '__all__'
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# Get department and semester from instance or initial data
+		department = None
+		semester = None
+		if self.instance and self.instance.pk:
+			department = self.instance.department
+			semester = self.instance.semester
+		elif 'department' in self.data and 'semester' in self.data:
+			try:
+				department = self.data.get('department')
+				semester = self.data.get('semester')
+			except Exception:
+				pass
+		# Filter elective fields to only show subjects marked as elective
+		qs = SemesterSubject.objects.filter(is_elective=True)
+		if department and semester:
+			qs = qs.filter(semester__department=department, semester__semester=semester)
+		self.fields['elective1'].queryset = qs
+		self.fields['elective2'].queryset = qs
+		self.fields['elective3'].queryset = qs
+
+# Custom admin for Student
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+	form = StudentAdminForm
+	list_display = ("user", "department", "semester", "elective1", "elective2", "elective3")
+	search_fields = ("user__username", "department__name")
 from django import forms
 from django.urls import path
 from django.shortcuts import render, redirect
@@ -15,7 +84,15 @@ except ImportError:
 	has_openpyxl = False
 
 
-from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE
+from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester
+
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+	list_display = ('code', 'name', 'hod', 'ahod')
+	search_fields = ('code', 'name')
+
+
 
 
 def export_students_csv(modeladmin, request, queryset):
@@ -183,7 +260,6 @@ class StudentAdmin(admin.ModelAdmin):
 			form = StudentImportForm()
 		return render(request, "admin/core/import_students.html", {"form": form})
 
-admin.site.register(Student, StudentAdmin)
 class StaffAdmin(admin.ModelAdmin):
 	list_display = ('user', 'name', 'department', 'position', 'position2', 'position3')
 	list_filter = ('department', 'position', 'position2', 'position3')
@@ -216,9 +292,18 @@ admin.site.register(AHOD, AHODAdmin)
 admin.site.register(StaffRating)
 admin.site.register(RatingQuestions)
 admin.site.register(IndividualStaffRating)
+
 admin.site.register(SpotFeedback)
 
-# Register AcademicRecord in admin
-from .models import AcademicRecord, Attendance
-admin.site.register(AcademicRecord)
+# Register Attendance only
+class SemesterSubjectInline(admin.TabularInline):
+	model = SemesterSubject
+	extra = 1
+
+@admin.register(Semester)
+class SemesterAdmin(admin.ModelAdmin):
+	inlines = [SemesterSubjectInline]
+	list_display = ("department", "semester")
+	search_fields = ("department__name", "semester")
+from .models import Attendance
 admin.site.register(Attendance)

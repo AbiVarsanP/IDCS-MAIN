@@ -1040,10 +1040,11 @@ def staff_action_od(request, id):
 
     if request.POST:
         od = OD.objects.get(id=id)
-        print(od.user.mentor.user.username, request.user)
-        # Mentor action
-        if str(od.user.mentor.user.username) == str(request.user):
-            od.Mstatus = get_post(request, 'sts')
+        print(f"staff_action_od: mentor={od.user.mentor.user.username}, advisor={od.user.advisor.user.username}, hod={od.user.hod.user.username}, current_user={request.user}")
+        role = request.POST.get('role')
+        status = get_post(request, 'sts')
+        if role == 'mentor' and str(od.user.mentor.user.username) == str(request.user):
+            od.Mstatus = status
             if od.Mstatus == STATUS[2][0]:  # Rejected
                 od.Astatus = STATUS[2][0]
                 od.Hstatus = STATUS[2][0]
@@ -1056,9 +1057,28 @@ def staff_action_od(request, id):
             print(od.Mstatus)
             od.save()
             return redirect("staff_od_view")
-        # HOD action (allow HOD to act at any stage)
-        if str(od.user.hod.user.username) == str(request.user):
-            action_status = get_post(request, 'sts')
+        elif role == 'advisor' and str(od.user.advisor.user.username) == str(request.user):
+            od.Astatus = status
+            print(f"Advisor action: POST['sts']={od.Astatus}, Mentor={od.Mstatus}, Advisor={od.Astatus}, User={request.user}")
+            # If advisor is also acting as mentor (mentor is still pending), update mentor status
+            if od.Mstatus == STATUS[0][0]:  # Pending
+                print("Advisor acting as mentor: updating Mstatus to", od.Astatus)
+                od.Mstatus = od.Astatus
+            # If advisor rejects, cascade rejection
+            if od.Astatus == STATUS[2][0]:  # Rejected
+                print("Advisor rejected: cascading rejection to Hstatus and AHstatus")
+                od.Hstatus = STATUS[2][0]
+                od.AHstatus = STATUS[2][0]
+            from .models import Notification
+            Notification.objects.create(
+                student=od.user,
+                message=f"Your OD request was {od.Astatus} by Advisor"
+            )
+            print(f"After save: Mentor={od.Mstatus}, Advisor={od.Astatus}, HOD={od.Hstatus}, AHOD={od.AHstatus}")
+            od.save()
+            return redirect("staff_od_view")
+        elif role == 'hod' and str(od.user.hod.user.username) == str(request.user):
+            action_status = status
             if action_status == STATUS[1][0]:  # 'Approved'
                 od.Mstatus = STATUS[1][0]
                 od.Astatus = STATUS[1][0]
@@ -1077,21 +1097,6 @@ def staff_action_od(request, id):
             od.save()
             print(od.Astatus)
             return redirect("hod_od_view")
-        # Advisor action
-        if str(od.user.advisor.user.username) == str(request.user):
-            od.Astatus = get_post(request, 'sts')
-            if od.Mstatus == STATUS[0][0]:  # Rejected
-                od.Mstatus = od.Astatus
-            if od.Astatus == STATUS[2][0]:
-                od.Hstatus = STATUS[2][0]
-                od.AHstatus = STATUS[2][0]
-            from .models import Notification
-            Notification.objects.create(
-                student=od.user,
-                message=f"Your OD request was {od.Astatus} by Advisor"
-            )
-            od.save()
-            return redirect("staff_od_view")
         od.save()
         print("Changed")
     return redirect("staff_od_view")
@@ -1100,12 +1105,15 @@ def staff_action_od(request, id):
 def staff_action_leave(request, id):
 
 
+
     if request.POST:
         leave = LEAVE.objects.get(id=id)
-        print(leave.user.mentor.user.username, request.user)
+        role = request.POST.get('role')
+        status = get_post(request, 'sts')
+        print(f"staff_action_leave: mentor={leave.user.mentor.user.username}, advisor={leave.user.advisor.user.username}, hod={leave.user.hod.user.username}, current_user={request.user}, role={role}, status={status}")
 
-        if str(leave.user.mentor.user.username) == str(request.user):
-            leave.Mstatus = get_post(request, 'sts')
+        if role == 'mentor' and str(leave.user.mentor.user.username) == str(request.user):
+            leave.Mstatus = status
             # Only set other statuses if rejected, not approved
             if leave.Mstatus == STATUS[2][0]:  # Rejected
                 leave.Astatus = STATUS[2][0]
@@ -1117,9 +1125,8 @@ def staff_action_leave(request, id):
                 message=f"Your Leave request was {leave.Mstatus} by Mentor"
             )
             print(leave.Mstatus)
-
-        if str(leave.user.advisor.user.username) == str(request.user):
-            leave.Astatus = get_post(request, 'sts')
+        elif role == 'advisor' and str(leave.user.advisor.user.username) == str(request.user):
+            leave.Astatus = status
             # If mentor is still pending, set mentor status to advisor's decision
             if leave.Mstatus == STATUS[0][0]:  # Pending
                 leave.Mstatus = leave.Astatus
@@ -1131,9 +1138,8 @@ def staff_action_leave(request, id):
                 student=leave.user,
                 message=f"Your Leave request was {leave.Astatus} by Advisor"
             )
-
-        if str(leave.user.hod.user.username) == str(request.user):
-            action_status = get_post(request, 'sts')
+        elif role == 'hod' and str(leave.user.hod.user.username) == str(request.user):
+            action_status = status
             if action_status == STATUS[1][0]:  # 'Approved'
                 leave.Mstatus = STATUS[1][0]
                 leave.Astatus = STATUS[1][0]
@@ -1144,13 +1150,11 @@ def staff_action_leave(request, id):
                 leave.Astatus = STATUS[2][0]
                 leave.Hstatus = STATUS[2][0]
                 leave.AHstatus = STATUS[2][0]
-
             from .models import Notification
             Notification.objects.create(
                 student=leave.user,
                 message=f"Your Leave request was {action_status} by HOD"
             )
-
             leave.save()
             print(leave.Astatus)
             return redirect("hod_leave_view")
@@ -1172,33 +1176,46 @@ def staff_action_gatepass(request, id):
         role = request.POST.get('role')
         status = request.POST.get('sts')
         from .models import Notification
-        # Mentor action
-        if role == 'mentor' and str(gatepass.user.mentor.user.username) == str(request.user):
-            gatepass.Mstatus = status
-            # Only set other statuses if rejected, not approved
-            if status == STATUS[2][0]:  # Rejected
-                gatepass.Astatus = STATUS[2][0]
-                gatepass.Hstatus = STATUS[2][0]
-            Notification.objects.create(
-                student=gatepass.user,
-                message=f"Your Gatepass request was {gatepass.Mstatus} by Mentor"
-            )
-            gatepass.save()
-            return redirect("staff_gatepass_view")
-        # Advisor action
-        if role == 'advisor' and str(gatepass.user.advisor.user.username) == str(request.user):
-            gatepass.Astatus = status
-            # If mentor is still pending, set mentor status to advisor's decision
-            if gatepass.Mstatus == STATUS[0][0]:  # Pending
-                gatepass.Mstatus = gatepass.Astatus
-            if status == STATUS[2][0]:
-                gatepass.Hstatus = STATUS[2][0]
-            Notification.objects.create(
-                student=gatepass.user,
-                message=f"Your Gatepass request was {gatepass.Astatus} by Advisor"
-            )
-            gatepass.save()
-            return redirect("staff_gatepass_view")
+        user_is_mentor = str(gatepass.user.mentor.user.username) == str(request.user)
+        user_is_advisor = str(gatepass.user.advisor.user.username) == str(request.user)
+        # If staff is both mentor and advisor, update both statuses
+        if (role == 'mentor' and user_is_mentor) or (role == 'advisor' and user_is_advisor):
+            if user_is_mentor and user_is_advisor:
+                gatepass.Mstatus = status
+                gatepass.Astatus = status
+                if status == STATUS[2][0]:
+                    gatepass.Hstatus = STATUS[2][0]
+                Notification.objects.create(
+                    student=gatepass.user,
+                    message=f"Your Gatepass request was {status} by Mentor/Advisor"
+                )
+                gatepass.save()
+                return redirect("staff_gatepass_view")
+            # If only mentor
+            if role == 'mentor' and user_is_mentor:
+                gatepass.Mstatus = status
+                if status == STATUS[2][0]:  # Rejected
+                    gatepass.Astatus = STATUS[2][0]
+                    gatepass.Hstatus = STATUS[2][0]
+                Notification.objects.create(
+                    student=gatepass.user,
+                    message=f"Your Gatepass request was {gatepass.Mstatus} by Mentor"
+                )
+                gatepass.save()
+                return redirect("staff_gatepass_view")
+            # If only advisor
+            if role == 'advisor' and user_is_advisor:
+                gatepass.Astatus = status
+                if gatepass.Mstatus == STATUS[0][0]:  # Pending
+                    gatepass.Mstatus = gatepass.Astatus
+                if status == STATUS[2][0]:
+                    gatepass.Hstatus = STATUS[2][0]
+                Notification.objects.create(
+                    student=gatepass.user,
+                    message=f"Your Gatepass request was {gatepass.Astatus} by Advisor"
+                )
+                gatepass.save()
+                return redirect("staff_gatepass_view")
         # HOD action
         if role == 'hod' and str(gatepass.user.hod.user.username) == str(request.user):
             if status == STATUS[1][0]:  # Approved
@@ -1540,31 +1557,48 @@ def staff_action_bonafide(request, id):
         role = request.POST.get('role')
         status = request.POST.get('sts')
         from .models import Notification
-        if role == 'mentor' and str(bonafide.user.mentor.user.username) == str(request.user):
-            bonafide.Mstatus = status
-            # Only set other statuses if rejected, not approved
-            if status == STATUS[2][0]:  # Rejected
-                bonafide.Astatus = STATUS[2][0]
-                bonafide.Hstatus = STATUS[2][0]
-            Notification.objects.create(
-                student=bonafide.user,
-                message=f"Your Bonafide request was {bonafide.Mstatus} by Mentor"
-            )
-            bonafide.save()
-            return redirect("staff_bonafides")
-        if role == 'advisor' and str(bonafide.user.advisor.user.username) == str(request.user):
-            bonafide.Astatus = status
-            # If mentor is still pending, set mentor status to advisor's decision
-            if bonafide.Mstatus == STATUS[0][0]:  # Pending
-                bonafide.Mstatus = bonafide.Astatus
-            if status == STATUS[2][0]:
-                bonafide.Hstatus = STATUS[2][0]
-            Notification.objects.create(
-                student=bonafide.user,
-                message=f"Your Bonafide request was {bonafide.Astatus} by Advisor"
-            )
-            bonafide.save()
-            return redirect("staff_bonafides")
+        user_is_mentor = str(bonafide.user.mentor.user.username) == str(request.user)
+        user_is_advisor = str(bonafide.user.advisor.user.username) == str(request.user)
+        # If staff is both mentor and advisor, update both statuses
+        if (role == 'mentor' and user_is_mentor) or (role == 'advisor' and user_is_advisor):
+            # If staff is both mentor and advisor for this student
+            if user_is_mentor and user_is_advisor:
+                bonafide.Mstatus = status
+                bonafide.Astatus = status
+                # Only set Hstatus if rejected
+                if status == STATUS[2][0]:
+                    bonafide.Hstatus = STATUS[2][0]
+                Notification.objects.create(
+                    student=bonafide.user,
+                    message=f"Your Bonafide request was {status} by Mentor/Advisor"
+                )
+                bonafide.save()
+                return redirect("staff_bonafides")
+            # If only mentor
+            if role == 'mentor' and user_is_mentor:
+                bonafide.Mstatus = status
+                if status == STATUS[2][0]:  # Rejected
+                    bonafide.Astatus = STATUS[2][0]
+                    bonafide.Hstatus = STATUS[2][0]
+                Notification.objects.create(
+                    student=bonafide.user,
+                    message=f"Your Bonafide request was {bonafide.Mstatus} by Mentor"
+                )
+                bonafide.save()
+                return redirect("staff_bonafides")
+            # If only advisor
+            if role == 'advisor' and user_is_advisor:
+                bonafide.Astatus = status
+                if bonafide.Mstatus == STATUS[0][0]:  # Pending
+                    bonafide.Mstatus = bonafide.Astatus
+                if status == STATUS[2][0]:
+                    bonafide.Hstatus = STATUS[2][0]
+                Notification.objects.create(
+                    student=bonafide.user,
+                    message=f"Your Bonafide request was {bonafide.Astatus} by Advisor"
+                )
+                bonafide.save()
+                return redirect("staff_bonafides")
         if role == 'hod' and str(bonafide.user.hod.user.username) == str(request.user):
             if status == STATUS[1][0]:  # Approved
                 bonafide.Mstatus = STATUS[1][0]

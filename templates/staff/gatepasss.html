@@ -23,6 +23,89 @@
     <button type="submit" class="btn btn-primary">Filter</button>
 </form>
 
+
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+
+                <strong class="card-title">Menties Gatepass</strong>
+
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">ID</th>
+                            <th>NAME</th>
+                            <th>SUB</th>
+                            <th>FROM-TO</th>
+                            <th>Submitted At</th>
+                            <th>STATUS</th>
+                            <th>OPTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            {% with filtered_mods=mods|dictsort:"id" %}
+                            {% for i in filtered_mods %}
+                                {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+                                    <tr>
+                                        <td class="serial"> <a href="">#GP{{i.id}}</a> </td>
+                                        <td> {{i.user.name}} </td>
+                                        <td>{{i.sub}}</td>
+                                        <td>{{i.start}} - {{i.end}}</td>
+                                        <td>{{ i.created|date:"d M Y H:i" }}</td>
+                                        <td>
+                                            Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                            Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                            HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                                        </td>
+                                        <td>
+                                            {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="mentor">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="advisor">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="role" value="hod">
+                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                                </form>
+                                            {% else %}
+                                                {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                                    <span class="text-success">Approved</span>
+                                                {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                                    <span class="text-danger">Rejected</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            {% if filtered_mods|length == 0 or not filtered_mods|dictsort:"id"|yesno:"no,yes" %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No records found</td>
+                                </tr>
+                            {% endif %}
+                            {% endwith %}
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
@@ -148,88 +231,5 @@
         </div>
     </div>
 </div>
-
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header">
-
-                <strong class="card-title">Menties Gatepass</strong>
-
-            </div>
-            <div class="table-stats order-table ov-h">
-                <table class="table ">
-                    <thead>
-                        <tr>
-                            <th class="serial">ID</th>
-                            <th>NAME</th>
-                            <th>SUB</th>
-                            <th>FROM-TO</th>
-                            <th>Submitted At</th>
-                            <th>STATUS</th>
-                            <th>OPTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                            {% with filtered_mods=mods|dictsort:"id" %}
-                            {% for i in filtered_mods %}
-                                {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
-                                    <tr>
-                                        <td class="serial"> <a href="">#GP{{i.id}}</a> </td>
-                                        <td> {{i.user.name}} </td>
-                                        <td>{{i.sub}}</td>
-                                        <td>{{i.start}} - {{i.end}}</td>
-                                        <td>{{ i.created|date:"d M Y H:i" }}</td>
-                                        <td>
-                                            Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
-                                            Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
-                                            HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-                                        </td>
-                                        <td>
-                                            {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
-                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="mentor">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                            {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
-                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="advisor">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                            {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
-                                                <form method="post" action="{% url 'staff_action_gatepass' i.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="hod">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                            {% else %}
-                                                {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
-                                                    <span class="text-success">Approved</span>
-                                                {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
-                                                    <span class="text-danger">Rejected</span>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                            {% if filtered_mods|length == 0 or not filtered_mods|dictsort:"id"|yesno:"no,yes" %}
-                                <tr>
-                                    <td colspan="6" class="text-center">No records found</td>
-                                </tr>
-                            {% endif %}
-                            {% endwith %}
-                    </tbody>
-                </table>
-            </div> <!-- /.table-stats -->
-        </div>
-    </div>
-</div>
-
 
 {% endblock %}

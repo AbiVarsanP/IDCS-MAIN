@@ -7,7 +7,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0013_user_principal_status'),
+        ('auth', '0001_initial'),
         ('core', '0080_merge_0067_passwordotp_0079_delete_principal'),
     ]
 

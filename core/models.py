@@ -114,6 +114,7 @@ class Notification(models.Model):
         ('mentor', 'Mentor'),
         ('advisor', 'Advisor'),
         ('hod', 'HOD'),
+        ('ahod', 'AHOD'),  # add this
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
     message = models.TextField()
@@ -242,6 +243,19 @@ class HOD(models.Model):
 
 
 class OD(models.Model):
+    # Add a global status field to reflect the latest approval state
+    status = models.CharField(choices=STATUS, max_length=50, default="Pending")
+    def save(self, *args, **kwargs):
+        # Set global status based on the latest approval state (priority: Rejected > Pending > Approved)
+        if 'Rejected' in [self.Mstatus, self.Astatus, self.AHstatus, self.Hstatus]:
+            self.status = 'Rejected'
+        elif 'Pending' in [self.Mstatus, self.Astatus, self.AHstatus, self.Hstatus]:
+            self.status = 'Pending'
+        elif all(s == 'Approved' for s in [self.Mstatus, self.Astatus, self.AHstatus, self.Hstatus]):
+            self.status = 'Approved'
+        else:
+            self.status = 'Pending'
+        super().save(*args, **kwargs)
     user = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='s_student')
     sub = models.CharField(max_length=150)
     body = models.TextField()

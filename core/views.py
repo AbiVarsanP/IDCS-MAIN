@@ -333,18 +333,16 @@ def ahod_notification_history(request):
             ahod = None
     # Only allow AHODs
     if not ahod or not hasattr(ahod, 'position2') or ahod.position2 != 1:
-        return render(request, 'hod/hod_notification_history.html', {'notifications': [], 'duser': ahod})
+        return render(request, 'ahod/notification_history.html', {'all_notifications': [], 'duser': ahod})
     # Query notifications for AHOD
-    notifications = Notification.objects.filter(staff=ahod, role__iexact='ahod').order_by('-created_at')
+    all_notifications = Notification.objects.filter(staff=ahod, role__iexact='ahod').order_by('-created_at')
     if request.method == "POST" and 'delete_all' in request.POST:
-        notifications.delete()
+        all_notifications.delete()
         return redirect('hod_notification_history')
     elif request.method == "POST":
-        notifications.filter(is_read=False).update(is_read=True)
-    recent_notifications = notifications[:5]
-    return render(request, 'hod/hod_notification_history.html', {
-        'notifications': notifications,
-        'recent_notifications': recent_notifications,
+        all_notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'ahod/notification_history.html', {
+        'all_notifications': all_notifications,
         'duser': ahod
     })
 
@@ -609,64 +607,36 @@ import qrcode
 @login_required
 def ahod_od_view(request):
     context = set_config(request)
-    ahod = AHOD.objects.get(user=context['duser'])
-    from .constants import SDEPT, DEPT
-    ahod_dept_obj = ahod.user.department
-    ahod_dept_id = ahod_dept_obj.id if ahod_dept_obj else None
-    dept_code = None
-    for code, name in DEPT:
-        sdept_entry = SDEPT[ahod_dept_id] if SDEPT and ahod_dept_id is not None and ahod_dept_id < len(SDEPT) else None
-        if sdept_entry and len(sdept_entry) > 1 and name == sdept_entry[1]:
-            dept_code = code
-            break
-    if not dept_code:
-
-        dept_code = str(ahod_dept_id)
-
-    # Dept ODs: all ODs where student's hod is AHOD user, or mentor is not AHOD user
-    context['hods'] = [
-        i for i in OD.objects.all()
-        if (
-            (i.user.hod and i.user.hod.id == ahod.user.id) or
-            (not i.user.mentor or i.user.mentor.id != ahod.user.id)
-        )
-    ]
-    # Mentees: students where AHOD is mentor
-    context['mods'] = [i for i in OD.objects.all() if i.user.mentor and i.user.mentor.id == ahod.user.id]
-
-    # Handle POST for AHOD OD action (approve/reject)
-    if request.method == 'POST':
-        od_id = request.POST.get('od_id')
-        action = request.POST.get('action') or request.POST.get('sts')
-        reason = request.POST.get('reason')
-        od = OD.objects.get(id=od_id)
-        if action == 'approve':
-            od.AHstatus = 'Approved by AHOD'
-        elif action == 'reject':
-            od.AHstatus = 'Rejected by AHOD'
-            od.Mstatus = 'Rejected by AHOD'
-            od.Astatus = 'Rejected by AHOD'
-            od.Hstatus = 'Rejected by AHOD'
-        od.save()
-        # Optionally, add notification logic here
-        return redirect('ahod_od_view')
-
+    from .models import Staff, AHOD, OD
+    from django.db.models import Q
+    try:
+        duser = Staff.objects.get(user=request.user)
+    except Staff.DoesNotExist:
+        duser = None
+    context['duser'] = duser
+    ahod = AHOD.objects.filter(user=duser).first() if duser else None
+    # Mentees: ODs where duser is mentor or advisor
+    context['mods'] = OD.objects.filter(Q(user__mentor=duser) | Q(user__advisor=duser)).distinct()
+    # Dept ODs: all ODs for students in AHOD's department
+    if ahod and hasattr(ahod, 'user') and hasattr(ahod.user, 'department'):
+        context['hods'] = OD.objects.filter(user__department=ahod.user.department).distinct()
+    else:
+        context['hods'] = OD.objects.none()
     return render(request, 'ahod/ods.html', context)
 
 @login_required
 def ahod_leave_view(request):
+    from django.db.models import Q
     context = set_config(request)
     ahod = AHOD.objects.get(user=context['duser'])
     # Mentees: students where AHOD is mentor
-    context['mods'] = [i for i in LEAVE.objects.all() if i.user.mentor and i.user.mentor.id == ahod.user.id]
-    # Dept leaves: all leaves where student's hod is AHOD user, or mentor is not AHOD user
-    context['hods'] = [
-        i for i in LEAVE.objects.all()
-        if (
-            (i.user.hod and i.user.hod.id == ahod.user.id) or
-            (not i.user.mentor or i.user.mentor.id != ahod.user.id)
-        )
-    ]
+    context['mods'] = LEAVE.objects.filter(user__mentor=ahod.user)
+    # Dept leaves: all leaves for students in AHOD's department (match ODs logic)
+    dept = getattr(ahod.user, 'department', None)
+    if dept:
+        context['hods'] = LEAVE.objects.filter(user__department=dept).order_by('-created')
+    else:
+        context['hods'] = LEAVE.objects.none()
     return render(request, 'ahod/leaves.html', context)
 
 # Student Profile View
@@ -864,6 +834,11 @@ def od(request):
         # Convert browser datetime string → Python datetime
         start = parse_datetime(start)
         end = parse_datetime(end)
+        from django.utils import timezone
+        if start and timezone.is_naive(start):
+            start = timezone.make_aware(start)
+        if end and timezone.is_naive(end):
+            end = timezone.make_aware(end)
 
         # Create OD request
         obj = OD.objects.create(
@@ -875,14 +850,14 @@ def od(request):
             proof=proof
         )
 
-        # Notify mentor, advisor, HOD
+        # Notify mentor, advisor, HOD, AHOD
         student = context['duser']
         staff_list = [
             (student.mentor, 'mentor'),
             (student.advisor, 'advisor'),
-            (student.hod, 'hod')
+            (student.hod, 'hod'),
+            (student.ahod.user if student.ahod else None, 'ahod'),
         ]
-
         for staff, role in staff_list:
             if staff:
                 Notification.objects.create(
@@ -917,19 +892,28 @@ def leave(request):
             t = datetime.strptime(t_raw, "%Y-%m-%dT%H:%M") if t_raw else timezone.now()
         except Exception:
             t = timezone.now()
+        # Make timezone aware if needed
+        if timezone.is_naive(f):
+            f = timezone.make_aware(f)
+        if timezone.is_naive(t):
+            t = timezone.make_aware(t)
         obj = LEAVE(user=context['duser'], sub=sub,
                     body=body, start=f, end=t, proof=proff)
         obj.save()
-        # Notify mentor, advisor, HOD
+        # Notify mentor, advisor, HOD, AHOD
         student = context['duser']
-        staff_list = [student.mentor, student.advisor, student.hod]
-        for staff in staff_list:
+        staff_list = [
+            (student.mentor, 'mentor'),
+            (student.advisor, 'advisor'),
+            (student.hod, 'hod'),
+            (student.ahod.user if student.ahod else None, 'ahod'),
+        ]
+        for staff, role in staff_list:
             if staff:
-                role = 'hod' if hasattr(staff, 'position') and staff.position == 0 else None
                 Notification.objects.create(
                     staff=staff,
                     role=role,
-                    message=f"New Leave request from {student.name}",
+                    message=f"New Leave request from {student.name}"
                 )
         return redirect("dash")
 
@@ -961,7 +945,7 @@ def gatepass(request):
                     role=role,
                     message=f"New Gatepass request from {student.name}",
                 )
-        return redirect("dash")
+    # Notify mentor, advisor, HOD, AHOD
     if action == 'status':
         # Show all gatepasses for this student
         context['gatepasses'] = GATEPASS.objects.filter(user=context['duser']).order_by('-id')
@@ -1534,7 +1518,7 @@ def bonafide_view(request):
                     role=role,
                     message=f"New Bonafide request from {student.name}",
                 )
-
+    # Notify mentor, advisor, HOD, AHOD
         return redirect("dash")
     return render(request, 'student/bonafide_form.html', context=context)
 

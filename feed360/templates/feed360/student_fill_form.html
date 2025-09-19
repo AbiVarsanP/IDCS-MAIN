@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dict_get %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Fill Feedback Form: {{ form.title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for subject in subjects %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <strong>Subject:</strong> {{ subject.name }}<br>
+                    <strong>Staff:</strong> {{ staff_map|dict_get:subject.id }}
+                </div>
+                <div class="card-body">
+                    {% for question in questions %}
+                        <div class="mb-3">
+                            <label>{{ question.text }}</label>
+                            {% if question.answer_type == 'stars' or question.answer_type == 'both' %}
+                                <div class="star-rating" data-input-name="star_{{ question.id }}_subject_{{ subject.id }}">
+                                    {% for i in "1234" %}
+                                        <span class="fa fa-star-o" data-value="{{ forloop.counter }}"></span>
+                                    {% endfor %}
+                                    <input type="hidden" name="star_{{ question.id }}_subject_{{ subject.id }}" required>
+                                </div>
+                            {% endif %}
+                            {% if question.answer_type == 'text' or question.answer_type == 'both' %}
+                                <textarea name="comment_{{ question.id }}_subject_{{ subject.id }}" class="form-control" rows="2"></textarea>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success">Submit Feedback</button>
+    </form>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.star-rating .fa {
+    font-size: 1.5em;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.star-rating .fa.selected,
+.star-rating .fa:hover,
+.star-rating .fa.selected ~ .fa {
+    color: #ffc107;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.star-rating').forEach(function(ratingDiv) {
+        var stars = ratingDiv.querySelectorAll('.fa');
+        var input = ratingDiv.querySelector('input[type="hidden"]');
+        stars.forEach(function(star, idx) {
+            star.addEventListener('click', function() {
+                var val = star.getAttribute('data-value');
+                input.value = val;
+                stars.forEach(function(s, i) {
+                    if (i < val) {
+                        s.classList.add('selected');
+                        s.classList.remove('fa-star-o');
+                        s.classList.add('fa-star');
+                    } else {
+                        s.classList.remove('selected');
+                        s.classList.remove('fa-star');
+                        s.classList.add('fa-star-o');
+                    }
+                });
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

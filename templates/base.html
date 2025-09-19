@@ -90,12 +90,14 @@
                             <li class="{% if request.resolver_match.url_name == 'principal_dashboard' %}active{% endif %}"><a href="{% url 'principal_dashboard' %}"><i class="menu-icon fa fa-laptop"></i>Principal Dashboard</a></li>
                             <li class="{% if request.resolver_match.url_name == 'principal_department' %}active{% endif %}"><a href="{% url 'principal_department' %}"><i class="menu-icon fa fa-building"></i>Departments</a></li>
                         {% elif duser and duser.position == 0 %}
+                            
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_od_view' %}active{% endif %}"><a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'hod_feedback' %}active{% endif %}"><a href="#"><i class="menu-icon ti-comments"></i>Feedback</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'feed360_create' %}">Create Feed360 Form</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'feed360_staff_results' staff_id=request.user.staff.id %}">View Feed360 Results</a></li>
 
                             <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>

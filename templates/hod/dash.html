@@ -44,7 +44,28 @@
     }
 </style>
 <div class="row">
+    {% if duser and duser.position == 0 %}
     <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-5">
+                        <i class="ti-comments"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Feed360 Feedback</div>
+                            <div class="stat-heading">
+                                <a href="{% url 'feed360_create' %}" class="btn btn-link btn-sm flat-color-5">Create</a>
+                                <a href="{% url 'feed360_staff_results' staff_id=request.user.staff.id %}" class="btn btn-link btn-sm flat-color-5">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
         <div class="card">
             <div class="card-body">
                 <div class="stat-widget-five">
@@ -128,6 +149,25 @@
                                     <a href="{% url 'hod_gatepass_view' %}" class="btn btn-link btn-sm  flat-color-4">View
                                         &nbsp;<i class="fa fa-arrow-right"></i></a>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-5">
+                        <i class="ti-bar-chart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Staff Feedback Results</div>
+                            <div class="stat-heading">
+                                <a href="{% url 'feed360_hod_staff_feedback_results' %}" class="btn btn-link btn-sm flat-color-5">View</a>
                             </div>
                         </div>
                     </div>

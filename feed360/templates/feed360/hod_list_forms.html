@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Feedback Forms Created for {{ department_name }}</h2>
+    {% if forms %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>Section</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in forms %}
+                <tr>
+                    <td>{{ form.title }}</td>
+                    <td>{{ form.year }}</td>
+                    <td>{{ form.section }}</td>
+                    <td>{{ form.created_at }}</td>
+                    <td>
+                        <a href="{% url 'feed360_hod_results_form' form.id %}" class="btn btn-info btn-sm">View Results</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No feedback forms found for your department.</div>
+    {% endif %}
+</div>
+{% endblock %}

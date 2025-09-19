@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include("core.urls")),
     path('resume/', include(('resumebuilder.urls', 'resumebuilder'), namespace='resumebuilder')),
     path('pathpilot/', include('pathpilot.urls')),
+        path('feed360/', include('feed360.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

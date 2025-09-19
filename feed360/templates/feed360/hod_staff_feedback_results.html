@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Staff Feedback Results (All Forms)</h2>
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="staff_id">Select Staff:</label>
+                <select name="staff_id" id="staff_id" class="form-control" required>
+                    <option value="">-- Select Staff --</option>
+                    {% for s in staff_list %}
+                        <option value="{{ s.id }}" {% if s.id|stringformat:'s' == selected_staff_id %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 align-self-end">
+                <button type="submit" class="btn btn-primary">View Results</button>
+            </div>
+        </div>
+    </form>
+    {% if selected_staff %}
+        <h4>Results for: {{ selected_staff.name }}</h4>
+        {% if results %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Form Title</th>
+                        <th>Question</th>
+                        <th>Avg Rating</th>
+                        <th>Sentiment</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in results %}
+                    <tr>
+                        <td>{{ res.form_title }}</td>
+                        <td>{{ res.question_text }}</td>
+                        <td>{{ res.avg_rating }}</td>
+                        <td>
+                            Sentiment: <b>{{ res.sentiment }}</b> ({{ res.confidence|floatformat:2 }} confidence)
+                        </td>
+                        <td>
+                            {% for comment in res.comments %}
+                                <div>{{ comment }}</div>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">No feedback found for this staff.</div>
+        {% endif %}
+
+        {# --- Staff Dashboard Charts (reuse staff_my_results style) --- #}
+        <h4>Staff Feedback Charts</h4>
+        <canvas id="trendChart" height="80"></canvas>
+        <canvas id="aspectChart" height="80"></canvas>
+        <canvas id="sentimentPie" height="80"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script id="trend-data" type="application/json">{{ trend_json|default:'[]'|safe }}</script>
+        <script id="aspect-labels" type="application/json">{{ aspect_labels_json|default:'[]'|safe }}</script>
+        <script id="aspect-data" type="application/json">{{ aspect_data_json|default:'{}'|safe }}</script>
+        <script id="sentiment-dist" type="application/json">{{ sentiment_dist_json|default:'{}'|safe }}</script>
+        <script>
+        // Trend chart
+        const trend = JSON.parse(document.getElementById('trend-data').textContent);
+        const trendLabels = trend.map(x => x.form_id);
+        const trendData = trend.map(x => x.overall_score);
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Overall Score',
+                    data: trendData,
+                    borderColor: 'blue',
+                    fill: false
+                }]
+            }
+        });
+        // Aspect chart
+        const aspectLabels = JSON.parse(document.getElementById('aspect-labels').textContent);
+        const aspectData = JSON.parse(document.getElementById('aspect-data').textContent);
+        const aspectDatasets = aspectLabels.map((label, i) => ({
+            label: label,
+            data: aspectData[label],
+            borderColor: `hsl(${i*60},70%,50%)`,
+            fill: false
+        }));
+        new Chart(document.getElementById('aspectChart'), {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: aspectDatasets
+            }
+        });
+        // Sentiment pie
+        const sentimentDist = JSON.parse(document.getElementById('sentiment-dist').textContent);
+        const sentimentLabels = Object.keys(sentimentDist);
+        const sentimentCounts = Object.values(sentimentDist);
+        new Chart(document.getElementById('sentimentPie'), {
+            type: 'pie',
+            data: {
+                labels: sentimentLabels,
+                datasets: [{
+                    data: sentimentCounts,
+                    backgroundColor: ['#4caf50','#2196f3','#ff9800','#f44336','#9c27b0']
+                }]
+            }
+        });
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

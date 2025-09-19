@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Active Feedback Forms</h2>
+    {% if forms %}
+        <ul class="list-group mb-4">
+            {% for form in forms %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ form.title }} ({{ form.year }}-{{ form.section }})</span>
+                    <a href="{% url 'feed360_fill' form.id %}" class="btn btn-primary btn-sm">Fill Feedback</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-info">No active feedback forms for your class.</div>
+    {% endif %}
+</div>
+{% endblock %}

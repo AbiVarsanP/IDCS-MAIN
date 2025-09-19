@@ -448,6 +448,8 @@ def my_class_students(request):
 def ahod_dash(request):
     context = set_config(request)
     ahod = AHOD.objects.get(user=context['duser'])
+    # Set duser to the Staff object for correct feedback link
+    context['duser'] = ahod.user
     # Get department code for AHOD
     ahod_dept = ahod.user.department
     # Get all students in the same department as AHOD
@@ -1351,39 +1353,6 @@ def student_feedback(request):
     
     hod = HOD.objects.get(user=duser.hod)
 
-    # spot feedback
-    spf = SpotFeedback.objects.filter(user=duser.hod)
-    context['spf_staff']=[]
-    for i in spf:
-        if duser in i.students.all():
-            context['spf_staff'].append(Staff.objects.get(user=i.staff.user))
-
-        if duser in i.completed_students.all():
-            context['cs_rating'].append(Staff.objects.get(user=i.staff.user))  
-            
-    if not hod.get_feedback:
-        duser.feedback_for.clear()
-        return render(request, 'student/feedback.html', context)
-
-    if hod.get_feedback:
-        rec_f = list(i.staff.id for i in duser.feedback_for.all())
-
-    for i in temp:
-        if i not in rec_f:
-            context['s_rating'].append(
-                duser.teaching_staffs.get(id=i))
-        else:
-            context['cs_rating'].append(
-                duser.teaching_staffs.get(id=i))
-    
-    return render(request, 'student/feedback.html', context)
-
-
-@login_required
-def student_feedback_form(request, id,typ):
-    context = set_config(request)
-    
-    ques = RatingQuestions.objects.all()
     context['ques'] = ques
     context['c_staff'] = Staff.objects.get(id=id)
 

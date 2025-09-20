@@ -27,7 +27,7 @@
 
     <!-- Department-level Sentiment Pie Chart -->
     <h4>Department Sentiment Distribution</h4>
-    <canvas id="deptSentimentPie" width="400" height="200"></canvas>
+    <canvas id="deptSentimentPie" width="200" height="200"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {# Output JSON safely for JS #}
     {{ sentiment_labels|json_script:"sentiment-labels" }}
@@ -126,30 +126,48 @@
     </script>
 
     <!-- Per-staff detailed results -->
-    {% for result in staff_results %}
-        <h4>Staff: {{ result.staff.name }}</h4>
-        <table class="table table-bordered mb-4">
-            <thead>
-                <tr>
-                    <th>Question</th>
-                    <th>Avg Rating</th>
-                    <th>Comments</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for agg in result.aggregates %}
-                <tr>
-                    <td>{{ agg.question_id }}</td>
-                    <td>{{ agg.avg_rating }}</td>
-                    <td>
+    <h4>Per-Staff, All-Questions Results</h4>
+    <table class="table table-bordered mb-4">
+        <thead>
+            <tr>
+                <th>Staff</th>
+                <th>Questions</th>
+                <th>Avg Ratings</th>
+                <th>Comments</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for result in staff_results %}
+            <tr>
+                <td>{{ result.staff.name }}</td>
+                <td>
+                    <ul style="padding-left: 18px;">
+                    {% for agg in result.aggregates %}
+                        <li>{{ agg.question_id }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ul style="padding-left: 18px;">
+                    {% for agg in result.aggregates %}
+                        <li>{{ agg.avg_rating }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ul style="padding-left: 18px;">
+                    {% for agg in result.aggregates %}
+                        <li>
                         {% for comment in agg.comments %}
                             <div>{{ comment }}</div>
                         {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endfor %}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

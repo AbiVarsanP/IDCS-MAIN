@@ -53,12 +53,17 @@ def save_map(request):
 
 @login_required
 def map_history(request):
+	from core.helpers import set_config
+	context = set_config(request)
 	maps = PathPilotMap.objects.filter(user=request.user).order_by('-created_at')
-	return render(request, 'pathpilot/map_history.html', {'maps': maps})
+	context['maps'] = maps
+	return render(request, 'pathpilot/map_history.html', context)
 
 
 def cp(request):
 	"""Render the Path Pilot form page. Handles PDF download if requested."""
+	from core.helpers import set_config
+	context = set_config(request)
 	# If ?download=pdf, generate PDF from last plan in session
 	if request.GET.get('download') == 'pdf':
 		plan = request.session.get('pathpilot_last_plan')
@@ -102,7 +107,7 @@ def cp(request):
 		response = HttpResponse(buffer, content_type='application/pdf')
 		response['Content-Disposition'] = 'attachment; filename="pathpilot_roadmap.pdf"'
 		return response
-	return render(request, 'pathpilot/cp.html')
+	return render(request, 'pathpilot/cp.html', context)
 
 @csrf_exempt
 def course_map(request):

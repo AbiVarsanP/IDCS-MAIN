@@ -23,7 +23,8 @@
     {% if selected_staff %}
         <h4>Results for: {{ selected_staff.name }}</h4>
         {% if results %}
-            <table class="table table-bordered">
+            <h4>Per-Form, Per-Question Results</h4>
+            <table class="table table-bordered mt-4">
                 <thead>
                     <tr>
                         <th>Form Title</th>
@@ -34,20 +35,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for res in results %}
-                    <tr>
-                        <td>{{ res.form_title }}</td>
-                        <td>{{ res.question_text }}</td>
-                        <td>{{ res.avg_rating }}</td>
-                        <td>
-                            Sentiment: <b>{{ res.sentiment }}</b> ({{ res.confidence|floatformat:2 }} confidence)
-                        </td>
-                        <td>
-                            {% for comment in res.comments %}
-                                <div>{{ comment }}</div>
-                            {% endfor %}
-                        </td>
-                    </tr>
+                    {% regroup results by form_title as form_groups %}
+                    {% for form in form_groups %}
+                        {% for q in form.list %}
+                        <tr>
+                            {% if forloop.first %}
+                            <td rowspan="{{ form.list|length }}">{{ form.grouper }}</td>
+                            {% endif %}
+                            <td>{{ q.question_text }}</td>
+                            <td>{{ q.avg_rating }}</td>
+                            <td>Sentiment: <b>{{ q.sentiment }}</b> ({{ q.confidence|floatformat:2 }} confidence)</td>
+                            <td>
+                                {% if forloop.first %}
+                                <a class="btn btn-sm btn-success" href="{% url 'feed360_hod_view_comments_all' selected_staff.id q.form_id %}">View All</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
                     {% endfor %}
                 </tbody>
             </table>
@@ -59,7 +63,7 @@
         <h4>Staff Feedback Charts</h4>
         <canvas id="trendChart" height="80"></canvas>
         <canvas id="aspectChart" height="80"></canvas>
-        <canvas id="sentimentPie" height="80"></canvas>
+    <canvas id="sentimentPie" width="500" height="500" style="width:500px; height:500px;"></canvas>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script id="trend-data" type="application/json">{{ trend_json|default:'[]'|safe }}</script>
         <script id="aspect-labels" type="application/json">{{ aspect_labels_json|default:'[]'|safe }}</script>
@@ -110,6 +114,10 @@
                     data: sentimentCounts,
                     backgroundColor: ['#4caf50','#2196f3','#ff9800','#f44336','#9c27b0']
                 }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false
             }
         });
         </script>

@@ -16,14 +16,16 @@
         </thead>
         <tbody>
             {% for res in results %}
-            <tr>
-                <td>{{ res.form_title }}</td>
-                <td>{{ res.question_text }}</td>
-                <td>{{ res.avg_rating }}</td>
-                <td>
-                    Sentiment: <b>{{ res.sentiment }}</b> ({{ res.confidence|floatformat:2 }} confidence)
-                </td>
-            </tr>
+                {% for q in res.questions %}
+                <tr>
+                    {% if forloop.first %}
+                    <td rowspan="{{ res.questions|length }}">{{ res.form_title }}</td>
+                    {% endif %}
+                    <td>{{ q.question_text }}</td>
+                    <td>{{ q.avg_rating }}</td>
+                    <td>Sentiment: <b>{{ q.majority_sentiment }}</b> ({{ q.majority_confidence|floatformat:2 }} confidence)</td>
+                </tr>
+                {% endfor %}
             {% endfor %}
         </tbody>
     </table>

@@ -27,49 +27,45 @@ def extract_text(file):
 # Modular AI section analysis
 
 
-def ai_analyze_section(section_name, section_text, target_role=None):
+
+def ai_analyze_section(section_name, section_text, jd_text=None):
+	"""
+	Sends the full section text and full JD to the AI for analysis.
+	The AI should return JSON: {"section_score": int, "lines": [{"original": str, "suggestion": str, "reason": str}]}
+	Only lines that are not proper or not relevant to the JD should be returned in the 'lines' list.
+	"""
 	if not section_text.strip():
 		return None
-	lines = [l for l in section_text.splitlines() if l.strip()]
-	analyzed_lines = []
-	section_score_sum = 0
-	for idx, line in enumerate(lines):
-		print(f"[AI DEBUG] Calling AI for section '{section_name}', line {idx+1}/{len(lines)}: {line[:80]}")
-		prompt = (
-			f"This is a fresher resume for a student. Give only a short, actionable suggestion and scores. "
-			f"For this line: '{line}', check grammar, clarity, and suggest a stronger version. "
-			f"If any important job-related keywords are missing, include them in a missing_keywords field as a list. "
-			f"Reply ONLY with JSON: {{clarity_score (0-10), impact_score (0-10), ats_compatibility (0-10), suggestion, missing_keywords (list)}}."
-		)
-		if target_role:
-			prompt += f" Compare this line against job role requirements for {target_role}. If any keywords are missing, add them to missing_keywords."
-		try:
-			ai_response = call_ai_api(prompt)
-			print(f"[AI DEBUG] AI response for section '{section_name}', line {idx+1}: {ai_response[:120]}")
-			import json
-			json_start = ai_response.find('{')
-			json_end = ai_response.rfind('}') + 1
-			if json_start != -1 and json_end != -1:
-				ai_json = ai_response[json_start:json_end]
-				data = json.loads(ai_json)
-				analyzed_lines.append({
-					"original": line,
-					"suggestion": data.get("suggestion"),
-					"clarity_score": int(data.get("clarity_score", 0)),
-					"ats_compatibility": int(data.get("ats_compatibility", 0)),
-					"impact_score": int(data.get("impact_score", 0)),
-					"missing_keywords": data.get("missing_keywords", None)
-				})
-				section_score_sum += int(data.get("clarity_score", 0)) + int(data.get("ats_compatibility", 0)) + int(data.get("impact_score", 0))
-			else:
-				analyzed_lines.append({"original": line, "suggestion": ai_response, "clarity_score": 0, "ats_compatibility": 0, "impact_score": 0, "missing_keywords": None})
-		except Exception as e:
-			print(f"[AI DEBUG] AI error for section '{section_name}', line {idx+1}: {e}")
-			analyzed_lines.append({"original": line, "suggestion": f"AI error: {e}", "clarity_score": 0, "ats_compatibility": 0, "impact_score": 0, "missing_keywords": None})
-	# Section score: average of line scores (out of 30, scaled to 100)
-	max_score = len(analyzed_lines) * 30 if analyzed_lines else 1
-	section_score = int((section_score_sum / max_score) * 100) if analyzed_lines else 0
-	return {"section_score": section_score, "lines": analyzed_lines}
+	prompt = (
+		f"You are an expert resume reviewer and ATS analyzer. "
+		f"Here is the job description (JD):\n{jd_text}\n" if jd_text else ""
+	)
+	prompt += (
+		f"Here is a section from a student's resume (section: {section_name}):\n{section_text}\n"
+		f"Analyze the section as a whole and each line. "
+		f"For each line, if it is not proper (e.g., grammar, clarity, or not relevant to the JD), return it in a list with a suggestion to improve it. "
+		f"If the line is fine and relevant, do not include it in the list. "
+		f"Give an overall section score (0-100) based on how well the section matches the JD. "
+		f"Reply ONLY with JSON: {{'section_score': int, 'lines': [{{'original': str, 'suggestion': str, 'reason': str}}]}}."
+	)
+	try:
+		ai_response = call_ai_api(prompt)
+		print(f"[AI DEBUG] AI response for section '{section_name}': {ai_response[:120]}")
+		import json
+		json_start = ai_response.find('{')
+		json_end = ai_response.rfind('}') + 1
+		if json_start != -1 and json_end != -1:
+			ai_json = ai_response[json_start:json_end]
+			data = json.loads(ai_json)
+			return {
+				"section_score": int(data.get("section_score", 0)),
+				"lines": data.get("lines", [])
+			}
+		else:
+			return {"section_score": 0, "lines": []}
+	except Exception as e:
+		print(f"[AI DEBUG] AI error for section '{section_name}': {e}")
+		return {"section_score": 0, "lines": []}
 
 
 def split_resume_sections(text):
@@ -99,18 +95,88 @@ def split_resume_sections(text):
 		sections[current_section] = '\n'.join(buffer).strip()
 	return sections
 
-def analyze_resume(text, target_role=None):
-	sections = split_resume_sections(text)
-	section_feedback = {}
-	total_score = 0
-	section_count = 0
-	for section, section_text in sections.items():
-		ai_result = ai_analyze_section(section, section_text, target_role=target_role)
-		section_feedback[section] = ai_result
-		total_score += int(ai_result.get("section_score", 0))
-		section_count += 1
-	overall_score = int(total_score / section_count) if section_count else 0
-	return {
-		"sections": section_feedback,
-		"overall": {"score": overall_score}
-	}
+
+
+def analyze_resume(text, jd_text=None):
+	"""
+	Sends the full resume and JD to the AI. Expects a list of flagged lines with section, reason, and suggestion, and an overall score.
+	"""
+	prompt = (
+		f"You are an expert resume reviewer and ATS analyzer.\n"
+		f"Here is the job description (JD):\n{jd_text}\n\n"
+		f"Here is the full resume:\n{text}\n\n"
+		f"Analyze the resume as a whole. For each line, if it is not relevant to the JD or needs improvement, return it in a list with its section, a reason, and a suggestion.\n"
+		f"If the line is fine and relevant, do not include it in the list.\n"
+		f"Be concise: limit each suggestion to 1-2 sentences. Limit the number of flagged lines to the 5 most important per chunk.\n"
+		f"Give an overall resume score (0-100) based on how well the resume matches the JD.\n"
+		f"Reply ONLY with JSON: {{'overall_score': int, 'flagged_lines': [{{'section': str, 'original': str, 'reason': str, 'suggestion': str}}]}}."
+	)
+	import json
+	try:
+		ai_response = call_ai_api(prompt)
+		print(f"[AI DEBUG] AI response for full resume: {ai_response[:120]}")
+		json_start = ai_response.find('{')
+		json_end = ai_response.rfind('}') + 1
+		if json_start != -1 and json_end != -1:
+			ai_json = ai_response[json_start:json_end]
+			import re
+			# Fix single quotes to double quotes for JSON
+			ai_json_fixed = re.sub(r"'", '"', ai_json)
+			try:
+				data = json.loads(ai_json_fixed)
+				return {
+					"overall": {"score": int(data.get("overall_score", 0))},
+					"flagged_lines": data.get("flagged_lines", [])
+				}
+			except json.JSONDecodeError as e:
+				# Try to extract as many flagged_lines as possible from a truncated array, even if broken mid-object
+				flagged_lines = []
+				score = 0
+				try:
+					# Extract overall_score manually
+					score_match = re.search(r'"overall_score"\s*:\s*(\d+)', ai_json_fixed)
+					if score_match:
+						score = int(score_match.group(1))
+					# Extract flagged_lines array up to last complete or partial object
+					flagged_start = ai_json_fixed.find('"flagged_lines"')
+					arr_start = ai_json_fixed.find('[', flagged_start)
+					arr_str = ai_json_fixed[arr_start:]
+					# Find all possible objects, even broken ones
+					obj_matches = re.findall(r'\{[^\{\}]*\}', arr_str)
+					for obj_str in obj_matches:
+						try:
+							flagged_lines.append(json.loads(obj_str))
+						except Exception:
+							# Try to fix broken objects by trimming at last complete key-value
+							last_comma = obj_str.rfind(',')
+							if last_comma > 0:
+								try:
+									fixed_obj = obj_str[:last_comma] + '}'
+									flagged_lines.append(json.loads(fixed_obj))
+								except Exception:
+									continue
+							continue
+					# Try to extract a final partial object if the array is cut off
+					last_obj_start = arr_str.rfind('{')
+					if last_obj_start != -1:
+						partial_obj = arr_str[last_obj_start:]
+						# Try to close the object and parse, even if it's very incomplete
+						for i in range(len(partial_obj), 0, -1):
+							try:
+								maybe_obj = partial_obj[:i]
+								# Add closing brace if missing
+								if not maybe_obj.endswith('}'): maybe_obj += '}'
+								flagged_lines.append(json.loads(maybe_obj))
+								break
+							except Exception:
+								continue
+				except Exception as e2:
+					print(f"[AI DEBUG] Partial JSON extraction failed: {e2}\nRaw AI: {ai_response}")
+				print(f"[AI DEBUG] JSON recovery failed: {e}\nRaw AI: {ai_response}")
+				return {"overall": {"score": score}, "flagged_lines": flagged_lines, "error": "AI JSON malformed (partial results shown)"}
+		else:
+			print(f"[AI DEBUG] No JSON found in AI response. Raw: {ai_response}")
+			return {"overall": {"score": 0}, "flagged_lines": [], "error": "No JSON in AI response"}
+	except Exception as e:
+		print(f"[AI DEBUG] AI error for full resume: {e}")
+		return {"overall": {"score": 0}, "flagged_lines": [], "error": str(e)}

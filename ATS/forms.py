@@ -1,8 +1,15 @@
 from django import forms
 
+
 class ResumeUploadForm(forms.Form):
 	file = forms.FileField(label='Upload Resume',
 		help_text='Accepted formats: PDF, DOCX, TXT')
+	jd = forms.CharField(
+		label='Job Description',
+		widget=forms.Textarea(attrs={'placeholder': 'Paste the job description here...', 'rows': 5}),
+		required=True,
+		help_text='Paste the job description for the target job.'
+	)
 
 	def clean_file(self):
 		file = self.cleaned_data['file']

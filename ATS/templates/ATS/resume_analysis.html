@@ -1,0 +1,70 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<h2>Resume Analysis Results</h2>
+
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="score-dashboard" style="margin-bottom: 2em;">
+    <h3>Resume Score</h3>
+    <ul style="list-style:none; padding:0;">
+        <li><strong>Overall Resume Score:</strong> <span style="color: #007bff; font-size:1.3em;">{{ overall.score }}/100</span></li>
+    </ul>
+</div>
+
+<div class="improvement-lines" style="margin-bottom:2em;">
+    <h3>Lines That Need Improvement</h3>
+    {% if lines_to_improve %}
+    <div style="overflow-x:auto;">
+    <table class="table table-striped table-hover" style="width:100%; border-collapse:separate; border-spacing:0 6px; background:#fff; box-shadow:0 2px 8px #f0f0f0;">
+        <thead style="background:#f1f3f6;">
+            <tr style="border-bottom:2px solid #dee2e6;">
+                <th style="padding:8px 12px;">Section</th>
+                <th style="padding:8px 12px;">Original Line</th>
+                <th style="padding:8px 12px;">Suggestion</th>
+                <th style="padding:8px 12px;">Clarity</th>
+                <th style="padding:8px 12px;">ATS</th>
+                <th style="padding:8px 12px;">Impact</th>
+                <th style="padding:8px 12px;">Missing Keywords</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for line in lines_to_improve %}
+            <tr style="background-color: #fffbe6; border-radius:6px;">
+                <td style="padding:8px 12px; font-weight:500;">{{ line.section }}</td>
+                <td style="white-space:pre-wrap; padding:8px 12px;">{{ line.original }}</td>
+                <td style="color:#007bff; white-space:pre-wrap; padding:8px 12px; font-weight:500;">{{ line.suggestion }}</td>
+                <td style="text-align:center; padding:8px 12px;">{{ line.clarity_score }}</td>
+                <td style="text-align:center; padding:8px 12px;">{{ line.ats_compatibility }}</td>
+                <td style="text-align:center; padding:8px 12px;">{{ line.impact_score }}</td>
+                <td style="color:#6c757d; white-space:pre-wrap; padding:8px 12px;">
+                    {% if line.missing_keywords %}
+                        {{ line.missing_keywords|join:", " }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+        <p style="color: #28a745;">No major improvements needed. Great job!</p>
+    {% endif %}
+</div>
+
+<div class="resume-preview" style="margin-top:2em;">
+    <h3>Full Resume Preview</h3>
+    <pre style="background:#f8f9fa; border:1px solid #eee; border-radius:6px; padding:1em;">{{ resume_text }}</pre>
+</div>
+{% endblock %}
+
+
+
+<div style="margin-top:2em;">
+    <button class="btn btn-secondary" disabled>Download Improved Resume (coming soon)</button>
+    <a href="{% url 'ATS:upload_resume' %}" class="btn btn-link">Upload Another Resume</a>
+</div>

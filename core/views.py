@@ -448,8 +448,6 @@ def my_class_students(request):
 def ahod_dash(request):
     context = set_config(request)
     ahod = AHOD.objects.get(user=context['duser'])
-    # Set duser to the Staff object for correct feedback link
-    context['duser'] = ahod.user
     # Get department code for AHOD
     ahod_dept = ahod.user.department
     # Get all students in the same department as AHOD

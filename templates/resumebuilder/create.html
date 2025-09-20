@@ -2,6 +2,23 @@
 {% block content %}
 <div class="container-fluid">
   <h2 class="font-weight-bold mb-4 text-primary"><i class="fa fa-user mr-2"></i>Edit Resume</h2>
+
+  {% if form.errors %}
+    <div class="alert alert-danger">
+      <strong>There was a problem saving your resume:</strong>
+      <ul>
+        {% for field in form %}
+          {% for error in field.errors %}
+            <li>{{ field.label }}: {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
   <form method="post" enctype="multipart/form-data" id="resume-form">{% csrf_token %}
     <div class="card p-4 mb-3 bg-light">
       <div class="d-flex align-items-center mb-2">

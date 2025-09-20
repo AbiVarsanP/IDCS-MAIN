@@ -6,10 +6,13 @@ class ResumeForm(forms.ModelForm):
 	class Meta:
 		model = Resume
 		fields = [
-			'img', 'role', 'bio', 'template_id',
+			'name', 'email', 'phone', 'img', 'role', 'bio', 'template_id',
 			'declaration_text', 'declaration_signature', 'declaration_place', 'declaration_date'
 		]
 		widgets = {
+			'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Name'}),
+			'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+			'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number', 'type': 'tel', 'pattern': '[0-9]*'}),
 			'img': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
 			'role': forms.TextInput(attrs={'class': 'form-control'}),
 			'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),

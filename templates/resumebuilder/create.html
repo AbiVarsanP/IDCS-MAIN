@@ -16,17 +16,49 @@
           <li>{{ error }}</li>
         {% endfor %}
       </ul>
+      <button type="submit" name="action" value="save_personal_info" class="btn btn-secondary mt-3">Save Personal Info Only</button>
     </div>
   {% endif %}
 
   <form method="post" enctype="multipart/form-data" id="resume-form">{% csrf_token %}
+    <div>
+      {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+          <strong>There were errors in your submission:</strong>
+          <ul class="mb-0">
+            {{ form.errors }}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
     <div class="card p-4 mb-3 bg-light">
       <div class="d-flex align-items-center mb-2">
         <span class="fa fa-user fa-lg text-primary mr-2"></span>
         <span class="h5 mb-0" style="color:#007bff;">Personal Information</span>
       </div>
       {# Only show personal info fields, not declaration fields #}
-      {{ form.img }}
+      <div class="form-row align-items-center">
+        <div class="form-group col-md-6 mb-0">
+          <label for="id_name">Name:</label>
+          {{ form.name }}
+        </div>
+        <div class="form-group col-md-6 mb-0 d-flex align-items-center">
+          <div class="mr-3">
+            <label for="id_img" class="mb-0">Profile Image (Upload):</label>
+            {{ form.img }}
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_email">Email:</label>
+          {{ form.email }}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="id_phone">Phone Number:</label>
+          {{ form.phone }}
+        </div>
+      </div>
       <div class="form-group">
         <label for="id_role">Role:</label>
         {{ form.role }}
@@ -39,6 +71,7 @@
         <label for="id_template_id">Template id:</label>
         {{ form.template_id }}
       </div>
+      <button type="submit" name="action" value="save_personal_info" class="btn btn-secondary mt-3">Save Personal Info Only</button>
     </div>
   <div class="accordion" id="resumeAccordion">
     <!-- Skills -->
@@ -316,7 +349,7 @@
               return `
                 <div class='row' id='pro-fields'>
                   <div class='col-md-6 mb-2'>
-                    <input type='text' name='name' class='form-control' placeholder='Project Name'>
+                    <input type='text' name='project_entry_name' class='form-control' placeholder='Project Name'>
                   </div>
                   <div class='col-md-6 mb-2'>
                     <input type='text' name='link' class='form-control' placeholder='Project Link (optional)'>
@@ -331,7 +364,7 @@
               var container = document.getElementById('project-inputs');
               var fields = container.querySelector('#pro-fields');
               if (!fields) return;
-              var name = fields.querySelector('input[name="name"]').value.trim();
+              var name = fields.querySelector('input[name="project_entry_name"]').value.trim();
               var link = fields.querySelector('input[name="link"]').value.trim();
               var desc = fields.querySelector('textarea[name="description"]').value.trim();
               if (!name && !link && !desc) return;
@@ -603,6 +636,7 @@
     </div>
 
   </div>
+  <h5>Note : before preview the resume , save the resume</h5>
     <div class="d-flex justify-content-end mt-4">
       <a href="{% url 'resumebuilder:resume_templates' resume.id %}" class="btn btn-orange floating-save no-print mr-2"><i class="fa fa-eye mr-2"></i>Preview Resume</a>
       <button type="submit" class="btn btn-orange floating-save no-print"><i class="fa fa-save mr-2"></i>Save Resume</button>

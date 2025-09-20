@@ -21,17 +21,17 @@ def generate_course_plan(data, start=None, end=None):
 		branch = data.get('branch')
 		year = data.get('year')
 		degree = data.get('degree')
+		semester = int(data.get('semester'))
 		skills = data.get('skills')
 		career_goal = data.get('career_goal')
 		st = int(start) if start is not None else 1
 		en = int(end) if end is not None else 10
 		system_prompt = (
-			f"Generate a career roadmap for a {year} year {degree} student in {branch} branch, "
-			f"with skills: {skills}, who wants to become {career_goal}. "
-			f"Break down skills, internships, projects, and job insights into exactly {en-st+1} steps (Step {st} to Step {en}). "
-			f"For each step, provide: Topic, Hints, and Resources. "
+			f"Generate a career roadmap for a {year} year {degree} student in {branch} branch, currently in semester {semester}, with skills: {skills}, who wants to become {career_goal}. "
+			f"For semester {semester} ONLY, break down the steps/goals, internships, projects, and job insights needed to achieve the career goal. "
+			f"Provide a section for 'Semester {semester}' with steps: for each step, provide Topic, Hints, and Resources. "
 			f"Return ONLY valid JSON (no markdown, no extra text, no explanation). "
-			f"Format output as JSON: {{'Step {st}': {{'Topic': ..., 'Hints': ..., 'Resources': ...}}, ..., 'Step {en}': {{...}}}}."
+			f"Format output as JSON: {{'Semester {semester}': {{'Step 1': {{'Topic': ..., 'Hints': ..., 'Resources': ...}}, ...}}}}."
 		)
 	else:
 		branch = data.get('branch')

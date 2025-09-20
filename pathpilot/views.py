@@ -73,7 +73,7 @@ def cp(request):
 			plan = json.loads(plan) if isinstance(plan, str) else plan
 		except Exception:
 			return HttpResponse('Invalid plan data.', status=400)
-		# Generate PDF
+		# Generate PDF (support semester-based and flat plans)
 		buffer = BytesIO()
 		p = canvas.Canvas(buffer, pagesize=letter)
 		width, height = letter
@@ -82,26 +82,57 @@ def cp(request):
 		p.drawString(40, y, 'Path Pilot Roadmap')
 		y -= 30
 		p.setFont('Helvetica', 12)
-		step_num = 1
-		for _, details in plan.items():
-			step_label = f"Step {step_num}"
-			if y < 80:
-				p.showPage()
-				y = height - 40
+		# Detect if plan is semester-based (nested)
+		is_semester_based = any(k.startswith('Semester') and isinstance(v, dict) for k, v in plan.items())
+		if is_semester_based:
+			for semester, steps in plan.items():
+				if y < 100:
+					p.showPage()
+					y = height - 40
+					p.setFont('Helvetica', 12)
+				p.setFont('Helvetica-Bold', 14)
+				p.drawString(40, y, semester)
+				y -= 20
+				if isinstance(steps, dict):
+					for step, details in steps.items():
+						if y < 80:
+							p.showPage()
+							y = height - 40
+							p.setFont('Helvetica', 12)
+						p.setFont('Helvetica-Bold', 12)
+						p.drawString(60, y, step)
+						y -= 16
+						p.setFont('Helvetica', 12)
+						p.drawString(80, y, f"Topic: {details.get('Topic','')}")
+						y -= 14
+						if 'Periods' in details:
+							p.drawString(80, y, f"Periods: {details.get('Periods','-')}")
+							y -= 14
+						p.drawString(80, y, f"Hints: {details.get('Hints','-')}")
+						y -= 14
+						p.drawString(80, y, f"Resources: {details.get('Resources','-')}")
+						y -= 20
+		else:
+			step_num = 1
+			for _, details in plan.items():
+				step_label = f"Step {step_num}"
+				if y < 80:
+					p.showPage()
+					y = height - 40
+					p.setFont('Helvetica', 12)
+				p.setFont('Helvetica-Bold', 13)
+				p.drawString(40, y, step_label)
+				y -= 18
 				p.setFont('Helvetica', 12)
-			p.setFont('Helvetica-Bold', 13)
-			p.drawString(40, y, step_label)
-			y -= 18
-			p.setFont('Helvetica', 12)
-			p.drawString(60, y, f"Topic: {details.get('Topic','')}")
-			y -= 16
-			p.drawString(60, y, f"Periods: {details.get('Periods','-')}")
-			y -= 16
-			p.drawString(60, y, f"Hints: {details.get('Hints','-')}")
-			y -= 16
-			p.drawString(60, y, f"Resources: {details.get('Resources','-')}")
-			y -= 24
-			step_num += 1
+				p.drawString(60, y, f"Topic: {details.get('Topic','')}")
+				y -= 16
+				p.drawString(60, y, f"Periods: {details.get('Periods','-')}")
+				y -= 16
+				p.drawString(60, y, f"Hints: {details.get('Hints','-')}")
+				y -= 16
+				p.drawString(60, y, f"Resources: {details.get('Resources','-')}")
+				y -= 24
+				step_num += 1
 		p.save()
 		buffer.seek(0)
 		response = HttpResponse(buffer, content_type='application/pdf')
@@ -121,9 +152,10 @@ def course_map(request):
 			branch = data.get('branch')
 			year = data.get('year')
 			degree = data.get('degree')
+			semester = int(data.get('semester'))
 			skills = data.get('skills')
 			career_goal = data.get('career_goal')
-			if not all([branch, year, degree, skills, career_goal]):
+			if not all([branch, year, degree, semester, skills, career_goal]):
 				return JsonResponse({'error': 'Please fill all required fields.'}, status=400)
 		else:
 			branch = data.get('branch')
@@ -173,32 +205,32 @@ def course_map(request):
 		logger = logging.getLogger('pathpilot')
 		try:
 			session_key = 'pathpilot_last_plan'
-			if role == 'Staff':
-				total_periods = int(data.get('total_periods'))
-				start = int(data.get('start', 1))
-				end = int(data.get('end', min(10, total_periods)))
-				plan = generate_course_plan(data, start=start, end=end)
+			if role == 'Student':
+				# Only generate for one semester at a time
+				current_sem = semester
+				data['semester'] = current_sem
+				# Clear session if starting a new roadmap (first semester)
+				if current_sem == 5:  # or 1 if your courses start from 1st sem
+					if session_key in request.session:
+						del request.session[session_key]
+				plan = generate_course_plan(data)
 				if not plan:
 					return JsonResponse({'error': 'Unable to generate roadmap right now. Please try again later.'}, status=500)
-				step_plan = {}
-				for idx, (k, v) in enumerate(plan.items(), start):
-					step_plan[f'Period {idx}'] = v
-				# Save/append to session
+				# Store/append to session
 				if session_key in request.session:
 					try:
 						existing = json.loads(request.session[session_key])
 					except Exception:
 						existing = {}
-					existing.update(step_plan)
+					existing.update(plan)
 					request.session[session_key] = json.dumps(existing)
 				else:
-					request.session[session_key] = json.dumps(step_plan)
-				has_more = end < total_periods
-				next_start = end + 1
-				next_end = min(end + 10, total_periods)
-				return JsonResponse({'plan': step_plan, 'has_more': has_more, 'next_start': next_start, 'next_end': next_end})
+					request.session[session_key] = json.dumps(plan)
+				has_more = current_sem < 8
+				next_semester = current_sem + 1 if has_more else None
+				return JsonResponse({'plan': plan, 'has_more': has_more, 'next_semester': next_semester})
 			else:
-				# Student batching logic
+				# Staff batching logic (unchanged)
 				max_steps = int(data.get('max_steps', 10))
 				start = int(data.get('start', 1))
 				end = int(data.get('end', start + max_steps - 1))
@@ -218,7 +250,7 @@ def course_map(request):
 					request.session[session_key] = json.dumps(existing)
 				else:
 					request.session[session_key] = json.dumps(step_plan)
-				# Determine has_more for students
+				# Determine has_more for staff
 				has_more = len(step_plan) == max_steps
 				next_start = end + 1
 				next_end = end + max_steps

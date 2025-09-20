@@ -67,7 +67,17 @@
 		<div id="student-fields">
 			<div class="mb-3">
 				<label class="form-label pathpilot-form-label">Student Branch</label>
-				<input type="text" class="form-control" id="branch_student" name="branch_student" required>
+				<select class="form-select" id="branch_student" name="branch_student" required>
+					<option value="">Select Branch</option>
+					<option value="Artificial intelligence and data science">Artificial intelligence and data science</option>
+					<option value="Atificial Intelligence and machine learning">Atificial Intelligence and machine learning</option>
+					<option value="Computer science Engineering">Computer science Engineering</option>
+					<option value="Electronic communication Engineering">Electronic communication Engineering</option>
+					<option value="Information Technology">Information Technology</option>
+					<option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+					<option value="Mechanical Engineering">Mechanical Engineering</option>
+					<option value="Civil Engineering">Civil Engineering</option>
+				</select>
 			</div>
 				<div class="mb-3">
 					<label class="form-label pathpilot-form-label">Year</label>
@@ -81,7 +91,25 @@
 				</div>
 			<div class="mb-3">
 				<label class="form-label pathpilot-form-label">Degree</label>
-				<input type="text" class="form-control" id="degree" name="degree" required placeholder="e.g. B.Tech, B.E, M.Tech">
+				<select class="form-select" id="degree" name="degree" required>
+					<option value="">Select Degree</option>
+					<option value="BE">BE</option>
+					<option value="B.Tech">B.Tech</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Semester</label>
+				<select class="form-select" id="semester" name="semester" required>
+					<option value="">Select Semester</option>
+					<option value="1">1st Semester</option>
+					<option value="2">2nd Semester</option>
+					<option value="3">3rd Semester</option>
+					<option value="4">4th Semester</option>
+					<option value="5">5th Semester</option>
+					<option value="6">6th Semester</option>
+					<option value="7">7th Semester</option>
+					<option value="8">8th Semester</option>
+				</select>
 			</div>
 			<div class="mb-3">
 				<label class="form-label pathpilot-form-label">Skills <span style="color:#888;font-size:0.95em;">(comma separated)</span></label>
@@ -181,13 +209,14 @@ form.addEventListener('submit', async function(e) {
 	let valid = true;
 	const role = document.getElementById('role').value;
 	function isEmpty(val) { return !val || !val.trim(); }
-	if (role === 'Student') {
-		if (isEmpty(form.branch_student.value)) valid = false;
-		if (isEmpty(form.year.value)) valid = false;
-		if (isEmpty(form.degree.value)) valid = false;
-		if (isEmpty(form.skills.value)) valid = false;
-		if (isEmpty(form.career_goal.value)) valid = false;
-	} else {
+			if (role === 'Student') {
+				if (isEmpty(form.branch_student.value)) valid = false;
+				if (isEmpty(form.year.value)) valid = false;
+				if (isEmpty(form.degree.value)) valid = false;
+				if (isEmpty(form.semester.value)) valid = false;
+				if (isEmpty(form.skills.value)) valid = false;
+				if (isEmpty(form.career_goal.value)) valid = false;
+			} else {
 		if (isEmpty(form.branch_staff.value)) valid = false;
 		if (isEmpty(form.subject.value)) valid = false;
 		if (!form.syllabus.files[0]) valid = false;
@@ -204,17 +233,18 @@ form.addEventListener('submit', async function(e) {
 	btnText.textContent = 'Generating...';
 	resultDiv.innerHTML = '';
 	let data = {};
-	if (role === 'Student') {
-		data = {
-			role: 'Student',
-			branch: form.branch_student.value.trim(),
-			year: form.year.value.trim(),
-			degree: form.degree.value.trim(),
-			skills: form.skills.value.trim(),
-			career_goal: form.career_goal.value.trim()
-		};
-		sendData(data);
-	} else {
+			if (role === 'Student') {
+				data = {
+					role: 'Student',
+					branch: form.branch_student.value.trim(),
+					year: form.year.value.trim(),
+					degree: form.degree.value.trim(),
+					semester: form.semester.value.trim(),
+					skills: form.skills.value.trim(),
+					career_goal: form.career_goal.value.trim()
+				};
+				sendData(data);
+			} else {
 		// Read file as text (for txt, docx, pdf)
 		const file = form.syllabus.files[0];
 		if (!file) return;
@@ -259,16 +289,35 @@ async function sendData(data) {
 		if (json.error) {
 			resultDiv.innerHTML = `<div class='alert alert-danger'>${json.error}</div>`;
 		} else {
-			// Batching for both roles
 			let role = data.role;
 			if (!window.currentMapPlan) window.currentMapPlan = {};
 			Object.assign(window.currentMapPlan, json.plan);
 			renderTimeline(window.currentMapPlan);
 			sessionStorage.setItem('pathpilot_last_plan', JSON.stringify(window.currentMapPlan));
-			if (json.has_more) {
-				// Show Generate More button
+			// Semester batching for students
+			if (role === 'Student' && json.has_more && json.next_semester) {
 				let moreBtn = document.getElementById('generate-more-btn');
-				let label = (role === 'Staff') ? `Generate More Periods (${json.next_start}-${json.next_end})` : `Generate More Steps (${json.next_start}-${json.next_end})`;
+				let label = `Generate Semester ${json.next_semester}`;
+				if (!moreBtn) {
+					moreBtn = document.createElement('button');
+					moreBtn.className = 'pathpilot-btn';
+					moreBtn.id = 'generate-more-btn';
+					moreBtn.textContent = label;
+					moreBtn.style.marginLeft = '10px';
+					resultDiv.appendChild(moreBtn);
+				} else {
+					moreBtn.textContent = label;
+					moreBtn.style.display = '';
+				}
+				moreBtn.onclick = function() {
+					moreBtn.disabled = true;
+					let nextData = { ...data, semester: json.next_semester };
+					sendData(nextData);
+				};
+			} else if (role === 'Staff' && json.has_more) {
+				// Staff batching logic (unchanged)
+				let moreBtn = document.getElementById('generate-more-btn');
+				let label = `Generate More Periods (${json.next_start}-${json.next_end})`;
 				if (!moreBtn) {
 					moreBtn = document.createElement('button');
 					moreBtn.className = 'pathpilot-btn';
@@ -283,14 +332,8 @@ async function sendData(data) {
 				moreBtn.onclick = function() {
 					moreBtn.disabled = true;
 					let nextData = { ...data };
-					if (role === 'Staff') {
-						nextData.start = json.next_start;
-						nextData.end = json.next_end;
-					} else {
-						nextData.start = json.next_start;
-						nextData.end = json.next_end;
-						nextData.max_steps = 10;
-					}
+					nextData.start = json.next_start;
+					nextData.end = json.next_end;
 					sendData(nextData);
 				};
 			} else {
@@ -308,7 +351,18 @@ async function sendData(data) {
 }
 // Render timeline/flow
 function renderTimeline(plan) {
+	// Parse plan if it's a string (AI or backend bug)
+	if (typeof plan === 'string') {
+		try {
+			plan = JSON.parse(plan);
+		} catch (e) {
+			resultDiv.innerHTML = '<div class="alert alert-danger">Failed to parse roadmap data.</div>';
+			return;
+		}
+	}
 	window.currentMapPlan = plan;
+	// Debug: log plan structure
+	console.log('PathPilot plan:', plan);
 	if (!plan || Object.keys(plan).length === 0) {
 		resultDiv.innerHTML = '<div class="alert alert-warning">No roadmap generated.</div>';
 		// Disable save button if present
@@ -317,20 +371,40 @@ function renderTimeline(plan) {
 		return;
 	}
 	let html = '';
-	let stepNum = 1;
-	for (const [key, details] of Object.entries(plan)) {
-		let role = document.getElementById('role') ? document.getElementById('role').value : 'Student';
-		let stepLabel = (role === 'Staff') ? key : key;
-		html += `<div class='timeline-item'>
-			<div class='timeline-dot'></div>
-			<div class='timeline-content'>
-				<div class='timeline-title'>${stepLabel}</div>
-				<div class='timeline-topic'>Topic: ${details.Topic || ''}</div>
-				<div><strong>Periods:</strong> ${details.Periods || '-'}</div>
-				<div><strong>Hints:</strong> ${details.Hints || '-'}</div>
-				<div><strong>Resources:</strong> ${details.Resources || '-'}</div>
-			</div>
-		</div>`;
+	let role = document.getElementById('role') ? document.getElementById('role').value : 'Student';
+	if (role === 'Student' && plan && Object.keys(plan).some(k => k.startsWith('Semester'))) {
+		// Semester-based plan: each semester is a section, each has steps
+		for (const [semester, steps] of Object.entries(plan)) {
+			html += `<div class='timeline-item'><div class='timeline-dot'></div><div class='timeline-content'>`;
+			html += `<div class='timeline-title' style='font-size:1.2em;color:#ff9800;'>${semester}</div>`;
+			if (typeof steps === 'object' && steps !== null) {
+				for (const [step, details] of Object.entries(steps)) {
+					html += `<div style='margin-left:18px;margin-bottom:10px;'>`;
+					html += `<div class='timeline-title' style='font-size:1em;color:#27a3e2;'>${step}</div>`;
+					html += `<div class='timeline-topic'>Topic: ${details.Topic || ''}</div>`;
+					html += `<div><strong>Hints:</strong> ${details.Hints || '-'}</div>`;
+					html += `<div><strong>Resources:</strong> ${details.Resources || '-'}</div>`;
+					html += `</div>`;
+				}
+			}
+			html += `</div></div>`;
+		}
+	} else {
+		// Default: flat steps/periods
+		let stepNum = 1;
+		for (const [key, details] of Object.entries(plan)) {
+			let stepLabel = (role === 'Staff') ? key : key;
+			html += `<div class='timeline-item'>
+				<div class='timeline-dot'></div>
+				<div class='timeline-content'>
+					<div class='timeline-title'>${stepLabel}</div>
+					<div class='timeline-topic'>Topic: ${details.Topic || ''}</div>
+					<div><strong>Periods:</strong> ${details.Periods || '-'}</div>
+					<div><strong>Hints:</strong> ${details.Hints || '-'}</div>
+					<div><strong>Resources:</strong> ${details.Resources || '-'}</div>
+				</div>
+			</div>`;
+		}
 	}
 	html += `<button class='pathpilot-btn' onclick='downloadPDF()'>Download as PDF</button>`;
 	html += `<button class='pathpilot-btn' id='save-map-btn' style='margin-left:10px;' disabled>Save to Map History</button>`;

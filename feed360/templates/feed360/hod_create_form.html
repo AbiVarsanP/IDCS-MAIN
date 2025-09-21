@@ -8,16 +8,25 @@
         {% csrf_token %}
         <div class="card mb-3">
             <div class="card-body">
-                {{ form.as_p }}
+                {{ form.title.label_tag }} {{ form.title }}<br>
+                {{ form.year.label_tag }} {{ form.year }}<br>
+                {{ form.section.label_tag }} {{ form.section }}<br>
+                {{ form.active.label_tag }} {{ form.active }}<br>
+                {{ form.department }}
+                <hr>
+                <b>Common for all questions:</b><br>
+                {{ form.answer_type.label_tag }} {{ form.answer_type }}<br>
+                {{ form.subject.label_tag }} {{ form.subject }}<br>
+                {{ form.subject_text.label_tag }} {{ form.subject_text }}<br>
             </div>
         </div>
         <h4>Questions</h4>
         <div id="questions">
             {{ formset.management_form }}
             {% for form in formset %}
-                <div class="card mb-2">
+                <div class="card mb-2 question-form">
                     <div class="card-body">
-                        {{ form.as_p }}
+                        {{ form.text.label_tag }} {{ form.text }}
                         {% if form.instance.pk %}
                             <input type="checkbox" name="{{ form.prefix }}-DELETE"> Delete
                         {% endif %}
@@ -25,10 +34,38 @@
                 </div>
             {% endfor %}
         </div>
+        <button type="button" class="btn btn-secondary mb-3" id="add-question">Add Extra Question</button>
         <button type="submit" class="btn btn-primary">Create Form</button>
     </form>
     <hr>
-    <!-- JS enhancement: Add/Remove question rows dynamically -->
-    <!-- For now, one empty question row is rendered. -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addBtn = document.getElementById('add-question');
+        const questionsDiv = document.getElementById('questions');
+        let totalForms = document.getElementById('id_feedbackquestion_set-TOTAL_FORMS');
+        addBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Find the last question form and clone it
+            const forms = questionsDiv.querySelectorAll('.question-form');
+            const lastForm = forms[forms.length - 1];
+            const newForm = lastForm.cloneNode(true);
+            // Update form index
+            const formRegex = new RegExp(`feedbackquestion_set-(\\d+)-`, 'g');
+            const newIndex = forms.length;
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `feedbackquestion_set-${newIndex}-`);
+            // Clear input values
+            newForm.querySelectorAll('input, textarea, select').forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+            questionsDiv.appendChild(newForm);
+            // Update management form
+            totalForms.value = forms.length + 1;
+        });
+    });
+    </script>
 </div>
 {% endblock %}

@@ -96,8 +96,7 @@
                             <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'feed360_create' %}">Create Feed360 Form</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'feed360_staff_results' staff_id=request.user.staff.id %}">View Feed360 Results</a></li>
+                            
 
                             <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
@@ -110,21 +109,27 @@
                             <li class="{% if request.resolver_match.url_name == 'ahod_bonafide_hod' %}active{% endif %}"><a href="{% url 'ahod_bonafide_hod' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide (HOD)</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_gatepass_hod' %}active{% endif %}"><a href="{% url 'ahod_gatepass_hod' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass (HOD)</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_notification_history' %}active{% endif %}"><a href="{% url 'ahod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
-                        {% elif duser and request.user.is_staff %}
+                        {% elif duser and duser.position == 0 %}
+                            {# HOD sidebar #}
+                            ...existing code...
+                        {% elif duser and duser.position2 == 1 %}
+                            {# AHOD sidebar #}
+                            ...existing code...
+                        {# DEBUG: duser={{ duser }}, is_staff={{ request.user.is_staff }}, position={{ duser.position }}, position2={{ duser.position2 }} #}
+                        {% elif duser and request.user.is_staff and duser.position != 0 and duser.position2 != 1 %}
+                            {# Staff sidebar #}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_od_view' %}active{% endif %}"><a href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_leave_view' %}active{% endif %}"><a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_bonafides' %}active{% endif %}"><a href="{% url 'staff_bonafides' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_gatepass_view' %}active{% endif %}"><a href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_feedback' %}active{% endif %}"><a href="#"><i class="menu-icon ti-comments"></i>Feedback</a></li>
+                            <li><a href="/feed360/staff/9/results/"><i class="menu-icon ti-comments"></i>Feedback</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_notifications' %}active{% endif %}"><a href="{% url 'staff_notifications' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_timetable' %}active{% endif %}"><a href="{% url 'staff_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
                             <li class="menu-title">Class</li>
                             <li class="{% if request.resolver_match.url_name == 'staff_my_class' %}active{% endif %}"><a href="{% url 'staff_my_class' %}"><i class="menu-icon fa fa-users"></i>My Class Students</a></li>
-                        {% else %}
-                            <!-- <li>
-                                <a id="menuToggle" class="menutoggle"><i class="menu-icon fa fa-bars"></i></a>
-                            </li> -->
+                        {% elif request.user.is_authenticated and not request.user.is_staff %}
+                            {# Student sidebar #}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
                                 <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
                             </li>
@@ -143,8 +148,8 @@
                             <li class="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
                                 <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
                             </li>
-                            <li class="{% if request.resolver_match.url_name == 'student_feedback' %}active{% endif %}">
-                                <a href="{% url 'student_feedback' %}"><i class="menu-icon ti-comments"></i>Feedback </a>
+                            <li>
+                                <a href="/feed360/"><i class="menu-icon ti-comments"></i>Feed 360 </a>
                             </li>
                             <li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
                                 <a href="{% url 'notifications_view' %}" ><i class="menu-icon fa fa-bell"></i> Notification History</a>
@@ -323,7 +328,7 @@
                 <div class="footer-inner bg-white">
                     <div class="row">
                         <div class="col-sm-6">
-                            Copyright &copy; 2023 IDCS
+                            Copyright &copy; 2025 IDCS
                         </div>
                     </div>
                 </div>

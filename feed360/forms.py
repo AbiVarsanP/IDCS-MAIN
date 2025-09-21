@@ -1,12 +1,16 @@
 
 from django import forms
 from django.forms import modelform_factory, inlineformset_factory
-from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse
+from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse, Subject
 
 from core.constants import YEAR, SECTION
 
 
 class FeedbackFormCreateForm(forms.ModelForm):
+	answer_type = forms.ChoiceField(choices=[('stars', 'Stars'), ('text', 'Text'), ('both', 'Stars & Text')], label='Answer Type (common for all questions)')
+	subject = forms.ModelChoiceField(queryset=Subject.objects.all(), required=False, label='Subject (common for all questions)')
+	subject_text = forms.CharField(max_length=100, required=False, label='Subject Text (if no subject)')
+
 	def clean(self):
 		cleaned_data = super().clean()
 		# If department is missing, set it from initial (HOD's department)
@@ -14,6 +18,7 @@ class FeedbackFormCreateForm(forms.ModelForm):
 		if not dept and self.fields['department'].initial:
 			cleaned_data['department'] = self.fields['department'].initial
 		return cleaned_data
+
 	def save(self, commit=True):
 		instance = super().save(commit=False)
 		# Ensure department is set as string name
@@ -33,6 +38,7 @@ class FeedbackFormCreateForm(forms.ModelForm):
 		if commit:
 			instance.save()
 		return instance
+
 	class Meta:
 		model = FeedbackForm
 		fields = ['title', 'year', 'section', 'active', 'department']
@@ -59,8 +65,8 @@ class FeedbackFormCreateForm(forms.ModelForm):
 FeedbackQuestionFormSet = inlineformset_factory(
 	FeedbackForm,
 	FeedbackQuestion,
-	fields=['text', 'answer_type', 'subject', 'subject_text'],
-	extra=1,
+	fields=['text'],  # Only question text is per-question
+	extra=3,  # Show 3 question forms by default
 	can_delete=True
 )
 

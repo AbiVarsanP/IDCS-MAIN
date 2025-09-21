@@ -11,7 +11,10 @@ def resume_image_upload_path(instance, filename):
 class Resume(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes')
 	img = models.ImageField(upload_to=resume_image_upload_path, blank=True, null=True)
-	role = models.CharField(max_length=100)
+	name = models.CharField(max_length=100, blank=True, null=True)
+	email = models.EmailField(max_length=254, blank=True, null=True)
+	phone = models.CharField(max_length=20, blank=True, null=True)
+	role = models.CharField(max_length=100, blank=True)
 	bio = models.TextField(blank=True)
 	template_id = models.IntegerField(default=1)
 	created_at = models.DateTimeField(default=timezone.now)

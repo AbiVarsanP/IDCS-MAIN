@@ -61,6 +61,7 @@ class FeedbackResponse(models.Model):
 	staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
 	rating = models.IntegerField(null=True, blank=True)
 	comment = models.TextField(null=True, blank=True)
+	sentiment_label = models.CharField(max_length=16, blank=True, null=True)  # Store sentiment at submission
 	submitted_at = models.DateTimeField(auto_now_add=True)
 
 	class Meta:

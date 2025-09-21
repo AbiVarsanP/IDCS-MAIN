@@ -20,6 +20,18 @@ body, html {
   text-align: left;
 }
 @media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-resume-area, #printable-resume-area * {
+    visibility: visible;
+  }
+  #printable-resume-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
   body > header, body > nav, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .footer, .page-header, .page-title, .main-header, .main-footer,
   .resume-footer, .copyright, .print-hide, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
   #header, #main-header, #main-footer, #footer, #logo, #idcs-logo, #idcs-header, #idcs-footer, .header, .footer, .top-bar, .bottom-bar, .site-header, .site-footer, .nav, .nav-bar, .navbar-fixed-top,
@@ -38,7 +50,7 @@ body, html {
   .resume-preview-custom {
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 0 0 0 20px !important;
+    padding: 0 !important;
     border-radius: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -54,6 +66,12 @@ body, html {
   @page {
     margin: 20mm 10mm 20mm 10mm;
     size: auto;
+    @top-left { content: ""; }
+    @top-center { content: ""; }
+    @top-right { content: ""; }
+    @bottom-left { content: ""; }
+    @bottom-center { content: ""; }
+    @bottom-right { content: ""; }
   }
 }
 .resume-section-title {
@@ -131,15 +149,23 @@ body, html {
   margin-top: 32px;
 }
 </style>
-<div class="resume-preview-custom">
+<div id="printable-resume-area">
+  <div class="resume-preview-custom">
   <div class="resume-meta">
-    <span>Email: <strong>{{ student_email|default:'-' }}</strong></span>
+    <span>Email: <strong>{{ resume.email|default:'-' }}</strong></span>
     <span style="margin:0 8px;">|</span>
-    <span>Phone: <strong>{{ student_phone|default:'-' }}</strong></span>
+    <span>Phone: <strong>{{ resume.phone|default:'-' }}</strong></span>
     <span style="float:right;"><a href="#" class="resume-meta-link">in</a></span>
   </div>
+  <div class="row mb-3 align-items-center">
+    <div class="col-auto pr-0" style="display:flex;align-items:center;">
+      <img src="{{ resume.profile_pic_url }}" alt="Profile Picture" class="rounded-circle mb-3" style="width:100px;height:100px;object-fit:cover;">
+    </div>
+    <div class="col text-center">
+      <div style="font-weight:700;font-size:2rem;">{{ resume.name|default:'-' }}</div>
+    </div>
+  </div>
   <div style="margin-bottom:18px;color:#222;">
-    <img src="{{ resume.profile_pic_url }}" alt="Profile Picture" class="rounded-circle mb-3" style="width:100px;height:100px;object-fit:cover;">
     <div style="font-weight:700;font-size:1.3rem;">{{ resume.role }}</div>
     <div style="color:#555;">{{ resume.bio }}</div>
   </div>
@@ -220,6 +246,7 @@ body, html {
   <div style="text-align:center;">
   <button class="resume-print-btn no-print" onclick="window.print()">Print <i class="fa fa-print"></i></button>
   <a href="javascript:history.back()" class="resume-back-link no-print">&larr; Back</a>
+  </div>
   </div>
 </div>
 {% endblock %}

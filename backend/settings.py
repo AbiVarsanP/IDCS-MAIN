@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'resumebuilder',
     'pathpilot',
     'feed360',
+    'ATS',
 ]
 
 MIDDLEWARE = [

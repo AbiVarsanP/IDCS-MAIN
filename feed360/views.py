@@ -1,3 +1,126 @@
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.shortcuts import render, redirect, get_object_or_404
+from core.models import Staff
+from django.db import transaction
+from django.contrib import messages
+from .models import FeedbackAggregate, FeedbackQuestion, FeedbackResponse, Subject, Staff, Student, FeedbackForm
+from .forms import FeedbackFormCreateForm, FeedbackQuestionFormSet
+from .services import analyzer
+
+@login_required
+def hod_view_comments_all(request, staff_id, form_id):
+	# Permission: Only HODs
+	user = request.user
+	staff = getattr(user, 'staff', None)
+	if not staff or staff.position != 0:
+		messages.error(request, "Permission denied. HODs only.")
+		return redirect('feed360_index')
+	try:
+		form_id_int = int(form_id)
+	except (ValueError, TypeError):
+		messages.error(request, "Invalid form ID.")
+		return redirect('feed360_hod_staff_feedback_results')
+	from .models import Staff, FeedbackForm, FeedbackQuestion, FeedbackResponse, Student
+	staff_obj = Staff.objects.get(id=staff_id)
+	form = FeedbackForm.objects.get(id=form_id_int)
+	# Get all questions for this form
+	questions = FeedbackQuestion.objects.filter(form=form)
+	# Get all students in the form's department, year, section
+	students = Student.objects.filter(
+		department__name=form.department,
+		year=form.year,
+		section=form.section
+	)
+	questions_data = []
+	for question in questions:
+		responses = FeedbackResponse.objects.filter(form=form, question=question, staff=staff_obj)
+		resp_map = {r.student_id: r for r in responses}
+		student_feedback = []
+		for student in students:
+			resp = resp_map.get(student.id)
+			sentiment = None
+			if resp and resp.comment:
+				# Use stored sentiment_label if available, else analyze
+				sentiment = resp.sentiment_label or analyzer.analyze_text_with_perplexity(resp.comment).get('sentiment_label', 'Neutral')
+			student_feedback.append({
+				'student_name': student.user.get_full_name() if hasattr(student, 'user') else str(student),
+				'rating': resp.rating if resp else None,
+				'comment': resp.comment if resp else None,
+				'sentiment': sentiment if resp and resp.comment else None,
+			})
+		questions_data.append({
+			'text': question.text,
+			'student_feedback': student_feedback,
+		})
+	back_url = reverse('feed360_hod_staff_feedback_results') + f'?staff_id={staff_id}'
+	# Fetch duser (Staff) for sidebar context
+	duser = Staff.objects.get(user=request.user)
+	return render(request, 'feed360/hod_view_comments_all.html', {
+		'questions': questions_data,
+		'back_url': back_url,
+		'duser': duser,
+	})
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db import transaction
+from django.contrib import messages
+from .models import FeedbackAggregate, FeedbackQuestion, FeedbackResponse, Subject, Staff, Student, FeedbackForm
+from .forms import FeedbackFormCreateForm, FeedbackQuestionFormSet
+from .services import analyzer
+@login_required
+def hod_view_comments(request, staff_id, form_id, question_id):
+	# Permission: Only HODs
+	user = request.user
+	staff = getattr(user, 'staff', None)
+	if not staff or staff.position != 0:
+		messages.error(request, "Permission denied. HODs only.")
+		return redirect('feed360_index')
+	# Defensive: Ensure form_id and question_id are integers and not department names
+	try:
+		form_id_int = int(form_id)
+		question_id_int = int(question_id)
+	except (ValueError, TypeError):
+		messages.error(request, "Invalid form or question ID.")
+		return redirect('feed360_hod_staff_feedback_results')
+	# Extra check: IDs should not be suspiciously large or small, and not strings like department names
+	if not (form_id_int > 0 and question_id_int > 0):
+		messages.error(request, "Invalid form or question ID.")
+		return redirect('feed360_hod_staff_feedback_results')
+	# Get staff, form, question
+	from .models import Staff, FeedbackForm, FeedbackQuestion, FeedbackResponse, Student
+	staff_obj = Staff.objects.get(id=staff_id)
+	form = FeedbackForm.objects.get(id=form_id_int)
+	question = get_object_or_404(FeedbackQuestion, id=question_id_int, form=form)
+	# The line below causes a ValueError because form.department is a string, 
+	# but the Student.department field is a ForeignKey. 
+	# Fix this Django query to filter by the department's name instead of its ID.
+	students = Student.objects.filter(
+		department__name=form.department,
+		year=form.year,
+		section=form.section
+	)
+	# Build feedback map: student_id -> response
+	responses = FeedbackResponse.objects.filter(form=form, question=question, staff=staff_obj)
+	resp_map = {r.student_id: r for r in responses}
+	student_feedback = []
+	for student in students:
+		resp = resp_map.get(student.id)
+		student_feedback.append({
+			'student_name': student.user.get_full_name() if hasattr(student, 'user') else str(student),
+			'rating': resp.rating if resp else None,
+			'comment': resp.comment if resp else None,
+		})
+	back_url = reverse('feed360_hod_staff_feedback_results') + f'?staff_id={staff_id}'
+	duser = Staff.objects.get(user=request.user)
+	return render(request, 'feed360/hod_view_comments.html', {
+		'student_feedback': student_feedback,
+		'back_url': back_url,
+		'duser': duser,
+	})
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
@@ -99,6 +222,8 @@ from .services import analyzer
 @login_required
 def results_for_staff(request, staff_id):
 	# Get staff object first
+	from core.helpers import set_config
+	context = set_config(request)
 	try:
 		staff = Staff.objects.get(pk=staff_id)
 	except Staff.DoesNotExist:
@@ -114,46 +239,57 @@ def results_for_staff(request, staff_id):
 	if not is_hod and user_staff != staff:
 		messages.error(request, "Permission denied.")
 		return redirect('feed360_index')
-	# Build per-form, per-question results (like HOD portal)
-	results = []
+	# Group responses by form and then by question
+	from collections import defaultdict, Counter
 	responses = FeedbackResponse.objects.filter(staff=staff)
-	agg_map = {}
+	form_map = defaultdict(list)
 	for resp in responses:
-		key = (resp.form_id, resp.question_id)
-		if key not in agg_map:
-			agg_map[key] = {'ratings': [], 'sentiments': [], 'form_title': resp.form.title, 'question_text': resp.question.text}
-		if resp.rating:
-			agg_map[key]['ratings'].append(resp.rating)
-		if resp.comment:
-			sent_result = analyzer.analyze_text_with_perplexity(resp.comment)
-			agg_map[key]['sentiments'].append(sent_result)
-	for (form_id, question_id), data in agg_map.items():
-		avg_rating = round(sum(data['ratings']) / len(data['ratings']), 2) if data['ratings'] else None
-		# Aggregate sentiment: majority label and average score
-		sentiment_labels = [s.get('sentiment_label', 'Neutral') for s in data['sentiments']]
-		sentiment_scores = [float(s.get('sentiment_score', 0.0)) for s in data['sentiments']]
-		if sentiment_labels:
-			from collections import Counter
-			label_counter = Counter(sentiment_labels)
-			majority = label_counter.most_common(1)[0][0]
-			# Average score for the majority label
-			majority_scores = [score for label, score in zip(sentiment_labels, sentiment_scores) if label == majority]
+		form_map[resp.form_id].append(resp)
+	results = []
+	for form_id, resps in form_map.items():
+		if not resps:
+			continue
+		form_title = resps[0].form.title
+		# Group by question
+		question_map = defaultdict(list)
+		for resp in resps:
+			question_map[resp.question.text].append(resp)
+		question_results = []
+		for q_text, q_resps in question_map.items():
+			ratings = [r.rating for r in q_resps if r.rating is not None]
+			avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else '-'
+			sentiments = []
+			confidences = []
+			for r in q_resps:
+				# Sentiment analysis (TextBlob only, no AI)
+				sent_result = analyzer.analyze_text_with_perplexity(r.comment) if r.comment else {'sentiment_label': 'Neutral', 'sentiment_score': 0.0}
+				sentiments.append(sent_result.get('sentiment_label', 'Neutral'))
+				confidences.append(sent_result.get('sentiment_score', 0.0))
+			label_counter = Counter(sentiments)
+			majority = label_counter.most_common(1)[0][0] if sentiments else 'Neutral'
+			majority_scores = [score for label, score in zip(sentiments, confidences) if label == majority]
 			avg_conf = sum(majority_scores) / len(majority_scores) if majority_scores else 0.0
-		else:
-			majority = 'Neutral'
-			avg_conf = 0.0
-		# Collect all comments for this group
-		comments = []
-		for resp in responses:
-			if resp.form_id == form_id and resp.question_id == question_id and resp.comment:
-				comments.append(resp.comment)
+			question_results.append({
+				'question_text': q_text,
+				'avg_rating': avg_rating,
+				'majority_sentiment': majority,
+				'majority_confidence': avg_conf,
+			})
+		# Calculate overall avg rating for the form
+		all_ratings = [qr['avg_rating'] for qr in question_results if isinstance(qr['avg_rating'], (int, float))]
+		overall_avg_rating = round(sum(all_ratings) / len(all_ratings), 2) if all_ratings else None
+		# Majority sentiment for the form
+		all_sentiments = [qr['majority_sentiment'] for qr in question_results]
+		label_counter = Counter(all_sentiments)
+		form_majority = label_counter.most_common(1)[0][0] if all_sentiments else 'Neutral'
+		form_majority_scores = [qr['majority_confidence'] for qr in question_results if qr['majority_sentiment'] == form_majority]
+		form_majority_conf = sum(form_majority_scores) / len(form_majority_scores) if form_majority_scores else 0.0
 		results.append({
-			'form_title': data['form_title'],
-			'question_text': data['question_text'],
-			'avg_rating': avg_rating,
-			'sentiment': majority,
-			'confidence': avg_conf,
-			'comments': comments,
+			'form_title': form_title,
+			'questions': question_results,
+			'overall_avg_rating': overall_avg_rating,
+			'majority_sentiment': form_majority,
+			'majority_confidence': form_majority_conf,
 		})
 	# Use same logic as staff_my_results
 	aggregates = FeedbackAggregate.objects.filter(staff_id=staff.id).order_by('-last_computed')
@@ -202,7 +338,7 @@ def results_for_staff(request, staff_id):
 		if agg.sentiment_distribution:
 			sentiment_dist.update(agg.sentiment_distribution)
 	import json
-	return render(request, 'feed360/staff_my_results.html', {
+	context.update({
 		'aggregates': aggregates,
 		'trend': trend,
 		'aspect_labels': aspect_labels,
@@ -214,6 +350,7 @@ def results_for_staff(request, staff_id):
 		'sentiment_dist_json': json.dumps(dict(sentiment_dist)),
 		'results': results,
 	})
+	return render(request, 'feed360/staff_my_results.html', context)
 from django.forms import formset_factory
 from .models import FeedbackQuestion, FeedbackResponse, Subject, Staff, Student
 
@@ -293,6 +430,7 @@ def fill_feedback_form(request, form_id):
 				# Analyze sentiment if comment exists
 				sentiment_result = None
 				if comment:
+					# Sentiment analysis (TextBlob only, no AI)
 					sentiment_result = analyzer.analyze_text_with_perplexity(comment)
 				FeedbackResponse.objects.create(
 					form=feedback_form,
@@ -308,48 +446,52 @@ def fill_feedback_form(request, form_id):
 		# Trigger aggregation for affected staff and this form
 		for staff in affected_staff:
 			responses = FeedbackResponse.objects.filter(form=feedback_form, staff=staff)
-			agg_map = {}
-			for resp in responses:
-				key = (resp.form_id, resp.question_id, resp.staff_id, resp.question.subject_id)
-				if key not in agg_map:
-					agg_map[key] = {'ratings': [], 'sentiments': [], 'sentiment_scores': [], 'emotion_labels': [], 'aspect_scores': []}
-				if resp.rating:
-					agg_map[key]['ratings'].append(resp.rating)
-				if resp.comment:
-					sent_result = analyzer.analyze_text_with_perplexity(resp.comment)
-					agg_map[key]['sentiments'].append(sent_result.get('sentiment_label', 'Neutral'))
-					agg_map[key]['sentiment_scores'].append(sent_result.get('sentiment_score', 0.0))
-					agg_map[key]['emotion_labels'].append(sent_result.get('emotion_label', ''))
-					agg_map[key]['aspect_scores'].append(sent_result.get('aspect_scores', {}))
+			# Aggregate all questions for this (form, staff, subject)
 			from collections import Counter, defaultdict
-			for key, data in agg_map.items():
-				avg_rating = round(sum(data['ratings']) / len(data['ratings']), 2) if data['ratings'] else None
-				avg_star_rating = avg_rating
-				avg_sentiment_score = round(sum(data['sentiment_scores']) / len(data['sentiment_scores']), 2) if data['sentiment_scores'] else 0.0
-				sentiment_dist = dict(Counter(data['sentiments']))
-				aspect_totals = defaultdict(float)
-				aspect_counts = defaultdict(int)
-				for aspect_dict in data['aspect_scores']:
-					for aspect, score in aspect_dict.items():
-						aspect_totals[aspect] += score
-						aspect_counts[aspect] += 1
-				aspect_scores = {a: round(aspect_totals[a]/aspect_counts[a], 2) if aspect_counts[a] else 0.0 for a in aspect_totals}
-				form_id, question_id, staff_id, subject_id = key
-				print(f"[DEBUG] Creating/updating FeedbackAggregate: form_id={form_id}, staff_id={staff_id}, subject_id={subject_id}, avg_rating={avg_rating}, avg_star_rating={avg_star_rating}, avg_sentiment_score={avg_sentiment_score}, sentiment_dist={sentiment_dist}, aspect_scores={aspect_scores}")
-				FeedbackAggregate.objects.update_or_create(
-					form_id=form_id,
-					staff_id=staff_id,
-					subject_id=subject_id,
-					defaults={
-						'avg_rating': avg_rating,
-						'avg_star_rating': avg_star_rating,
-						'avg_sentiment_score': avg_sentiment_score,
-						'sentiment_score': avg_sentiment_score,
-						'sentiment_distribution': sentiment_dist,
-						'aspect_scores': aspect_scores,
-						'last_computed': timezone.now(),
-					}
-				)
+			subject = None
+			if responses.exists():
+				subject = responses.first().question.subject
+			ratings = []
+			sentiment_labels = []
+			sentiment_scores = []
+			emotion_labels = []
+			aspect_scores_list = []
+			for resp in responses:
+				if resp.rating:
+					ratings.append(resp.rating)
+				if resp.comment:
+					# Sentiment analysis (TextBlob only, no AI)
+					sent_result = analyzer.analyze_text_with_perplexity(resp.comment)
+					sentiment_labels.append(sent_result.get('sentiment_label', 'Neutral'))
+					sentiment_scores.append(sent_result.get('sentiment_score', 0.0))
+					emotion_labels.append(sent_result.get('emotion_label', ''))
+					aspect_scores_list.append(sent_result.get('aspect_scores', {}))
+			avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else None
+			avg_star_rating = avg_rating
+			avg_sentiment_score = round(sum(sentiment_scores) / len(sentiment_scores), 2) if sentiment_scores else 0.0
+			sentiment_dist = dict(Counter(sentiment_labels))
+			aspect_totals = defaultdict(float)
+			aspect_counts = defaultdict(int)
+			for aspect_dict in aspect_scores_list:
+				for aspect, score in aspect_dict.items():
+					aspect_totals[aspect] += score
+					aspect_counts[aspect] += 1
+			aspect_scores = {a: round(aspect_totals[a]/aspect_counts[a], 2) if aspect_counts[a] else 0.0 for a in aspect_totals}
+			print(f"[DEBUG] Creating/updating FeedbackAggregate: form_id={feedback_form.id}, staff_id={staff.id}, subject_id={subject.id if subject else None}, avg_rating={avg_rating}, avg_star_rating={avg_star_rating}, avg_sentiment_score={avg_sentiment_score}, sentiment_dist={sentiment_dist}, aspect_scores={aspect_scores}")
+			FeedbackAggregate.objects.update_or_create(
+				form_id=feedback_form.id,
+				staff_id=staff.id,
+				subject_id=subject.id if subject else None,
+				defaults={
+					'avg_rating': avg_rating,
+					'avg_star_rating': avg_star_rating,
+					'avg_sentiment_score': avg_sentiment_score,
+					'sentiment_score': avg_sentiment_score,
+					'sentiment_distribution': sentiment_dist,
+					'aspect_scores': aspect_scores,
+					'last_computed': timezone.now(),
+				}
+			)
 		messages.success(request, "Feedback submitted successfully.")
 		return redirect('feed360_index')
 	return render(request, 'feed360/student_fill_form.html', {
@@ -387,8 +529,19 @@ def create_feedback_form(request):
 				feedback_form = form.save(commit=False)
 				feedback_form.created_by = user
 				feedback_form.save()
-				formset.instance = feedback_form
-				formset.save()
+				# Get common fields
+				answer_type = form.cleaned_data.get('answer_type')
+				subject = form.cleaned_data.get('subject')
+				subject_text = form.cleaned_data.get('subject_text')
+				# Save questions with common fields
+				questions = formset.save(commit=False)
+				for q in questions:
+					q.form = feedback_form
+					q.answer_type = answer_type
+					q.subject = subject
+					q.subject_text = subject_text
+					q.save()
+				formset.save_m2m()
 			messages.success(request, "Feedback form created successfully.")
 			return redirect('feed360_index')
 	else:
@@ -402,16 +555,18 @@ def create_feedback_form(request):
 
 @login_required
 def hod_list_forms(request):
-    user = request.user
-    staff = getattr(user, 'staff', None)
-    if not staff or staff.position != 0:
-        return redirect('feed360_index')
-    dept_name = staff.department.name if staff.department else None
-    forms = FeedbackForm.objects.filter(department=dept_name).order_by('-created_at')
-    return render(request, 'feed360/hod_list_forms.html', {
-        'forms': forms,
-        'department_name': dept_name,
-    })
+	user = request.user
+	staff = getattr(user, 'staff', None)
+	if not staff or staff.position != 0:
+		return redirect('feed360_index')
+	dept_name = staff.department.name if staff.department else None
+	forms = FeedbackForm.objects.filter(department=dept_name).order_by('-created_at')
+	duser = Staff.objects.get(user=request.user)
+	return render(request, 'feed360/hod_list_forms.html', {
+		'forms': forms,
+		'department_name': dept_name,
+		'duser': duser,
+	})
 
 @login_required
 def hod_results_form(request, form_id):
@@ -502,7 +657,7 @@ def hod_results_form(request, form_id):
 	sentiment_labels = list(dept_sentiment_dist.keys())
 	sentiment_values = list(dept_sentiment_dist.values())
 
-	# --- AI-style summary generation ---
+	# --- Summary generation (no AI, only TextBlob for sentiment) ---
 	# Example: "70% of students are satisfied with clarity..."
 	total_responses = sum(sentiment_values)
 	positive_count = dept_sentiment_dist.get('Positive', 0)
@@ -527,6 +682,7 @@ def hod_results_form(request, form_id):
 			aspect_summary = f" Top aspect: {top_aspect} ({aspect_avgs[top_aspect]}/5)."
 	summary = f"{pos_pct}% of students gave positive feedback, {neu_pct}% neutral, {neg_pct}% negative.{aspect_summary}"
 
+	duser = Staff.objects.get(user=request.user)
 	return render(request, 'feed360/hod_results_staff.html', {
 		'form': form,
 		'staff_results': staff_results,
@@ -537,6 +693,7 @@ def hod_results_form(request, form_id):
 		'staff_names': staff_names,
 		'heatmap_matrix': heatmap_matrix,
 		'summary': summary,
+		'duser': duser,
 	})
 
 @login_required
@@ -567,6 +724,7 @@ def hod_staff_feedback_results(request):
 				if resp.rating:
 					agg_map[key]['ratings'].append(resp.rating)
 				if resp.comment:
+					# Sentiment analysis (TextBlob only, no AI)
 					sent_result = analyzer.analyze_text_with_perplexity(resp.comment)
 					agg_map[key]['sentiments'].append(sent_result)
 			for (form_id, question_id), data in agg_map.items():
@@ -589,8 +747,17 @@ def hod_staff_feedback_results(request):
 				for resp in responses:
 					if resp.form_id == form_id and resp.question_id == question_id and resp.comment:
 						comments.append(resp.comment)
+				# Defensive: Only add result if form_id is an integer
+				try:
+					form_id_int = int(form_id)
+				except Exception:
+					import logging
+					logging.warning(f"Skipping result with invalid form_id: {form_id}")
+					continue
 				results.append({
 					'form_title': data['form_title'],
+					'form_id': form_id_int,
+					'question_id': question_id,
 					'question_text': data['question_text'],
 					'avg_rating': avg_rating,
 					'sentiment': majority,
@@ -658,6 +825,7 @@ def hod_staff_feedback_results(request):
 		aspect_labels_json = '[]'
 		aspect_data_json = '{}'
 		sentiment_dist_json = '{}'
+	duser = Staff.objects.get(user=request.user)
 	return render(request, 'feed360/hod_staff_feedback_results.html', {
 		'staff_list': staff_list,
 		'selected_staff': selected_staff,
@@ -667,4 +835,5 @@ def hod_staff_feedback_results(request):
 		'aspect_labels_json': aspect_labels_json,
 		'aspect_data_json': aspect_data_json,
 		'sentiment_dist_json': sentiment_dist_json,
+		'duser': duser,
 	})

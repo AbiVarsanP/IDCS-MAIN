@@ -2,13 +2,13 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
+from core.models import Staff
 from django.db import transaction
 from django.contrib import messages
 from .models import FeedbackAggregate, FeedbackQuestion, FeedbackResponse, Subject, Staff, Student, FeedbackForm
 from .forms import FeedbackFormCreateForm, FeedbackQuestionFormSet
 from .services import analyzer
 
-# HOD: View all student comments and ratings for all questions in a form
 @login_required
 def hod_view_comments_all(request, staff_id, form_id):
 	# Permission: Only HODs
@@ -55,9 +55,12 @@ def hod_view_comments_all(request, staff_id, form_id):
 			'student_feedback': student_feedback,
 		})
 	back_url = reverse('feed360_hod_staff_feedback_results') + f'?staff_id={staff_id}'
+	# Fetch duser (Staff) for sidebar context
+	duser = Staff.objects.get(user=request.user)
 	return render(request, 'feed360/hod_view_comments_all.html', {
 		'questions': questions_data,
 		'back_url': back_url,
+		'duser': duser,
 	})
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -112,9 +115,11 @@ def hod_view_comments(request, staff_id, form_id, question_id):
 			'comment': resp.comment if resp else None,
 		})
 	back_url = reverse('feed360_hod_staff_feedback_results') + f'?staff_id={staff_id}'
+	duser = Staff.objects.get(user=request.user)
 	return render(request, 'feed360/hod_view_comments.html', {
 		'student_feedback': student_feedback,
 		'back_url': back_url,
+		'duser': duser,
 	})
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -550,16 +555,18 @@ def create_feedback_form(request):
 
 @login_required
 def hod_list_forms(request):
-    user = request.user
-    staff = getattr(user, 'staff', None)
-    if not staff or staff.position != 0:
-        return redirect('feed360_index')
-    dept_name = staff.department.name if staff.department else None
-    forms = FeedbackForm.objects.filter(department=dept_name).order_by('-created_at')
-    return render(request, 'feed360/hod_list_forms.html', {
-        'forms': forms,
-        'department_name': dept_name,
-    })
+	user = request.user
+	staff = getattr(user, 'staff', None)
+	if not staff or staff.position != 0:
+		return redirect('feed360_index')
+	dept_name = staff.department.name if staff.department else None
+	forms = FeedbackForm.objects.filter(department=dept_name).order_by('-created_at')
+	duser = Staff.objects.get(user=request.user)
+	return render(request, 'feed360/hod_list_forms.html', {
+		'forms': forms,
+		'department_name': dept_name,
+		'duser': duser,
+	})
 
 @login_required
 def hod_results_form(request, form_id):
@@ -675,6 +682,7 @@ def hod_results_form(request, form_id):
 			aspect_summary = f" Top aspect: {top_aspect} ({aspect_avgs[top_aspect]}/5)."
 	summary = f"{pos_pct}% of students gave positive feedback, {neu_pct}% neutral, {neg_pct}% negative.{aspect_summary}"
 
+	duser = Staff.objects.get(user=request.user)
 	return render(request, 'feed360/hod_results_staff.html', {
 		'form': form,
 		'staff_results': staff_results,
@@ -685,6 +693,7 @@ def hod_results_form(request, form_id):
 		'staff_names': staff_names,
 		'heatmap_matrix': heatmap_matrix,
 		'summary': summary,
+		'duser': duser,
 	})
 
 @login_required
@@ -816,6 +825,7 @@ def hod_staff_feedback_results(request):
 		aspect_labels_json = '[]'
 		aspect_data_json = '{}'
 		sentiment_dist_json = '{}'
+	duser = Staff.objects.get(user=request.user)
 	return render(request, 'feed360/hod_staff_feedback_results.html', {
 		'staff_list': staff_list,
 		'selected_staff': selected_staff,
@@ -825,4 +835,5 @@ def hod_staff_feedback_results(request):
 		'aspect_labels_json': aspect_labels_json,
 		'aspect_data_json': aspect_data_json,
 		'sentiment_dist_json': sentiment_dist_json,
+		'duser': duser,
 	})

@@ -60,8 +60,9 @@
 	font-size: 1.1rem;
 }
 </style>
+
 <div class="container" style="max-width:700px;margin:0 auto;">
-	<h2 style="color:#27a3e2;font-weight:700;margin-top:32px;">Path Pilot: Course & Career Map Generator</h2>
+	<h2 id="pathpilot-title" style="color:#27a3e2;font-weight:700;margin-top:32px;">Path Pilot: Course & Career Map Generator</h2>
 	<form id="pathpilot-form" autocomplete="off">
 		<input type="hidden" id="role" name="role" value="Student">
 		<div id="student-fields">
@@ -123,7 +124,17 @@
 		<div id="staff-fields" style="display:none;">
 			<div class="mb-3">
 				<label class="form-label pathpilot-form-label">Staff Branch</label>
-				<input type="text" class="form-control" id="branch_staff" name="branch_staff" >
+				<select class="form-select" id="branch_staff" name="branch_staff" required>
+					<option value="">Select Branch</option>
+					<option value="Artificial intelligence and data science">Artificial intelligence and data science</option>
+					<option value="Atificial Intelligence and machine learning">Atificial Intelligence and machine learning</option>
+					<option value="Computer science Engineering">Computer science Engineering</option>
+					<option value="Electronic communication Engineering">Electronic communication Engineering</option>
+					<option value="Information Technology">Information Technology</option>
+					<option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+					<option value="Mechanical Engineering">Mechanical Engineering</option>
+					<option value="Civil Engineering">Civil Engineering</option>
+				</select>
 			</div>
 			<div class="mb-3">
 				<label class="form-label pathpilot-form-label">Subject Name</label>
@@ -195,7 +206,21 @@ function updateRoleFields() {
 		document.getElementById('career_goal').required = false;
 	}
 }
-document.addEventListener('DOMContentLoaded', updateRoleFields);
+document.addEventListener('DOMContentLoaded', function() {
+	updateRoleFields();
+	// Set heading based on role
+	const role = getRoleFromURL();
+	const titleEl = document.getElementById('pathpilot-title');
+	if (titleEl) {
+		if (role === 'Student') {
+			titleEl.textContent = 'Path Pilot: Career Map Generator';
+		} else if (role === 'Staff') {
+			titleEl.textContent = 'Profes Pro: Course Map Generator';
+		} else {
+			titleEl.textContent = 'Path Pilot: Course & Career Map Generator';
+		}
+	}
+});
 
 // AJAX form submit
 const form = document.getElementById('pathpilot-form');

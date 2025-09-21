@@ -129,7 +129,7 @@ def analyze_resume(text, jd_text=None):
 					"flagged_lines": data.get("flagged_lines", [])
 				}
 			except json.JSONDecodeError as e:
-				# Try to extract as many flagged_lines as possible from a truncated array, even if broken mid-object
+				# Robust partial recovery: only add flagged_lines with all required fields, fill missing with empty string
 				flagged_lines = []
 				score = 0
 				try:
@@ -145,31 +145,27 @@ def analyze_resume(text, jd_text=None):
 					obj_matches = re.findall(r'\{[^\{\}]*\}', arr_str)
 					for obj_str in obj_matches:
 						try:
-							flagged_lines.append(json.loads(obj_str))
+							obj = json.loads(obj_str)
+							# Ensure all required fields are present
+							for key in ["section", "original", "reason", "suggestion"]:
+								if key not in obj:
+									obj[key] = ""
+							flagged_lines.append(obj)
 						except Exception:
 							# Try to fix broken objects by trimming at last complete key-value
 							last_comma = obj_str.rfind(',')
 							if last_comma > 0:
 								try:
 									fixed_obj = obj_str[:last_comma] + '}'
-									flagged_lines.append(json.loads(fixed_obj))
+									obj = json.loads(fixed_obj)
+									for key in ["section", "original", "reason", "suggestion"]:
+										if key not in obj:
+											obj[key] = ""
+									flagged_lines.append(obj)
 								except Exception:
 									continue
 							continue
-					# Try to extract a final partial object if the array is cut off
-					last_obj_start = arr_str.rfind('{')
-					if last_obj_start != -1:
-						partial_obj = arr_str[last_obj_start:]
-						# Try to close the object and parse, even if it's very incomplete
-						for i in range(len(partial_obj), 0, -1):
-							try:
-								maybe_obj = partial_obj[:i]
-								# Add closing brace if missing
-								if not maybe_obj.endswith('}'): maybe_obj += '}'
-								flagged_lines.append(json.loads(maybe_obj))
-								break
-							except Exception:
-								continue
+					# Do NOT try to parse a final partial object if it is too broken
 				except Exception as e2:
 					print(f"[AI DEBUG] Partial JSON extraction failed: {e2}\nRaw AI: {ai_response}")
 				print(f"[AI DEBUG] JSON recovery failed: {e}\nRaw AI: {ai_response}")

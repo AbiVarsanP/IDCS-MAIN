@@ -3,11 +3,11 @@
 
 
 {% block root %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <a href="{% url 'gatepass' %}?action=apply" class="btn btn-primary btn-block">Apply for Gatepass</a>
-    </div>
+<center>
+<div class="page-header float-center">
+    <h3 style="background:#1976d2;color:#fff;padding:10px 24px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">Gatepass Application</h3>
 </div>
+</center>
 <div id="gatepass-content">
     {% if action == 'apply' or not action %}
         {% include 'student/gatepass_apply.html' %}

@@ -45,21 +45,19 @@
 </style>
 
 <div class="row">
-    {% if duser and duser.position == 0 %}
     <div class="col-lg-3 col-md-3">
         <div class="card">
             <div class="card-body">
                 <div class="stat-widget-five">
-                    <div class="stat-icon dib flat-color-5">
-                        <i class="ti-comments"></i>
+                    <div class="stat-icon dib flat-color-4">
+                        <i class="ti-shift-right-alt"></i>
                     </div>
                     <div class="stat-content">
                         <div class="text-left dib">
-                            <div class="stat-text">Feed360 Feedback</div>
-                            <div class="stat-heading">
-                                <a href="{% url 'feed360_create' %}" class="btn btn-link btn-sm flat-color-5">Create</a>
-                                <a href="{% url 'feed360_staff_results' staff_id=request.user.staff.id %}" class="btn btn-link btn-sm flat-color-5">View</a>
-                                <a href="{% url 'feed360_hod_list_forms' %}" class="btn btn-link btn-sm flat-color-5">View All</a>
+                            <div class="stat-text">Gate Pass
+                                <div class="stat-heading">
+                                    <a href="{% url 'hod_gatepass_view' %}" class="btn btn-link btn-sm  flat-color-4">View &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -67,7 +65,6 @@
             </div>
         </div>
     </div>
-    {% endif %}
     <div class="col-lg-3 col-md-3">
         <div class="card">
             <div class="card-body">
@@ -128,19 +125,21 @@
             </div>
         </div>
     </div>
+    {% if duser and duser.position == 0 %}
     <div class="col-lg-3 col-md-3">
         <div class="card">
             <div class="card-body">
                 <div class="stat-widget-five">
-                    <div class="stat-icon dib flat-color-4">
-                        <i class="ti-shift-right-alt"></i>
+                    <div class="stat-icon dib flat-color-5">
+                        <i class="ti-comments"></i>
                     </div>
                     <div class="stat-content">
                         <div class="text-left dib">
-                            <div class="stat-text">Gate Pass
-                                <div class="stat-heading">
-                                    <a href="{% url 'hod_gatepass_view' %}" class="btn btn-link btn-sm  flat-color-4">View &nbsp;<i class="fa fa-arrow-right"></i></a>
-                                </div>
+                            <div class="stat-text">Feed360 Feedback</div>
+                            <div class="stat-heading">
+                                <a href="{% url 'feed360_create' %}" class="btn btn-link btn-sm flat-color-5">Create</a>
+                                <a href="{% url 'feed360_staff_results' staff_id=request.user.staff.id %}" class="btn btn-link btn-sm flat-color-5">View</a>
+                                <a href="{% url 'feed360_hod_list_forms' %}" class="btn btn-link btn-sm flat-color-5">View All</a>
                             </div>
                         </div>
                     </div>
@@ -167,6 +166,8 @@
             </div>
         </div>
     </div>
+    {% endif %}
+</div>
 </div>
 
 

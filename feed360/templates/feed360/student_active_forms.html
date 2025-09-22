@@ -2,8 +2,10 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Active Feedback Forms</h2>
+<div class="page-header float-center">
+    <center>
+    <h3 style="background:#1976d2;color:#fff;padding:10px 24px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">Active Feedback Forms</h3>
+    </center>
     {% if forms %}
         <ul class="list-group mb-4">
             {% for form in forms %}

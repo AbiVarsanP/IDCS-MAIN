@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4">
+    <h3>Staff Attendance - Assigned Subjects</h3>
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    {% if subjects_with_students %}
+        {% for item in subjects_with_students %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>{{ item.subject.name }}</strong> - Semester: {{ item.subject.semester.semester }}<br>
+                    Department: {{ item.subject.semester.department.name }}
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary mb-3">Submit Attendance</button>
+                        <div class="mb-3">
+                            <label for="attendance_date_{{ item.subject.id }}" class="form-label">Select Date:</label>
+                            <input type="date" id="attendance_date_{{ item.subject.id }}" name="attendance_date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="absent_last3_{{ item.subject.id }}" class="form-label">Enter last 3 digits of roll numbers to mark absent:</label>
+                            <input type="text" id="absent_last3_{{ item.subject.id }}" name="absent_last3" class="form-control" placeholder="e.g. 123, 456, 789">
+                            <small class="form-text text-muted">Separate multiple values with commas or spaces. Example: 123 456 789</small>
+                        </div>
+                        <table class="table table-bordered table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Roll Number</th>
+                                    <th>Name</th>
+                                    <th>Year</th>
+                                    <th>Section</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in item.students %}
+                                <tr>
+                                    <td>{{ student.roll }}</td>
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.year }}</td>
+                                    <td>
+                                        {% if student.section == 2 %}A{% elif student.section == 3 %}B{% else %}{{ student.section }}{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No subjects assigned.</p>
+    {% endif %}
+</div>
+{% endblock %}

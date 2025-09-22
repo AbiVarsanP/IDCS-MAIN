@@ -181,16 +181,19 @@ class Student(models.Model):
 
 
     def save(self, *args, **kwargs):
-        # Auto-set hod and ahod fields to department's hod and ahod if department is assigned
-        if self.department:
-            if self.department.hod:
-                self.hod = self.department.hod
-            if self.department.ahod:
-                from core.models import AHOD
-                ahod_instance = AHOD.objects.filter(user=self.department.ahod).first()
-                if ahod_instance:
-                    self.ahod = ahod_instance
-        super().save(*args, **kwargs)
+            # Auto-set department from advisor if advisor is set and department is not
+            if not self.department and self.advisor and self.advisor.department:
+                self.department = self.advisor.department
+            # Auto-set hod and ahod fields to department's hod and ahod if department is assigned
+            if self.department:
+                if self.department.hod:
+                    self.hod = self.department.hod
+                if self.department.ahod:
+                    from core.models import AHOD
+                    ahod_instance = AHOD.objects.filter(user=self.department.ahod).first()
+                    if ahod_instance:
+                        self.ahod = ahod_instance
+            super().save(*args, **kwargs)
 
     def feedback_clear(self):
         self.feedback_for.clear()

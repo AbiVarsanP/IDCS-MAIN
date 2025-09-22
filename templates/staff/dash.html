@@ -78,6 +78,16 @@
                 {% endfor %}
             </ul>
         </div>
+        <!-- Attendance Link Card -->
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <span>Attendance</span>
+                <a href="{% url 'staff_attendance' %}" class="btn btn-light btn-sm">Go</a>
+            </div>
+            <div class="card-body">
+                <p>View your assigned subjects and mark attendance.</p>
+            </div>
+        </div>
     </div>
     <div class="col-md-3">
         <!-- Leave Card -->

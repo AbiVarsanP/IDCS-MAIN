@@ -37,6 +37,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification, Student
+from .models import SemesterSubject
 from django.db import models
 # Principal dashboard view
 @login_required
@@ -79,6 +80,26 @@ def period_attendance_view(request):
 
 # Student attendance view for date-wise lookup
 @login_required
+def staff_attendance_view(request):
+    context = set_config(request)
+    staff = None
+    assigned_subjects = []
+    subjects_with_students = []
+    try:
+        staff = Staff.objects.get(user=request.user)
+        assigned_subjects = SemesterSubject.objects.filter(staff=staff)
+        for subject in assigned_subjects:
+            # Get students in the same department and semester as the subject
+            semester_obj = subject.semester
+            students = Student.objects.filter(department=semester_obj.department, semester=semester_obj.semester)
+            subjects_with_students.append({
+                'subject': subject,
+                'students': students
+            })
+    except Staff.DoesNotExist:
+        assigned_subjects = []
+    context['subjects_with_students'] = subjects_with_students
+    return render(request, 'staff/attendance.html', context)
 def student_attendance_view(request):
     context = set_config(request)
 

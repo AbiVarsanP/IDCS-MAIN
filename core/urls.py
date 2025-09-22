@@ -94,6 +94,7 @@ urlpatterns += [
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
     path("timetable/", staff_timetable, name="staff_timetable"),
     path("my_class_students/", my_class_students, name="my_class_students"),
+    path("staff/attendance/", staff_attendance_view, name="staff_attendance"),
 
     # Principal URLs
     path('principal/dashboard/', principal_dashboard, name='principal_dashboard'),

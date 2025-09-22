@@ -447,7 +447,13 @@ def my_class_students(request):
 @login_required
 def ahod_dash(request):
     context = set_config(request)
-    ahod = AHOD.objects.get(user=context['duser'])
+    ahod = AHOD.objects.filter(user=context['duser']).first()
+    if not ahod:
+        # Show a user-friendly error page or message
+        return render(request, 'ahod/ahod_dashboard.html', {
+            'error': 'AHOD record not found for your account. Please contact admin.',
+            'duser': context.get('duser'),
+        })
     # Get department code for AHOD
     ahod_dept = ahod.user.department
     # Get all students in the same department as AHOD

@@ -12,6 +12,7 @@
                     <th>Year</th>
                     <th>Section</th>
                     <th>Created At</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -23,7 +24,20 @@
                     <td>{{ form.section }}</td>
                     <td>{{ form.created_at }}</td>
                     <td>
-                        <a href="{% url 'feed360_hod_results_form' form.id %}" class="btn btn-info btn-sm">View Results</a>
+                        {% if form.active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {# Removed 'View Results' button as requested #}
+                        {% if form.active %}
+                            <form method="post" action="{% url 'feed360_hod_deactivate_form' form.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to deactivate this form?');">Deactivate</button>
+                            </form>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

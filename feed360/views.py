@@ -1,3 +1,23 @@
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
+# HOD deactivate feedback form
+@login_required
+@require_POST
+def hod_deactivate_form(request, form_id):
+	user = request.user
+	staff = getattr(user, 'staff', None)
+	if not staff or staff.position != 0:
+		messages.error(request, "Permission denied. HODs only.")
+		return redirect('feed360_hod_list_forms')
+	form = get_object_or_404(FeedbackForm, pk=form_id, department=staff.department.name)
+	if not form.active:
+		messages.info(request, "Form is already inactive.")
+	else:
+		form.active = False
+		form.save()
+		messages.success(request, f"Feedback form '{form.title}' deactivated.")
+	return redirect('feed360_hod_list_forms')
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -548,9 +568,15 @@ def create_feedback_form(request):
 		form = FeedbackFormCreateForm(user=request.user)
 		formset = FeedbackQuestionFormSet()
 
+	duser = None
+	try:
+		duser = Staff.objects.get(user=request.user)
+	except Exception:
+		duser = None
 	return render(request, 'feed360/hod_create_form.html', {
 		'form': form,
 		'formset': formset,
+		'duser': duser,
 	})
 
 @login_required

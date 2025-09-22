@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block root %}
+<<br>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">Leaves's Status</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>ID</th>
+                            <th>TITLE</th>
+                            <th>MENTOR</th>
+                            <th>ADVISOR</th>
+                            <th>AHOD</th>
+                            <th>HOD</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if leaves %}
+                        {% for i in leaves %}
+                        <tr>
+                            <td class="serial">{{ forloop.counter }}.</td>
+
+                            <td> #LE{{i.id}} </td>
+                            <td> <span class="name">{{i.sub}}</span> </td>
+
+                            <td>
+                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
+                            </td>
+                            <td>
+                                {% if i.user.ahod %}
+                                    <span class="badge badge-{{i.AHstatus}}">{{ i.AHstatus }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
+                            </td>
+                           
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr><td colspan="6">No Leave records found</td></tr>
+                        {% endif %}
+
+                    </tbody>
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+{% endblock %}

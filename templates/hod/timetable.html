@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static custom_filters %}
+
+{% block content %}
+
+<h2>HOD Timetable</h2>
+<div class="container mt-4">
+    <h2 class="text-center">My Timetable</h2>
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    {% for period in periods %}
+                    <th>Period {{ period }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in days %}
+                <tr>
+                    <td>{{ day }}</td>
+                    {% for period in periods %}
+                    <td>{{ table|get_item:day|get_item:period }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

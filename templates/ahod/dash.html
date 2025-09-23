@@ -20,18 +20,24 @@
                         <hr class="my-2 w-100">
                     </div>
                 </div>
-                <div class="mt-3 mt-md-0 text-center">
-                    {% if duser.profile %}
-                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
-                    {% else %}
-                        <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
-                    {% endif %}
-                </div>
-                <div class="mt-3 mt-md-0 text-center text-md-left">
-                    <strong>Staff ID:</strong> {{ duser.user.username }}<br>
-                    <strong>Name:</strong> {{ duser.name }}<br>
-                    <strong>User:</strong> Assistant HOD<br>
-                    <a href="/feed360/staff/{{ duser.id }}/results/" class="btn btn-info btn-sm mt-2">View My Feedback Results</a>
+
+                <div class="card bg-light ml-4" style="min-width: 260px; max-width: 320px;">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="mr-3">
+                            {% if duser.profile %}
+                                <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                            {% else %}
+                                <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>Staff ID:</strong> {{ duser.user.username }}<br>
+                            <strong>Name:</strong> {{ duser.name }}<br>
+                            <strong>User:</strong> Assistant HOD<br>
+                            <a href="/feed360/staff/{{ duser.id }}/results/" class="btn btn-info btn-sm mt-2">View My Feedback Results</a>
+                            <a href="{% url 'ahod_timetable' %}" class="btn btn-primary btn-sm mt-2">Go to Timetable</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

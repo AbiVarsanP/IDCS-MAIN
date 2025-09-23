@@ -49,9 +49,6 @@ class Department(models.Model):
 
     
 
-# ...existing code...
-
-
 # Attendance Model for Section 3.2: Track attendance, link to events/workshops/training, integrate with Leaves/ODs for deductions
 
 class Attendance(models.Model):
@@ -457,3 +454,15 @@ class SpotFeedback(models.Model):
 
     def get_absolute_url(self):
         return reverse('student_feedback_form', args=[str(self.staff.id), 'spf'])
+
+class Timetable(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    day = models.CharField(max_length=10)
+    period = models.CharField(max_length=20)
+    subject = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        unique_together = ('user', 'day', 'period')
+
+    def __str__(self):
+        return f"{self.user} - {self.day} - {self.period}: {self.subject}"

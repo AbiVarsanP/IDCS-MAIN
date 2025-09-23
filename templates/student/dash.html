@@ -28,7 +28,7 @@ document.addEventListener('click', function(e) {
     <div class="col-12 d-flex justify-content-center align-items-center">
         <div class="card mb-4 w-100">
             <div class="card-body d-flex flex-column flex-md-row align-items-center justify-content-between">
-                <div class="d-flex flex-column flex-md-row align-items-center w-100">
+                <div class="d-flex flex-column flex-md-row align-items-center w-80">
                     <div class="pr-4 d-flex align-items-center">
                         <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" class="img-fluid" style="max-width: 100px; height: auto;">
                     </div>
@@ -38,17 +38,19 @@ document.addEventListener('click', function(e) {
                         <hr class="my-2 w-100">
                     </div>
                 </div>
-                <div class="mt-3 mt-md-0 text-center">
-                    {% if duser.profile %}
-                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
-                    {% else %}
-                        <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
-                    {% endif %}
-                </div>
-                <div class="mt-3 mt-md-0 text-center text-md-left">
-                    <strong>Student ID:</strong> {{ duser.user.username }}<br>
-                    <strong>Name:</strong> {{ duser.name }}<br>
-                    <strong>User:</strong> Student
+                <div style="display: flex; gap: 20px;">
+                    <div class="mt-3 mt-md-0 text-center">
+                        {% if duser.profile %}
+                            <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                        {% else %}
+                            <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                        {% endif %}
+                    </div>
+                    <div class="mt-3 mt-md-0 text-left text-md-left">
+                        <strong>Student ID:</strong> {{ duser.user.username }}<br>
+                        <strong>Name:</strong> {{ duser.name }}<br>
+                        <strong>User:</strong> Student
+                    </div>
                 </div>
             </div>
         </div>

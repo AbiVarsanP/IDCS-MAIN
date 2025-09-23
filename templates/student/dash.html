@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
 
 {% block root %}
 <script>
@@ -21,28 +23,29 @@ document.addEventListener('click', function(e) {
     });
 });
 </script>
+
 <div class="row">
-    <div class="col-md-12 d-flex justify-content-center align-items-center">
-        <div class="card mb-4" style="width: 100%;">
-            <div class="card-body d-flex flex-row align-items-center justify-content-between">
-                <div class="d-flex flex-row align-items-center" style="flex: 1;">
+    <div class="col-12 d-flex justify-content-center align-items-center">
+        <div class="card mb-4 w-100">
+            <div class="card-body d-flex flex-column flex-md-row align-items-center justify-content-between">
+                <div class="d-flex flex-column flex-md-row align-items-center w-100">
                     <div class="pr-4 d-flex align-items-center">
-                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" style="max-width: 100px; height: 100px;">
+                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" class="img-fluid" style="max-width: 100px; height: auto;">
                     </div>
-                    <div class="d-flex flex-column align-items-start" style="flex: 1;">
-                        <h3 class="card-title mb-1" style="font-weight: bold; color: #1756a9;">K. Ramakrishnan College of Technology</h3>
-                        <div style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
-                        <hr style="margin: 0.5rem 0; width: 100%;">
+                    <div class="d-flex flex-column align-items-start w-100">
+                        <h3 class="card-title mb-1 text-center text-md-left" style="font-weight: bold; color: #1756a9;">K. Ramakrishnan College of Technology</h3>
+                        <div class="text-center text-md-left" style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
+                        <hr class="my-2 w-100">
                     </div>
                 </div>
-                <div class="mr-3">
+                <div class="mt-3 mt-md-0 text-center">
                     {% if duser.profile %}
                         <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
                     {% else %}
                         <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
                     {% endif %}
                 </div>
-                <div>
+                <div class="mt-3 mt-md-0 text-center text-md-left">
                     <strong>Student ID:</strong> {{ duser.user.username }}<br>
                     <strong>Name:</strong> {{ duser.name }}<br>
                     <strong>User:</strong> Student
@@ -52,9 +55,90 @@ document.addEventListener('click', function(e) {
     </div>
 </div>
 
-<!-- Dashboard Cards for OD, Leave, Bonafide, Gatepass -->
+<!-- Resume Builder & Path Pilot Horizontal Cards -->
+<div class="row mb-3">
+    <div class="col-12 col-md-3 mb-3 mb-md-0">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-5">
+                        <i class="ti-comments"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Feed360 Feedback</div>
+                            <div class="stat-heading">
+                                <a href="{% url 'feed360_index' %}" class="btn btn-link btn-sm flat-color-5">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3 mb-3 mb-md-0">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-1">
+                        <i class="ti-file"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-file">
+                            <div class="stat-text">Resume Builder</div>
+                            <div class="stat-heading">
+                                <a href="{% url 'resumebuilder:rb' %}" class="btn btn-link btn-sm flat-color-1">Create</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3 mb-3 mb-md-0">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-2">
+                        <i class="ti-files"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">ATS Resume Analysis</div>
+                            <div class="stat-heading">
+                                <a href="{% url 'ATS:upload_resume' %}" class="btn btn-link btn-sm flat-color-2">Analyse</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-3">
+                        <i class="ti-location-arrow"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="text-left dib">
+                            <div class="stat-text">Path Pilot</div>
+                            <div class="stat-heading">
+                                <a href="{% url 'resumebuilder:rb' %}" class="btn btn-link btn-sm flat-color-3">Create</a>
+                                <a href="{% url 'map_history' %}" class="btn btn-link btn-sm flat-color-3">Map History</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
-    <div class="col-md-3">
+    <!-- First Row: OD and Leave Applications -->
+    <div class="col-12 col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <span>Today's OD Applications</span>
@@ -89,24 +173,9 @@ document.addEventListener('click', function(e) {
                 {% endfor %}
             </ul>
         </div>
-        <div id="od-viewall" class="card mb-3" style="display:none; position:absolute; z-index:1000; width:90%; left:5%; top:20%;">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <span>All OD Applications</span>
-                <button class="btn btn-danger btn-sm" onclick="hideViewAll('od')">Close</button>
-            </div>
-            <ul class="list-group list-group-flush">
-                {% for od in ods_all %}
-                <li class="list-group-item">
-                    <strong>{{ od.sub }}</strong> - <span class="badge badge-{{od.Mstatus}}">{{od.Mstatus}}</span> <span class="badge badge-{{od.Astatus}}">{{od.Astatus}}</span> <span class="badge badge-{{od.AHstatus}}">{{od.AHstatus}}</span> <span class="badge badge-{{od.Hstatus}}">{{od.Hstatus}}</span><br>
-                    <small>{{ od.created|date:"d M Y H:i" }}</small>
-                </li>
-                {% empty %}
-                <li class="list-group-item">No OD applications found.</li>
-                {% endfor %}
-            </ul>
-        </div>
     </div>
-    <div class="col-md-3">
+
+    <div class="col-12 col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <span>Today's Leave Applications</span>
@@ -141,24 +210,10 @@ document.addEventListener('click', function(e) {
                 {% endfor %}
             </ul>
         </div>
-        <div id="leave-viewall" class="card mb-3" style="display:none; position:absolute; z-index:1000; width:90%; left:5%; top:20%;">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <span>All Leave Applications</span>
-                <button class="btn btn-danger btn-sm" onclick="hideViewAll('leave')">Close</button>
-            </div>
-            <ul class="list-group list-group-flush">
-                {% for leave in leaves_all %}
-                <li class="list-group-item">
-                    <strong>{{ leave.sub }}</strong> - <span class="badge badge-{{leave.Mstatus}}">{{leave.Mstatus}}</span> <span class="badge badge-{{leave.Astatus}}">{{leave.Astatus}}</span> <span class="badge badge-{{leave.AHstatus}}">{{leave.AHstatus}}</span> <span class="badge badge-{{leave.Hstatus}}">{{leave.Hstatus}}</span><br>
-                    <small>{{ leave.created|date:"d M Y H:i" }}</small>
-                </li>
-                {% empty %}
-                <li class="list-group-item">No Leave applications found.</li>
-                {% endfor %}
-            </ul>
-        </div>
     </div>
-    <div class="col-md-3">
+
+    <!-- Second Row: Bonafide and Gatepass Applications -->
+    <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                 <span>Today's Bonafide Applications</span>
@@ -189,24 +244,9 @@ document.addEventListener('click', function(e) {
                 {% endfor %}
             </ul>
         </div>
-        <div id="bonafide-viewall" class="card mb-3" style="display:none; position:absolute; z-index:1000; width:90%; left:5%; top:20%;">
-            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                <span>All Bonafide Applications</span>
-                <button class="btn btn-danger btn-sm" onclick="hideViewAll('bonafide')">Close</button>
-            </div>
-            <ul class="list-group list-group-flush">
-                {% for bonafide in bonafides_all %}
-                <li class="list-group-item">
-                    <strong>{{ bonafide.sub }}</strong> - <span class="badge badge-{{bonafide.Mstatus}}">{{bonafide.Mstatus}}</span> <span class="badge badge-{{bonafide.Astatus}}">{{bonafide.Astatus}}</span> <span class="badge badge-{{bonafide.Hstatus}}">{{bonafide.Hstatus}}</span><br>
-                    <small>{{ bonafide.created|date:"d M Y H:i" }}</small>
-                </li>
-                {% empty %}
-                <li class="list-group-item">No Bonafide applications found.</li>
-                {% endfor %}
-            </ul>
-        </div>
     </div>
-    <div class="col-md-3">
+
+    <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                 <span>Today's Gatepass Applications</span>
@@ -237,68 +277,9 @@ document.addEventListener('click', function(e) {
                 {% endfor %}
             </ul>
         </div>
-        <div id="gatepass-viewall" class="card mb-3" style="display:none; position:absolute; z-index:1000; width:90%; left:5%; top:20%;">
-            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                <span>All Gatepass Applications</span>
-                <button class="btn btn-danger btn-sm" onclick="hideViewAll('gatepass')">Close</button>
-            </div>
-            <ul class="list-group list-group-flush">
-                {% for gatepass in gatepasses_all %}
-                <li class="list-group-item">
-                    <strong>{{ gatepass.sub }}</strong> - <span class="badge badge-{{gatepass.Mstatus}}">{{gatepass.Mstatus}}</span> <span class="badge badge-{{gatepass.Astatus}}">{{gatepass.Astatus}}</span> <span class="badge badge-{{gatepass.Hstatus}}">{{gatepass.Hstatus}}</span><br>
-                    <small>{{ gatepass.created|date:"d M Y H:i" }}</small>
-                </li>
-                {% empty %}
-                <li class="list-group-item">No Gatepass applications found.</li>
-                {% endfor %}
-            </ul>
-        </div>
     </div>
 </div>
 
-<!-- Resume Builder & Path Pilot Horizontal Cards -->
-<div class="row mb-3">
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <strong class="card-title">Feed360 Feedback</strong>
-            </div>
-            <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                <a href="{% url 'feed360_index' %}" class="btn btn-warning w-75">Active Feedback Forms</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <strong class="card-title">Resume Builder</strong>
-            </div>
-            <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                <a href="{% url 'resumebuilder:rb' %}" class="btn btn-primary w-75">Go to Resume Builder</a>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-lg-6 mt-3">
-        <div class="card h-100">
-            <div class="card-header">
-                <strong class="card-title">ATS Resume Analysis</strong>
-            </div>
-            <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                <a href="{% url 'ATS:upload_resume' %}" class="btn btn-success w-75">Analyze My Resume (ATS)</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <strong class="card-title">Path Pilot</strong>
-            </div>
-            <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                <a href="{% url 'pathpilot' %}?role=Student" class="btn btn-info mb-2 w-75" style="background: linear-gradient(90deg, #27a3e2 60%, #ff9800 100%); color: #fff; border: none;">Go to Path Pilot</a>
-                <a href="{% url 'map_history' %}" class="btn btn-secondary w-75">Map History</a>
-            </div>
-        </div>
-    </div>
-</div>
+
 {% endblock %}

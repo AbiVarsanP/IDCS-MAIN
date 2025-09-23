@@ -1,43 +1,42 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
 
 {% block root %}
 <div class="row">
-    <div class="col-md-12 d-flex justify-content-center align-items-center">
-        <div class="card mb-4" style="width: 100%;">
-            <div class="card-body d-flex flex-row align-items-center justify-content-between">
-                <div class="d-flex flex-row align-items-center" style="flex: 1;">
+    <div class="col-12 d-flex justify-content-center align-items-center">
+        <div class="card mb-4 w-100">
+            <div class="card-body d-flex flex-column flex-md-row align-items-center justify-content-between">
+                <div class="d-flex flex-column flex-md-row align-items-center w-100">
                     <div class="pr-4 d-flex align-items-center">
-                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" style="max-width: 100px; height: 100px;">
+                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" class="img-fluid" style="max-width: 100px; height: auto;">
                     </div>
-                    <div class="d-flex flex-column align-items-start" style="flex: 1;">
-                        <h3 class="card-title mb-1" style="font-weight: bold; color: #1756a9;">K. Ramakrishnan College of Technology</h3>
-                        <div style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
-                        <hr style="margin: 0.5rem 0; width: 100%;">
+                    <div class="d-flex flex-column align-items-start w-100">
+                        <h3 class="card-title mb-1 text-center text-md-left" style="font-weight: bold; color: #1756a9;">K. Ramakrishnan College of Technology</h3>
+                        <div class="text-center text-md-left" style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
+                        <hr class="my-2 w-100">
                     </div>
                 </div>
-                <div class="card bg-light ml-4" style="min-width: 260px; max-width: 320px;">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="mr-3">
-                            {% if duser.profile %}
-                                <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
-                            {% else %}
-                                <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
-                            {% endif %}
-                        </div>
-                        <div>
-                            <strong>Staff ID:</strong> {{ duser.user.username }}<br>
-                            <strong>Name:</strong> {{ duser.name }}<br>
-                            <strong>User:</strong> Assistant HOD<br>
-                            <a href="/feed360/staff/{{ duser.id }}/results/" class="btn btn-info btn-sm mt-2">View My Feedback Results</a>
-                        </div>
-                    </div>
+                <div class="mt-3 mt-md-0 text-center">
+                    {% if duser.profile %}
+                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                    {% else %}
+                        <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                    {% endif %}
+                </div>
+                <div class="mt-3 mt-md-0 text-center text-md-left">
+                    <strong>Staff ID:</strong> {{ duser.user.username }}<br>
+                    <strong>Name:</strong> {{ duser.name }}<br>
+                    <strong>User:</strong> Assistant HOD<br>
+                    <a href="/feed360/staff/{{ duser.id }}/results/" class="btn btn-info btn-sm mt-2">View My Feedback Results</a>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 <style>
     .checked {
@@ -45,8 +44,6 @@
     }
 </style>
 
-
-<!-- All Students' Applications for AHOD (like HOD) -->
 <div class="row mt-4">
     <div class="col-12">
         <div class="card mb-4">
@@ -71,7 +68,7 @@
                                 <td>#OD{{i.id}}</td>
                                 <td>{{i.user.name}}</td>
                                 <td>{{i.sub}}</td>
-                                <td>{{i.start}} - {{i.end}}</td>
+                                <td>{{i.start}} <br> {{i.end}}</td>
                                 <td>{{i.Hstatus}}</td>
                             </tr>
                             {% endfor %}
@@ -122,9 +119,5 @@
         </div>
     </div>
 </div>
-
-
-
-
 
 {% endblock %}

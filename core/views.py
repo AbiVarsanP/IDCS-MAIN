@@ -710,6 +710,12 @@ def dash(request):
     context = set_config(request)
     if 'duser' not in context:
         return redirect('login')
+
+    # --- Add today's timetable for staff dashboard ---
+    if request.user.is_staff:
+        from core.services.get_todays_timetable import get_todays_timetable
+        context['todays_timetable'] = get_todays_timetable(context['duser'])
+
     if not request.user.is_staff:
         # Show only the student's own results for each section
         context['gatepasses'] = GATEPASS.objects.filter(user=context['duser'])

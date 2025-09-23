@@ -148,6 +148,12 @@ urlpatterns += [
 
 # Placement
 
+from .timetable_views import hod_timetable
+
+urlpatterns += [
+    path("hod/timetable/", hod_timetable, name="hod_timetable"),
+]
+
 
 
 

@@ -100,6 +100,7 @@
 
                             <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_timetable' %}active{% endif %}"><a href="{% url 'hod_timetable' %}"><i class="menu-icon ti-calendar"></i>My Timetable</a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}"><a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
 
                         {% elif duser and duser.position2 == 1 %}

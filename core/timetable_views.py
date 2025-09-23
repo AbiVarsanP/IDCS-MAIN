@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .helpers import set_config
 from .timetable_models import StaffTimeTable
+import logging
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def staff_timetable(request):
@@ -56,22 +59,16 @@ def hod_timetable(request):
         my_table = timetable_obj.my_timetable_data
     except StaffTimeTable.DoesNotExist:
         timetable_obj = None
+
     if request.method == 'POST':
-        if 'my-edit-btn' in request.POST or 'my-save-btn' in request.POST or any(k.startswith('my_') for k in request.POST.keys()):
-            for day in days:
-                for period in periods:
-                    key = f"{day}_{period}"
-                    my_key = f"my_{key}"
-                    my_table[key] = request.POST.get(my_key, '')
-            StaffTimeTable.objects.update_or_create(staff=hod, defaults={'my_timetable_data': my_table, 'data': table})
-            context['my_message'] = 'My Timetable updated!'
-        else:
-            for day in days:
-                for period in periods:
-                    key = f"{day}_{period}"
-                    table[key] = request.POST.get(key, '')
-            StaffTimeTable.objects.update_or_create(staff=hod, defaults={'data': table, 'my_timetable_data': my_table})
-            context['message'] = 'Timetable updated!'
+        for day in days:
+            for period in periods:
+                key = f"{day}_{period}"
+                my_key = f"my_{key}"
+                my_table[key] = request.POST.get(my_key, '')
+        StaffTimeTable.objects.update_or_create(staff=hod, defaults={'my_timetable_data': my_table, 'data': table})
+        context['message'] = 'HOD Timetable updated!'
+
     context['days'] = days
     context['periods'] = periods
     context['table'] = table

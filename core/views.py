@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from feed360.models import FeedbackQuestion
 
 # View for HOD to see all staff in their department
 from django.contrib.auth.decorators import login_required
@@ -1231,8 +1232,6 @@ def staff_action_gatepass(request, id):
                 gatepass.Mstatus = STATUS[2][0]
                 gatepass.Astatus = STATUS[2][0]
                 gatepass.Hstatus = STATUS[2][0]
-            else:
-                gatepass.Hstatus = status
             Notification.objects.create(
                 student=gatepass.user,
                 message=f"Your Gatepass request was {gatepass.Hstatus} by HOD"
@@ -1366,7 +1365,11 @@ def student_feedback(request):
         except Exception:
             return render(request, 'student/feedback.html', context)
 
-    temp = list(i.id for i in duser.teaching_staffs.all())
+    ques = FeedbackQuestion.objects.all()
+    typ = request.GET.get('type', 'gen')
+    context['ques'] = ques
+    context['typ'] = typ
+
     context['s_rating'] = []
     context['cs_rating'] = []
     
@@ -1789,11 +1792,40 @@ def hod_action_bonafide(request, id):
                 bonafide.Hstatus = STATUS[2][0]
         from .models import Notification
         Notification.objects.create(
-            student=bonafide.user,
+                       student=bonafide.user,
             message=f"Your Bonafide request was {action_status} by {'Mentor' if role == 'mentor' else 'HOD'}"
         )
         bonafide.save()
         return redirect('hod_bonafide_view')
     return redirect('hod_bonafide_view')
+
+@login_required
+def ahod_timetable(request):
+    context = set_config(request)
+    ahod = AHOD.objects.get(user=context['duser'])
+    # Get department code for AHOD
+    ahod_dept = ahod.user.department
+    # Fetch timetable data for the department
+    context['days'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    context['periods'] = ['Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6', 'Period 7']
+    context['table'] = {}  # Replace with actual timetable data
+    context['my_table'] = {}  # Replace with actual personal timetable data
+    if request.method == 'POST':
+        # Save timetable data to the database
+        Timetable.objects.filter(user=request.user).delete()  # Clear existing data
+        for day in context['days']:
+            for period in context['periods']:
+                key = f"{day}_{period}"
+                subject = request.POST.get(f"my_{key}", '')
+                if subject:
+                    Timetable.objects.create(user=request.user, day=day, period=period, subject=subject)
+        messages.success(request, 'Timetable updated successfully!')
+
+    # Retrieve timetable data from the database
+    timetable_entries = Timetable.objects.filter(user=request.user)
+    my_table = {f"{entry.day}_{entry.period}": entry.subject for entry in timetable_entries}
+    context['my_table'] = my_table
+
+    return render(request, 'ahod/timetable.html', context)
 
 

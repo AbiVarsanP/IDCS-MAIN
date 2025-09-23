@@ -133,6 +133,9 @@ urlpatterns+=[
     path("logout",logout_user,name='logout')
 ]
 
+urlpatterns += [
+    path('ahod/timetable/', ahod_timetable, name='ahod_timetable'),
+]
 
 
 # API

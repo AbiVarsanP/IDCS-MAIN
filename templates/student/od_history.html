@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">OD's Status</strong>
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>ID</th>
+                            <th>TITLE</th>
+                            <th>MENTOR</th>
+                            <th>ADVISOR</th>
+                             <th>AHOD</th>
+                            <th>HOD</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if ods %}
+                        {% for i in ods %}
+                        <tr>
+                            <td class="serial">{{ forloop.counter }}.</td>
+
+                            <td> #OD{{i.id}} </td>
+                            <td> <span class="name">{{i.sub}}</span> </td>
+
+                            {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
+                                <td colspan="3">
+                                    {% if i.certificate %}
+                                        <button type="button" class="btn btn-outline-success mb-2" data-toggle="modal" data-target="#certModal{{i.id}}">View Certificate</button>
+                                        <!-- Modal for certificate preview -->
+                                        <div class="modal fade" id="certModal{{i.id}}" tabindex="-1" role="dialog" aria-labelledby="certModalLabel{{i.id}}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="certModalLabel{{i.id}}">OD Certificate Preview</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body text-center">
+                                                        {% if ".pdf" in i.certificate.url|lower %}
+                                                            <embed src="{{i.certificate.url}}" type="application/pdf" width="100%" height="500px" />
+                                                        {% else %}
+                                                            <img src="{{i.certificate.url}}" alt="Certificate" style="max-width:100%; max-height:500px;" />
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <form action="{% url 'proof_od' i.id %}" enctype="multipart/form-data" method="POST" style="display:inline-block;">
+                                        {% csrf_token %}
+                                        <input class="form-group w-50" type="file" name="comp" required id="comp">
+                                        <button type="submit" class="btn btn-outline-primary">{% if i.certificate %}Update Certificate{% else %}Upload Certificate{% endif %}</button>
+                                    </form>
+                                </td>
+                            {% else %}
+                                <td>
+                                    <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
+                                </td>
+                                <td>
+                                    {% if i.user.ahod %}
+                                        <span class="badge badge-{{i.AHstatus}}">{{ i.AHstatus }}</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
+                                </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                            <tr><td colspan="6">No OD records found</td></tr>
+                        {% endif %}
+                        </tbody>
+
+                </table>
+            </div> <!-- /.table-stats -->
+        </div>
+    </div>
+</div>
+{% endblock %}

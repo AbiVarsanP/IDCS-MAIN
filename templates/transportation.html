@@ -102,31 +102,12 @@
         // ...existing code...
 </script>
 <!-- Pass route data as JSON for JavaScript -->
-{% regroup routes by id as route_list %}
-<script id="route-data-json" type="application/json">
-[
-{% for route in routes %}
-    {
-        "id": "{{ route.id }}",
-        "name": "{{ route.name|escapejs }}",
-        "bus_no": "{{ route.bus_no|escapejs }}",
-        "total_seat": "{{ route.total_seat }}",
-        "driver": "{{ route.driver.name|escapejs }}",
-        "mobile": "{{ route.driver.number|escapejs }}",
-        "boardingPoints": [
-            {% for bp in route.boarding_points.all %}
-                {"point": "{{ bp.name|escapejs }}", "timings": "{{ bp.timing|default:''|escapejs }}"}{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ]
-    }{% if not forloop.last %},{% endif %}
-{% endfor %}
-]
-</script>
+{{ route_list|json_script:"routes-data" }}
 <script>
 // Convert array to object for fast lookup
-const routeArray = JSON.parse(document.getElementById('route-data-json').textContent);
+const routeArray = JSON.parse(document.getElementById('routes-data').textContent || '[]');
 const routeData = {};
-routeArray.forEach(r => { routeData[r.id] = r; });
+routeArray.forEach(r => { routeData[String(r.id)] = r; });
 
     function showMainView() {
         document.getElementById('main-campus-routes').style.display = 'block';
@@ -139,21 +120,21 @@ routeArray.forEach(r => { routeData[r.id] = r; });
         if (!route) return;
         document.getElementById('route-name').textContent = route.name;
         document.getElementById('route-info').innerHTML = `
-            <div class="info-row"><span>Bus No:</span> ${route.bus_no}</div>
-            <div class="info-row"><span>Total Seats:</span> ${route.total_seat}</div>
-            <div class="info-row"><span>Driver:</span> ${route.driver}</div>
-            <div class="info-row"><span>Mobile:</span> ${route.mobile}</div>
+            <div class="info-row"><span>Buses:</span> ${route.buses.length}</div>
         `;
         const tableBody = document.getElementById('boarding-points-table');
         tableBody.innerHTML = '';
-        route.boardingPoints.forEach(point => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${point.point}</td>
-                <td>${point.timings}</td>
-            `;
-            tableBody.appendChild(row);
-        });
+        // Show first bus's boarding points by default
+        if (route.buses && route.buses.length) {
+            route.buses[0].boarding_points.forEach(point => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${point.point}</td>
+                    <td>${point.timings}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
         document.getElementById('main-campus-routes').style.display = 'none';
         document.getElementById('details-view').style.display = 'block';
         document.getElementById('enrollment-view').style.display = 'none';

@@ -275,40 +275,52 @@ class SemesterAdmin(admin.ModelAdmin):
 
 # Transportation admin registration
 
-from .transport_models import BusRoute, BoardingPoint, Driver, BusApplication
+from .transport_models import BusRoute, Bus, BoardingPoint, Driver, BusApplication
 
 
 
-# Inline for BoardingPoint
+# Inline for BoardingPoint under Bus
 class BoardingPointInline(admin.TabularInline):
 	model = BoardingPoint
 	extra = 1
 	show_change_link = True
 
-# Inline for Driver
+# Inline for Driver under Bus
 class DriverInline(admin.StackedInline):
 	model = Driver
 	extra = 0
-	max_num = 1  # Only one driver per route
+	max_num = 1  # Only one driver per bus
+	show_change_link = True
+
+# Inline for Bus under Route
+class BusInline(admin.StackedInline):
+	model = Bus
+	extra = 1
 	show_change_link = True
 
 @admin.register(BusRoute)
 class BusRouteAdmin(admin.ModelAdmin):
-	list_display = ("name", "bus_no", "total_seat")
-	search_fields = ("name", "bus_no")
+	list_display = ("name",)
+	search_fields = ("name",)
+	inlines = [BusInline]
+
+@admin.register(Bus)
+class BusAdmin(admin.ModelAdmin):
+	list_display = ("bus_no", "route", "total_seat")
+	search_fields = ("bus_no", "route__name")
 	inlines = [BoardingPointInline, DriverInline]
 
 @admin.register(BoardingPoint)
 class BoardingPointAdmin(admin.ModelAdmin):
-	list_display = ("name", "route")
+	list_display = ("name", "bus")
 	search_fields = ("name",)
-	list_filter = ("route",)
+	list_filter = ("bus",)
 
 @admin.register(Driver)
 class DriverAdmin(admin.ModelAdmin):
-	list_display = ("name", "number", "route")
+	list_display = ("name", "number", "bus")
 	search_fields = ("name", "number")
-	list_filter = ("route",)
+	list_filter = ("bus",)
 
 @admin.register(BusApplication)
 class BusApplicationAdmin(admin.ModelAdmin):

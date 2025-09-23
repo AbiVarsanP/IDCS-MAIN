@@ -2,6 +2,16 @@
 {% load static %}
 {% block root %}
 
+<style>
+/* make active bus button look selected */
+.btn-bus.active {
+	background-color: #0d6efd;
+	color: #fff;
+	border-color: #0d6efd;
+}
+.btn-bus { border: 1px solid #0d6efd; }
+</style>
+
 <div class="container" style="max-width: 1000px; margin: 30px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px 24px;">
 	<h1 style="color: #0a2e5a; font-size: 2.5em; font-weight: bold; margin-bottom: 5px;">Bus Routes (Staff View)</h1>
     <div class="divider" style="height: 5px; background-color: #007bff; margin: 20px 0; border-radius: 3px;"></div>
@@ -28,8 +38,8 @@
 		<h3 id="route-name"></h3>
 		<div id="route-info" style="margin-bottom:12px;"></div>
 		<div style="margin-bottom:12px;">
-			<label>Select Bus:</label>
-			<div id="details-bus-buttons" class="d-flex flex-wrap" style="gap:8px; margin-left:8px; display:inline-block; vertical-align: middle;"></div>
+			<label for="details-bus-select">Select Bus:</label>
+			<div id="details-bus-select" class="btn-group" role="group" style="display:inline-block; margin-left:8px;" aria-label="Details buses"></div>
 		</div>
 		<table class="table table-sm table-bordered">
 			<thead>
@@ -44,91 +54,96 @@
 		<p><strong>Available Seats:</strong> <span id="available-seats">-</span></p>
 	</div>
  <!-- Enrollment Information Card -->
-<div class="enrollment-info-card" style="background: linear-gradient(120deg, #e0f7fa 0%, #f8fafc 100%); border-left: 8px solid #00bcd4; box-shadow: 0 4px 16px rgba(0, 188, 212, 0.10); border-radius: 12px; padding: 32px 28px 28px 28px; margin-top: 30px; margin-bottom: 10px; position: relative;">
-    <h2 style="color: #00838f; font-size: 2em; margin-top: 0; margin-bottom: 18px; font-weight: 700; letter-spacing: 1px;">Enrollment Information</h2>
-     <div class="procedure-section" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #00bcd4; margin-top: 18px; padding: 18px 20px 14px 20px;">
-         <h3 style="color: #00838f;">Procedure to Enroll for Transportation</h3>
-          <p>1. Please fill and submit the "Online Application Form" with all the details. The Online Application Form will be enabled starting from 1st July 2025.</p>
-           <p><b>Note: Reg.No is a 16 digit Alpha-Numeric Number. The Login ID in the Student Copy of Admission Acknowledgement is the PRN. Please contact the admissions department if you do not have it.</b></p>
-            <p>2. Once the application details are verified, an E-Mail shall be sent to you on the next working day with the instruction for the online payment of the Transportation fee.</p>
-             <p>3. Payment confirmation notification will be sent after payment is verified.</p>
-              <p>4. The payment receipt (hard copy) will be issued on a particular schedule starting from 15th September 2025.</p>
-            </div>
-        </div>
+    <div class="enrollment-info-card" style="background: linear-gradient(120deg, #e0f7fa 0%, #f8fafc 100%); border-left: 8px solid #00bcd4; box-shadow: 0 4px 16px rgba(0, 188, 212, 0.10); border-radius: 12px; padding: 32px 28px 28px 28px; margin-top: 30px; margin-bottom: 10px; position: relative;">
+        <h2 style="color: #00838f; font-size: 2em; margin-top: 0; margin-bottom: 18px; font-weight: 700; letter-spacing: 1px;">Enrollment Information</h2>
+        <div class="procedure-section" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #00bcd4; margin-top: 18px; padding: 18px 20px 14px 20px;">
+            <h3 style="color: #00838f;">Procedure to Enroll for Transportation</h3>
+            <p>1. Please fill and submit the "Online Application Form" with all the details. The Online Application Form will be enabled starting from 1st July 2025.</p>
+            <p><b>Note: Reg.No is a 16 digit Alpha-Numeric Number. The Login ID in the Student Copy of Admission Acknowledgement is the PRN. Please contact the admissions department if you do not have it.</b></p>
+            <p>2. Once the application details are verified, an E-Mail shall be sent to you on the next working day with the instruction for the online payment of the Transportation fee.</p>
+            <p>3. Payment confirmation notification will be sent after payment is verified.</p>
+            <p>4. The payment receipt (hard copy) will be issued on a particular schedule starting from 15th September 2025.</p>
+        </div>
+       
+    </div>
 
 </div>
 
+    
     <!-- Online Application Button and Form -->
-<div style="margin: 30px 0 10px 0; text-align: right;">
-     <button id="show-application-form-btn" class="btn btn-success" type="button" style="font-weight:bold;">Apply Online for Bus Seat</button>
-     </div>
-     <div id="application-form-container" style="display:none; margin-bottom: 30px;">
-        {% if messages %}
-         {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-          {% endfor %}
-           {% endif %}
-           {% if form and form.errors %}
-            <div class="alert alert-danger">
-                <ul style="margin-bottom:0;">
-                     {% for field in form %}
-                     {% for error in field.errors %}
-                      <li>{{ field.label }}: {{ error }}</li>
-                       {% endfor %}
-                        {% endfor %}
-                        {% for error in form.non_field_errors %}
-                        <li>{{ error }}</li>
-                        {% endfor %}
-                     </ul>
-                     </div>
-                      {% endif %}
-                       <form method="post" action="">
-                         {% csrf_token %}
-                          <div class="row">
-                            <div class="col-md-6 mb-3">
+<div>
+    <div style="margin: 30px 0 10px 0; text-align: right;">
+        <button id="show-application-form-btn" class="btn btn-success" type="button" style="font-weight:bold;">Apply Online for Bus Seat</button>
+    </div>
+    <div id="application-form-container" style="display:none; margin-bottom: 30px;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% if form and form.errors %}
+            <div class="alert alert-danger">
+                <ul style="margin-bottom:0;">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+		<form method="post" action="">
+			{% csrf_token %}
+			<div class="card p-3">
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label for="id_name" class="form-label">Name</label>
+						<input type="text" name="name" maxlength="100" class="form-control" id="id_name" required value="{{ form.name.value|default_if_none:'' }}">
+					</div>
+					<div class="col-md-6">
+						<label for="id_register_no" class="form-label">Register No</label>
+						<input type="text" name="register_no" maxlength="30" class="form-control" id="id_register_no" required value="{{ form.register_no.value|default_if_none:'' }}">
+					</div>
+					<div class="col-md-6">
+						<label for="id_mobile_number" class="form-label">Mobile</label>
+						<input type="text" name="mobile_number" maxlength="30" class="form-control" id="id_mobile_number" required value="{{ form.mobile_number.value|default_if_none:'' }}">
+					</div>
+					<div class="col-md-6">
+						<label for="id_email" class="form-label">Email</label>
+						<input type="email" name="email" maxlength="254" class="form-control" id="id_email" required value="{{ form.email.value|default_if_none:'' }}">
+					</div>
+					<div class="col-md-6" >
+						<label for="id_route" class="form-label">Bus Route</label>
+						<select name="route" class="form-select" id="id_route" required >
+							<option value="">---------</option>
+							{% for route in routes %}
+							<option value="{{ route.id }}" {% if form.route.value|stringformat:'s' == route.id|stringformat:'s' %}selected{% endif %}>{{ route.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+		
+					<div class="col-md-6">
+						<label for="id_boarding_point" class="form-label">Boarding Point</label>
+						<select name="boarding_point" class="form-select" id="id_boarding_point" required>
+							<option value="">---------</option>
+							<!-- Options will be populated by JS -->
+						</select>
+					</div>
+				</div>
+				<div class="row mt-3">
+					<div class="col text-end">
+						<button type="submit" class="btn btn-primary">Submit Application</button>
+					</div>
+				</div>
+			</div>
+		</form>
+    </div>
+</div>
 
-                                <label for="id_name">Name</label>
-                                <input type="text" name="name" maxlength="100" class="form-control" id="id_name" required value="{{ form.name.value|default_if_none:'' }}">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                 <label for="id_register_no">Register No</label>
-                                 <input type="text" name="register_no" maxlength="30" class="form-control" id="id_register_no" required value="{{ form.register_no.value|default_if_none:'' }}">
-                            </div>
-                         </div>
-                         <div class="row">
-                          <div class="col-md-6 mb-3">
-                            <label for="id_register_no">Mobile</label>
-                            <input type="text" name="mobile_number" maxlength="30" class="form-control" id="id_mobile_number" required value="{{ form.mobile_number.value|default_if_none:'' }}">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_email">Email</label>
-                            <input type="email" name="email" maxlength="254" class="form-control" id="id_email" required value="{{ form.email.value|default_if_none:'' }}">
-                        </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="id_route">Bus Route</label>
-                                <select name="route" class="form-control" id="id_route" required>
-                                    <option value="">---------</option>
-                                    {% for route in routes %}
-                                    <option value="{{ route.id }}" {% if form.route.value|stringformat:'s' == route.id|stringformat:'s' %}selected{% endif %}>{{ route.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="id_boarding_point">Boarding Point</label>
-                                <select name="boarding_point" class="form-control" id="id_boarding_point" required>
-                                    <option value="">---------</option>
-					<!-- Options will be populated by JS -->
-                    </select>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary mt-2">Submit Application</button>
-        </form>
-    </div>
-</div>
-</div>
-</div>
+    
 <!-- Pass route data as JSON for JavaScript -->
 {{ route_list|json_script:"routes-data" }}
 <script>
@@ -150,47 +165,42 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
-	// Cascading selects: route -> bus -> boarding point (bus is selected via buttons)
+	// Cascading selects: route -> bus -> boarding point
 	var routeSelect = document.getElementById('id_route');
+	var busHidden = document.getElementById('id_bus');
+	var busButtons = document.getElementById('bus-buttons');
 	var bpSelect = document.getElementById('id_boarding_point');
 
 	function populateBusesForRoute() {
 		var routeId = routeSelect.value;
-		// populate bus buttons container (if present)
-		var container = document.getElementById('bus-buttons-container');
-		if (container) container.innerHTML = '';
-		if (bpSelect) bpSelect.innerHTML = '<option value="">---------</option>';
+		busButtons.innerHTML = '';
+		bpSelect.innerHTML = '<option value="">---------</option>';
+		busHidden.value = '';
 		if (routeId && routeData[routeId]) {
 			routeData[routeId].buses.forEach(function(bus) {
-				// create button if container exists
-				if (container) {
-					var btn = document.createElement('button');
-					btn.type = 'button';
-					btn.className = 'btn btn-outline-primary';
-					btn.textContent = bus.bus_no + ' (Seats: ' + bus.available_seats + ')';
-					btn.setAttribute('data-bus-id', bus.id);
-					btn.addEventListener('click', function() {
-						var input = document.getElementById('id_bus_input');
-						if (input) input.value = this.getAttribute('data-bus-id');
-						populateBoardingPointsForBusById(this.getAttribute('data-bus-id'));
-					});
-					container.appendChild(btn);
-				}
-				// also optionally pre-populate boarding points if there is no container (form simplified)
-				if (!container && bpSelect) {
-					// if this is the first bus, populate its boarding points
-					if (!bpSelect.dataset.populated) {
-						populateBoardingPointsForBusById(bus.id);
-						bpSelect.dataset.populated = '1';
-					}
-				}
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'btn btn-outline-primary btn-bus';
+				btn.style.marginRight = '6px';
+				btn.textContent = bus.bus_no + ' (' + bus.available_seats + ')';
+				btn.dataset.busId = bus.id;
+				btn.addEventListener('click', function() {
+					// mark selected visually
+					Array.from(busButtons.children).forEach(c => c.classList.remove('active'));
+					this.classList.add('active');
+					busHidden.value = this.dataset.busId;
+					populateBoardingPointsForBus(this.dataset.busId);
+				});
+				busButtons.appendChild(btn);
 			});
 		}
 	}
 
-	function populateBoardingPointsForBusById(busId) {
+	function populateBoardingPointsForBus(busId) {
+		if (!busId) busId = busHidden.value;
 		bpSelect.innerHTML = '<option value="">---------</option>';
 		if (!busId) return;
+		// find bus in routeData
 		var found = null;
 		Object.values(routeData).forEach(r => {
 			if (!r.buses) return;
@@ -203,12 +213,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				opt.textContent = bp.name + (bp.timing ? ' — ' + bp.timing : '');
 				bpSelect.appendChild(opt);
 			});
+			// update available seats displayed
 			var avail = document.getElementById('available-seats');
 			if (avail) avail.textContent = found.available_seats;
+			// if there's a bus button for this bus, mark it active
+			if (busButtons) {
+				Array.from(busButtons.children).forEach(c => c.classList.toggle('active', String(c.dataset.busId) === String(found.id)));
+			}
 		}
 	}
 
-	if (routeSelect && bpSelect) {
+	if (routeSelect && busButtons && bpSelect) {
 		routeSelect.addEventListener('change', populateBusesForRoute);
 		populateBusesForRoute();
 	}
@@ -217,12 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.querySelectorAll('.route-item').forEach(item => {
 		item.addEventListener('click', () => {
 			const routeId = item.getAttribute('data-route');
-			// If the application form exists, set the selected route and populate its buses
-			if (routeSelect) {
-				routeSelect.value = routeId;
-				// try populating buses for the route in the form
-				try { populateBusesForRoute(); } catch (e) { /* ignore */ }
-			}
 			showRouteDetails(routeId);
 		});
 	});
@@ -238,11 +247,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	var applicationForm = document.querySelector('#application-form-container form');
 	if (applicationForm) {
 		applicationForm.addEventListener('submit', function(e) {
-			// Optimistically decrement available seats on the selected bus (hidden input)
-			var busInput = document.getElementById('id_bus_input');
-			var detailsButtons = document.getElementById('details-bus-buttons');
-			var busId = busInput ? String(busInput.value) : null;
-			if (busId) {
+			// Optimistically decrement available seats on the selected bus
+			var busSel = document.getElementById('id_bus');
+			var detailsBusSel = document.getElementById('details-bus-select');
+			if (busSel && busSel.value) {
+				var busId = String(busSel.value);
 				var foundBus = null;
 				Object.values(routeData).forEach(r => {
 					if (!r.buses) return;
@@ -251,15 +260,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (foundBus) {
 					if (!isNaN(Number(foundBus.available_seats))) {
 						foundBus.available_seats = Math.max(0, Number(foundBus.available_seats) - 1);
+						// update any visible available seats
 						var availEl = document.getElementById('available-seats');
 						if (availEl) {
-							// if details view is showing this bus, update it by matching button's data-bus-id
-							var activeBusId = null;
-							if (detailsButtons) {
-								var activeBtn = detailsButtons.querySelector('.active');
-								if (activeBtn) activeBusId = String(activeBtn.getAttribute('data-bus-id'));
-							}
-							if (activeBusId && activeBusId === busId) {
+							// if details view is showing this bus, update it by checking active button
+							var activeBtn = detailsBusSel && detailsBusSel.querySelector('.active');
+							if (activeBtn && String(activeBtn.dataset.busId) === busId) {
 								availEl.textContent = foundBus.available_seats;
 							}
 						}
@@ -272,32 +278,32 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function showRouteDetails(routeId) {
-	// Try to get route data from the preloaded JSON. If missing, build a minimal fallback
-	let route = routeData[routeId];
-	if (!route) {
-		// locate the card in the DOM for this route and extract a sensible name
-		const card = document.querySelector('.route-item[data-route="' + routeId + '"]');
-		const name = card ? (card.querySelector('.card-title') ? card.querySelector('.card-title').textContent.replace(/^\s*Route\s*-\s*/i,'') : 'Route ' + routeId) : ('Route ' + routeId);
-		route = { id: routeId, name: name, buses: [] };
-		console.warn('route data not found for id', routeId, 'using fallback');
-	}
+	const route = routeData[routeId];
+	if (!route) return;
 	document.getElementById('route-name').textContent = route.name;
 	document.getElementById('route-info').innerHTML = `
 		<div class="info-row"><span>Buses:</span> ${route.buses.length}</div>
 	`;
 	const tableBody = document.getElementById('boarding-points-table');
 	tableBody.innerHTML = '';
-	// Populate details bus buttons
-	const detailsBusButtons = document.getElementById('details-bus-buttons');
-	detailsBusButtons.innerHTML = '';
+	// Populate bus buttons in details view
+	const detailsBusSelect = document.getElementById('details-bus-select');
+	detailsBusSelect.innerHTML = '';
+	const hiddenBus = document.getElementById('id_bus');
 	route.buses.forEach(b => {
 		const btn = document.createElement('button');
 		btn.type = 'button';
-		btn.className = 'btn btn-outline-secondary';
+		btn.className = 'btn btn-outline-primary btn-bus';
+		btn.style.marginRight = '6px';
 		btn.textContent = b.bus_no + ' (Available: ' + b.available_seats + ')';
-		btn.setAttribute('data-bus-id', b.id);
-		btn.addEventListener('click', function() { showBusDetails(this.getAttribute('data-bus-id')); });
-		detailsBusButtons.appendChild(btn);
+		btn.dataset.busId = b.id;
+		btn.addEventListener('click', function() {
+			Array.from(detailsBusSelect.children).forEach(c => c.classList.remove('active'));
+			this.classList.add('active');
+			if (hiddenBus) hiddenBus.value = this.dataset.busId;
+			showBusDetails(this.dataset.busId);
+		});
+		detailsBusSelect.appendChild(btn);
 	});
 
 	function showBusDetails(busId) {
@@ -315,19 +321,12 @@ function showRouteDetails(routeId) {
 			tableBody.appendChild(row);
 		});
 		document.getElementById('available-seats').textContent = bus.available_seats;
-		// mark the active details button and set hidden input if present
-		var detailsBtns = document.getElementById('details-bus-buttons');
-		if (detailsBtns) {
-			detailsBtns.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-			var btn = detailsBtns.querySelector('[data-bus-id="' + busId + '"]');
-			if (btn) btn.classList.add('active');
-		}
-		var input = document.getElementById('id_bus_input');
-		if (input) input.value = busId;
 	}
 
 	if (route.buses.length) {
-		showBusDetails(route.buses[0].id);
+		// click first button programmatically
+		const first = detailsBusSelect.querySelector('button');
+		if (first) { first.click(); }
 	}
 	document.getElementById('main-campus-routes').style.display = 'none';
 	document.getElementById('details-view').style.display = 'block';

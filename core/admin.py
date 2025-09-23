@@ -1,3 +1,4 @@
+from django import forms
 from .models import Department
 from django.contrib import admin
 from django.http import HttpResponse
@@ -13,6 +14,45 @@ from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 from .models import Principal
+from .models import Section
+# Custom form for SemesterSubject to filter section fields by department
+class SemesterSubjectAdminForm(forms.ModelForm):
+	class Meta:
+		model = SemesterSubject
+		fields = '__all__'
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		semester = self.instance.semester if self.instance and self.instance.pk else None
+		department = semester.department if semester else None
+		# If not editing, try to get semester from form data
+		if not department and 'semester' in self.data:
+			try:
+				sem_id = self.data.get('semester')
+				if sem_id:
+					semester = Semester.objects.get(pk=sem_id)
+					department = semester.department
+			except Exception:
+				pass
+		# Show all sections if no department, else filter
+		if department:
+			section_qs = Section.objects.filter(department=department)
+		else:
+			section_qs = Section.objects.all()
+		self.fields['section1'].queryset = section_qs
+		self.fields['section2'].queryset = section_qs
+		self.fields['section3'].queryset = section_qs
+		self.fields['section1'].help_text = 'Select a semester first to filter sections by department.'
+		self.fields['section2'].help_text = 'Select a semester first to filter sections by department.'
+		self.fields['section3'].help_text = 'Select a semester first to filter sections by department.'
+
+# Custom admin for SemesterSubject
+@admin.register(SemesterSubject)
+class SemesterSubjectAdmin(admin.ModelAdmin):
+	form = SemesterSubjectAdminForm
+	list_display = ("name", "semester", "staff1", "staff2", "staff3", "section1", "section2", "section3")
+	search_fields = ("name", "semester__department__name")
+
 
 class PrincipalAdmin(DefaultUserAdmin):
 	def get_queryset(self, request):

@@ -45,16 +45,31 @@
   <div id="map-view" class="pathpilot-timeline">
     {% if plan and plan.items %}
       {% for key, details in plan.items %}
-        <div class='timeline-item'>
-          <div class='timeline-dot'></div>
-          <div class='timeline-content'>
-            <div class='timeline-title'>{{ key }}</div>
-            <div class='timeline-topic'>Topic: {{ details.Topic|default_if_none:"" }}</div>
-            <div><strong>Periods:</strong> {{ details.Periods|default_if_none:"-" }}</div>
-            <div><strong>Hints:</strong> {{ details.Hints|default_if_none:"-" }}</div>
-            <div><strong>Resources:</strong> {{ details.Resources|default_if_none:"-" }}</div>
+        {% if details.items %} {# Nested: Semester -> Steps #}
+          {% for step, step_details in details.items %}
+            <div class='timeline-item'>
+              <div class='timeline-dot'></div>
+              <div class='timeline-content'>
+                <div class='timeline-title'>{{ key }} - {{ step }}</div>
+                <div class='timeline-topic'>Topic: {{ step_details.Topic|default_if_none:"" }}</div>
+                <div><strong>Periods:</strong> {{ step_details.Periods|default_if_none:"-" }}</div>
+                <div><strong>Hints:</strong> {{ step_details.Hints|default_if_none:"-" }}</div>
+                <div><strong>Resources:</strong> {{ step_details.Resources|default_if_none:"-" }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %} {# Flat: Semester -> Details #}
+          <div class='timeline-item'>
+            <div class='timeline-dot'></div>
+            <div class='timeline-content'>
+              <div class='timeline-title'>{{ key }}</div>
+              <div class='timeline-topic'>Topic: {{ details.Topic|default_if_none:"" }}</div>
+              <div><strong>Periods:</strong> {{ details.Periods|default_if_none:"-" }}</div>
+              <div><strong>Hints:</strong> {{ details.Hints|default_if_none:"-" }}</div>
+              <div><strong>Resources:</strong> {{ details.Resources|default_if_none:"-" }}</div>
+            </div>
           </div>
-        </div>
+        {% endif %}
       {% endfor %}
     {% else %}
       <div class="alert alert-warning">No roadmap data or map is empty.</div>

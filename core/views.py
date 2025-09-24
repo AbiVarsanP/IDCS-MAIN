@@ -1,3 +1,32 @@
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+# Student OD history view
+@login_required
+def student_od_history(request):
+    student = Student.objects.get(user=request.user)
+    ods = OD.objects.filter(user=student)
+    return render(request, 'student/od_history.html', {'ods': ods})
+
+# Student Leave history view
+@login_required
+def student_leave_history(request):
+    student = Student.objects.get(user=request.user)
+    leaves = LEAVE.objects.filter(user=student)
+    return render(request, 'student/leave_history.html', {'leaves': leaves})
+
+# Student Bonafide history view
+@login_required
+def student_bonafide_history(request):
+    student = Student.objects.get(user=request.user)
+    bonafides = BONAFIDE.objects.filter(user=student)
+    return render(request, 'student/bonafide_history.html', {'bonafides': bonafides})
+
+# Student Gatepass history view
+@login_required
+def student_gatepass_history(request):
+    student = Student.objects.get(user=request.user)
+    gatepasses = GATEPASS.objects.filter(user=student)
+    return render(request, 'student/gatepass_history.html', {'gatepasses': gatepasses})
 from django.contrib.auth import get_user_model
 
 # View for HOD to see all staff in their department
@@ -37,6 +66,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification, Student
+from .models import SemesterSubject
 from django.db import models
 # Principal dashboard view
 @login_required
@@ -79,6 +109,26 @@ def period_attendance_view(request):
 
 # Student attendance view for date-wise lookup
 @login_required
+def staff_attendance_view(request):
+    context = set_config(request)
+    staff = None
+    assigned_subjects = []
+    subjects_with_students = []
+    try:
+        staff = Staff.objects.get(user=request.user)
+        assigned_subjects = SemesterSubject.objects.filter(staff=staff)
+        for subject in assigned_subjects:
+            # Get students in the same department and semester as the subject
+            semester_obj = subject.semester
+            students = Student.objects.filter(department=semester_obj.department, semester=semester_obj.semester)
+            subjects_with_students.append({
+                'subject': subject,
+                'students': students
+            })
+    except Staff.DoesNotExist:
+        assigned_subjects = []
+    context['subjects_with_students'] = subjects_with_students
+    return render(request, 'staff/attendance.html', context)
 def student_attendance_view(request):
     context = set_config(request)
 
@@ -696,11 +746,18 @@ def dash(request):
     if 'duser' not in context:
         return redirect('login')
     if not request.user.is_staff:
-        # Show only the student's own results for each section
-        context['gatepasses'] = GATEPASS.objects.filter(user=context['duser'])
-        context['bonafides'] = BONAFIDE.objects.filter(user=context['duser'])
-        context['leaves'] = LEAVE.objects.filter(user=context['duser'])
-        context['ods'] = OD.objects.filter(user=context['duser'])
+        from django.utils import timezone
+        today = timezone.now().date()
+        # Today's applications
+        context['ods_today'] = OD.objects.filter(user=context['duser'], created__date=today)
+        context['leaves_today'] = LEAVE.objects.filter(user=context['duser'], created__date=today)
+        context['bonafides_today'] = BONAFIDE.objects.filter(user=context['duser'], created__date=today)
+        context['gatepasses_today'] = GATEPASS.objects.filter(user=context['duser'], created__date=today)
+        # All applications for 'View All'
+        context['ods_all'] = OD.objects.filter(user=context['duser'])
+        context['leaves_all'] = LEAVE.objects.filter(user=context['duser'])
+        context['bonafides_all'] = BONAFIDE.objects.filter(user=context['duser'])
+        context['gatepasses_all'] = GATEPASS.objects.filter(user=context['duser'])
         return render(request, 'student/dash.html', context=context)
 
     elif context['duser'].position == 0 or AHOD.objects.filter(user=context['duser']).exists() or context['duser'].position2 == 1:

@@ -2,19 +2,63 @@
 {% load static %}
 
 {% block content %}
+<style>
+    .table thead th {
+        background: #fff !important;
+        color: #222 !important;
+        font-weight: 700;
+        border-color: #1976d2 !important;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+    table tr[tabindex] {
+        outline: none;
+        transition: background 0.2s, box-shadow 0.2s;
+    }
+    table tr[tabindex]:hover {
+        background: #e3f2fd !important;
+        outline: 2px solid #1976d2 !important;
+        z-index: 2;
+        position: relative;
+    }
+    table tr[tabindex]:hover * {
+        filter: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        color: inherit !important;
+    }
+    tbody:has(tr[tabindex]:hover) tr[tabindex]:not(:hover) {
+        filter: blur(2px) grayscale(0.2);
+        opacity: 0.5;
+        pointer-events: none;
+        transition: filter 0.2s, opacity 0.2s;
+    }
+</style>
 <div class="page-header float-center">
     <center>
     <h3 style="background:#1976d2;color:#fff;padding:10px 24px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">Active Feedback Forms</h3>
     </center>
     {% if forms %}
-        <ul class="list-group mb-4">
-            {% for form in forms %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ form.title }} </span>
-                    <a href="{% url 'feed360_fill' form.id %}" class="btn btn-primary btn-sm">Fill Feedback</a>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="serial">#</th>
+                    <th>Title</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in forms %}
+                <tr tabindex="0">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ form.title }}</td>
+                    <td><a href="{% url 'feed360_fill' form.id %}" class="btn btn-primary btn-sm">Fill Feedback</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
     {% else %}
         <div class="alert alert-info">No active feedback forms for your class.</div>
     {% endif %}

@@ -27,6 +27,10 @@ from .view_mentees import view_mentees, my_mentees
 
 
 urlpatterns = [
+    path('student/od/history/', student_od_history, name='student_od_history'),
+    path('student/leave/history/', student_leave_history, name='student_leave_history'),
+    path('student/bonafide/history/', student_bonafide_history, name='student_bonafide_history'),
+    path('student/gatepass/history/', student_gatepass_history, name='student_gatepass_history'),
     path('staff/my_class/', my_class_students, name='staff_my_class'),
     path('student/attendance/', student_attendance_view, name='student_attendance'),
     path("",dash,name='dash'),
@@ -94,6 +98,7 @@ urlpatterns += [
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
     path("timetable/", staff_timetable, name="staff_timetable"),
     path("my_class_students/", my_class_students, name="my_class_students"),
+    path("staff/attendance/", staff_attendance_view, name="staff_attendance"),
 
     # Principal URLs
     path('principal/dashboard/', principal_dashboard, name='principal_dashboard'),

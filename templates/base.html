@@ -3,6 +3,39 @@
 <html>
 
 <head>
+    <style>
+        /* Global table hover/focus/blur and header styles */
+        table tr[tabindex] {
+            outline: none;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        table tr[tabindex]:hover {
+            background: #e3f2fd !important;
+            outline: 2px solid #1976d2 !important;
+            z-index: 2;
+            position: relative;
+        }
+        table tr[tabindex]:hover * {
+            filter: none !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            color: inherit !important;
+        }
+        tbody:has(tr[tabindex]:hover) tr[tabindex]:not(:hover) {
+            filter: blur(2px) grayscale(0.2);
+            opacity: 0.5;
+            pointer-events: none;
+            transition: filter 0.2s, opacity 0.2s;
+        }
+        table thead th {
+            background: #fff !important;
+            color: #222 !important;
+            font-weight: 700;
+            border-color: #1976d2 !important;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+    </style>
         <style>
         @media print {
             body > header, body > nav, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .footer, .page-header, .page-title, .main-header, .main-footer,

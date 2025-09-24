@@ -1,3 +1,21 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render
+from .models import Department
+
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
+def principal_department(request):
+    from django.urls import reverse
+    departments = Department.objects.all()
+    for dept in departments:
+        staff_list = dept.staffs.all()
+        # Attach mentees URL for each staff
+        for staff in staff_list:
+            staff.mentees_url = reverse('view_mentees', args=[staff.id])
+        dept.staff_list = staff_list
+        dept.staff_count = staff_list.count()
+    return render(request, 'principal/department.html', {'departments': departments})
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 # Student OD history view
@@ -1957,7 +1975,7 @@ def hod_action_bonafide(request, id):
                 bonafide.Hstatus = STATUS[2][0]
         from .models import Notification
         Notification.objects.create(
-                       student=bonafide.user,
+            student=bonafide.user,
             message=f"Your Bonafide request was {action_status} by {'Mentor' if role == 'mentor' else 'HOD'}"
         )
         bonafide.save()

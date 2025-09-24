@@ -5,11 +5,6 @@ from .views import *
 
 
 from .views import principal_dashboard
-def principal_department(request):
-    from django.shortcuts import render
-    from .models import Department
-    departments = Department.objects.all()
-    return render(request, 'principal/department.html', {'departments': departments})
 
 from .profile_views import staff_profile, hod_profile
 from .view_mentees import view_mentees

@@ -67,7 +67,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>IDCS</title>
     <meta name="description" content="IDCS">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="shortcut icon" href="{% static 'images/logo-1.png' %}" type="image/x-icon">
 
     <link rel="shortcut icon" href="{% static 'images/logo-1.png' %}" type="image/x-icon">
@@ -133,6 +133,7 @@
 
                             <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'hod_timetable' %}active{% endif %}"><a href="{% url 'hod_timetable' %}"><i class="menu-icon ti-calendar"></i>My Timetable</a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}"><a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
 
                         {% elif duser and duser.position2 == 1 %}
@@ -142,6 +143,7 @@
                             <li class="{% if request.resolver_match.url_name == 'ahod_bonafide_hod' %}active{% endif %}"><a href="{% url 'ahod_bonafide_hod' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide (HOD)</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_gatepass_hod' %}active{% endif %}"><a href="{% url 'ahod_gatepass_hod' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass (HOD)</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_notification_history' %}active{% endif %}"><a href="{% url 'ahod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'ahod_timetable' %}active{% endif %}"><a href="{% url 'ahod_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
                         {% elif duser and duser.position == 0 %}
                             {# HOD sidebar #}
                             ...existing code...
@@ -156,7 +158,11 @@
                             <li class="{% if request.resolver_match.url_name == 'staff_leave_view' %}active{% endif %}"><a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_bonafides' %}active{% endif %}"><a href="{% url 'staff_bonafides' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_gatepass_view' %}active{% endif %}"><a href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
+
                             <li><a href="/feed360/staff/9/results/"><i class="menu-icon ti-comments"></i>Feed 360</a></li>
+
+                            <!-- <li><a href="/feed360/staff/9/results/"><i class="menu-icon ti-comments"></i>Feedback</a></li> -->
+
                             <li class="{% if request.resolver_match.url_name == 'staff_notifications' %}active{% endif %}"><a href="{% url 'staff_notifications' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_timetable' %}active{% endif %}"><a href="{% url 'staff_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
                             <li class="menu-title">Class</li>
@@ -166,12 +172,18 @@
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
                                 <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
                             </li>
+                                <li class="{% if request.resolver_match.url_name == 'student_od_history' %}active{% endif %}">
+                                    <a href="{% url 'student_od_history' %}"><i class="menu-icon fa fa-list"></i>OD Status</a>
+                                </li>
                             <li class="{% if request.resolver_match.url_name == 'od' %}active{% endif %}">
                                 <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
                             </li>
                             <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
                                 <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
                             </li>
+                                <li class="{% if request.resolver_match.url_name == 'student_leave_history' %}active{% endif %}">
+                                    <a href="{% url 'student_leave_history' %}"><i class="menu-icon fa fa-list"></i>Leave Status</a>
+                                </li>
                             <li id="attendanceMenuItem" class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
                                 <a href="{% url 'student_attendance' %}"><i class="menu-icon fa fa-check-square-o"></i>Attendance</a>
                             </li>

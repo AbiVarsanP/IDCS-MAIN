@@ -3,7 +3,15 @@ from django.contrib.postgres.fields import ArrayField
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
+
 from .constants import *
+# Section model to represent department sections (A, B, C, etc.)
+class Section(models.Model):
+    code = models.PositiveIntegerField(choices=SECTION, unique=True)
+    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='sections')
+
+    def __str__(self):
+        return f"{self.get_code_display()} ({self.department.code})"
 
 
 User = get_user_model()
@@ -48,9 +56,6 @@ class Department(models.Model):
                 pass
 
     
-
-# ...existing code...
-
 
 # Attendance Model for Section 3.2: Track attendance, link to events/workshops/training, integrate with Leaves/ODs for deductions
 
@@ -414,19 +419,30 @@ class Semester(models.Model):
 class SemesterSubject(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='subjects')
     name = models.CharField(max_length=100)
-    staff = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='semester_subject_staff')
+    staff1 = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='semester_subject_staff1', help_text="Staff for section 1")
+    staff2 = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='semester_subject_staff2', help_text="Staff for section 2")
+    staff3 = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='semester_subject_staff3', help_text="Staff for section 3")
     is_elective = models.BooleanField(default=False, help_text="Check if this subject is an elective.")
 
+    section1 = models.PositiveIntegerField(choices=SECTION, null=True, blank=True, help_text="First section for this subject.")
+    section2 = models.PositiveIntegerField(choices=SECTION, null=True, blank=True, help_text="Second section for this subject.")
+    section3 = models.PositiveIntegerField(choices=SECTION, null=True, blank=True, help_text="Third section for this subject.")
+
     def __str__(self):
-        return f"{self.name} ({self.semester})"
+        dept_name = self.semester.department.name if self.semester and self.semester.department else "No Department"
+        section_labels = []
+        for s in [self.section1, self.section2, self.section3]:
+            if s is not None:
+                try:
+                    section_labels.append(dict(SECTION)[s])
+                except Exception:
+                    section_labels.append(str(s))
+        section_str = ', '.join(section_labels) if section_labels else "No Sections"
+        return f"{dept_name} - Semester {self.semester.semester} - {self.name} [{section_str}]"
 
     class Meta:
         unique_together = ("semester", "name")
         ordering = ["semester"]
-
-    def __str__(self):
-        dept_name = self.semester.department.name if self.semester and self.semester.department else "No Department"
-        return f"{dept_name} - Semester {self.semester.semester} - {self.name}"
 
 class SpotFeedback(models.Model):
     user = models.ForeignKey('Staff', on_delete=models.CASCADE, related_name='hod_spot')
@@ -457,3 +473,15 @@ class SpotFeedback(models.Model):
 
     def get_absolute_url(self):
         return reverse('student_feedback_form', args=[str(self.staff.id), 'spf'])
+
+class Timetable(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    day = models.CharField(max_length=10)
+    period = models.CharField(max_length=20)
+    subject = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        unique_together = ('user', 'day', 'period')
+
+    def __str__(self):
+        return f"{self.user} - {self.day} - {self.period}: {self.subject}"

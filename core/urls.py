@@ -27,6 +27,7 @@ from .view_mentees import view_mentees, my_mentees
 
 
 urlpatterns = [
+    path('student/recent-notifications/', recent_notifications_api, name='recent_notifications_api'),
     path('student/od/history/', student_od_history, name='student_od_history'),
     path('student/leave/history/', student_leave_history, name='student_leave_history'),
     path('student/bonafide/history/', student_bonafide_history, name='student_bonafide_history'),
@@ -137,6 +138,9 @@ urlpatterns+=[
     path("logout",logout_user,name='logout')
 ]
 
+urlpatterns += [
+    path('ahod/timetable/', ahod_timetable, name='ahod_timetable'),
+]
 
 
 # API
@@ -144,6 +148,12 @@ urlpatterns+=[
 # R & D
 
 # Placement
+
+from .timetable_views import hod_timetable
+
+urlpatterns += [
+    path("hod/timetable/", hod_timetable, name="hod_timetable"),
+]
 
 
 

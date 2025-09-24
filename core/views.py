@@ -1,5 +1,26 @@
+# Imports
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+
+# API endpoint for recent notifications (for live refresh)
+@login_required
+@require_GET
+def recent_notifications_api(request):
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return JsonResponse({'notifications': []})
+    notes = Notification.objects.filter(student=student).order_by('-created_at')[:5]
+    notifications = [
+        {
+            'created_at': note.created_at.strftime('%d %b %Y %H:%M'),
+            'message': note.message
+        }
+        for note in notes
+    ]
+    return JsonResponse({'notifications': notifications})
 # Student OD history view
 @login_required
 def student_od_history(request):
@@ -28,6 +49,7 @@ def student_gatepass_history(request):
     gatepasses = GATEPASS.objects.filter(user=student)
     return render(request, 'student/gatepass_history.html', {'gatepasses': gatepasses})
 from django.contrib.auth import get_user_model
+from feed360.models import FeedbackQuestion
 
 # View for HOD to see all staff in their department
 from django.contrib.auth.decorators import login_required
@@ -114,20 +136,124 @@ def staff_attendance_view(request):
     staff = None
     assigned_subjects = []
     subjects_with_students = []
+    from .models import Attendance
+    success = None
+    error = None
     try:
         staff = Staff.objects.get(user=request.user)
-        assigned_subjects = SemesterSubject.objects.filter(staff=staff)
+        assigned_subjects = SemesterSubject.objects.filter(
+            models.Q(staff1=staff) | models.Q(staff2=staff) | models.Q(staff3=staff)
+        )
+        if request.method == "POST":
+            # Find which subject and section this POST is for
+            post_keys = list(request.POST.keys())
+            subject_id = None
+            section_val = None
+            for key in post_keys:
+                if key.startswith("attendance_date_"):
+                    parts = key.split("_")
+                    if len(parts) >= 4:
+                        subject_id = parts[2]
+                        section_val = parts[3]
+                        break
+            if subject_id and section_val:
+                try:
+                    subject = SemesterSubject.objects.get(id=subject_id)
+                    section = int(section_val)
+                    date_str = request.POST.get(f"attendance_date_{subject_id}_{section}")
+                    absent_last3 = request.POST.get(f"absent_last3_{subject_id}_{section}", "")
+                    if not date_str:
+                        raise Exception("Date is required.")
+                    date_obj = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
+                    # Get students for this subject-section
+                    students = Student.objects.filter(
+                        department=subject.semester.department,
+                        semester=subject.semester.semester,
+                        section=section
+                    )
+                    absent_last3_list = [s.strip() for s in absent_last3.replace(",", " ").split() if s.strip()]
+                    for student in students:
+                        last3 = str(student.roll)[-3:] if student.roll else None
+                        status = 'Absent' if last3 in absent_last3_list else 'Present'
+                        att, created = Attendance.objects.get_or_create(
+                            student=student,
+                            subject=subject,
+                            date=date_obj,
+                            defaults={'status': status}
+                        )
+                        if not created:
+                            att.status = status
+                            att.save()
+                    success = f"Attendance marked for {subject.name} section {section} on {date_str}."
+                except Exception as e:
+                    error = f"Error: {e}"
+        # Prepare context as before
+        all_students_set = set()
         for subject in assigned_subjects:
-            # Get students in the same department and semester as the subject
             semester_obj = subject.semester
-            students = Student.objects.filter(department=semester_obj.department, semester=semester_obj.semester)
+            section_students = []
+            for idx, (section_field, staff_field) in enumerate([
+                ("section1", "staff1"), ("section2", "staff2"), ("section3", "staff3")
+            ], start=1):
+                section_val = getattr(subject, section_field)
+                staff_val = getattr(subject, staff_field)
+                if staff_val == staff and section_val is not None:
+                    students = Student.objects.filter(
+                        department=semester_obj.department,
+                        semester=semester_obj.semester,
+                        section=section_val
+                    )
+                    students_with_attendance = []
+                    for student in students:
+                        total = Attendance.objects.filter(student=student, subject=subject).count()
+                        present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
+                        percentage = (present / total * 100) if total > 0 else 0
+                        students_with_attendance.append({
+                            'student': student,
+                            'percentage': round(percentage, 2),
+                            'total': total,
+                            'present': present
+                        })
+                        all_students_set.add(student)
+                    section_students.append((section_val, students_with_attendance))
             subjects_with_students.append({
                 'subject': subject,
-                'students': students
+                'section_students': section_students
             })
+        # Calculate overall attendance percentage for each student (across all subjects)
+        student_percentages = {}
+        for student in all_students_set:
+            # Get all subjects for this student: department+semester (non-electives) + assigned electives only
+            subjects_qs = SemesterSubject.objects.filter(
+                semester__department=student.department,
+                semester__semester=student.semester,
+                is_elective=False
+            )
+            electives = [student.elective1, student.elective2, student.elective3]
+            electives = [e for e in electives if e]
+            subjects = list(subjects_qs) + electives
+            subjects = list({s.id: s for s in subjects}.values())
+            subject_percentages = []
+            for subject in subjects:
+                subj_total = Attendance.objects.filter(student=student, subject=subject).count()
+                subj_present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
+                subj_percentage = (subj_present / subj_total * 100) if subj_total > 0 else 0
+                if subj_total > 0:
+                    subject_percentages.append(subj_percentage)
+            if subject_percentages:
+                overall_percentage = sum(subject_percentages) / len(subject_percentages)
+            else:
+                total_days = Attendance.objects.filter(student=student).count()
+                present_days = Attendance.objects.filter(student=student, status='Present').count()
+                overall_percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+            student_percentages[student.id] = round(overall_percentage, 1)
     except Staff.DoesNotExist:
         assigned_subjects = []
+        student_percentages = {}
     context['subjects_with_students'] = subjects_with_students
+    context['student_percentages'] = student_percentages
+    context['success'] = success
+    context['error'] = error
     return render(request, 'staff/attendance.html', context)
 def student_attendance_view(request):
     context = set_config(request)
@@ -182,10 +308,29 @@ def student_attendance_view(request):
     subjects = list(subjects_qs) + electives
     # Remove duplicates
     subjects = list({s.id: s for s in subjects}.values())
-    # Calculate overall attendance percentage for this student (by total days marked and present)
-    total_days = Attendance.objects.filter(student=student).count()
-    present_days = Attendance.objects.filter(student=student, status='Present').count()
-    overall_percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+    # Calculate subject-wise attendance percentage for this student
+    subject_attendance = []
+    subject_percentages = []
+    for subject in subjects:
+        subj_total = Attendance.objects.filter(student=student, subject=subject).count()
+        subj_present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
+        subj_percentage = (subj_present / subj_total * 100) if subj_total > 0 else 0
+        subject_attendance.append({
+            'subject': subject,
+            'total': subj_total,
+            'present': subj_present,
+            'percentage': round(subj_percentage, 2)
+        })
+        if subj_total > 0:
+            subject_percentages.append(subj_percentage)
+    # Overall: average of subject-wise percentages (if any), else fallback to old logic
+    if subject_percentages:
+        overall_percentage = sum(subject_percentages) / len(subject_percentages)
+    else:
+        total_days = Attendance.objects.filter(student=student).count()
+        present_days = Attendance.objects.filter(student=student, status='Present').count()
+        overall_percentage = (present_days / total_days) * 100 if total_days > 0 else 0
+    context['subject_attendance'] = subject_attendance
     subject_percentages = []
     for subject in subjects:
         subject_percentages.append({
@@ -510,6 +655,9 @@ def ahod_dash(request):
     students = Student.objects.filter(department=ahod_dept)
     context['all_od'] = OD.objects.filter(user__in=students).distinct()
     context['all_leave'] = LEAVE.objects.filter(user__in=students).distinct()
+    # Fetch last 5 notifications for the AHOD
+    from .models import Notification
+    context['recent_notifications'] = Notification.objects.filter(staff=ahod.user, role__iexact='ahod').order_by('-created_at')[:5]
     return render(request, 'ahod/dash.html', context)
 
 
@@ -745,6 +893,12 @@ def dash(request):
     context = set_config(request)
     if 'duser' not in context:
         return redirect('login')
+
+    # --- Add today's timetable for staff dashboard ---
+    if request.user.is_staff:
+        from core.services.get_todays_timetable import get_todays_timetable
+        context['todays_timetable'] = get_todays_timetable(context['duser'])
+
     if not request.user.is_staff:
         from django.utils import timezone
         today = timezone.now().date()
@@ -758,6 +912,9 @@ def dash(request):
         context['leaves_all'] = LEAVE.objects.filter(user=context['duser'])
         context['bonafides_all'] = BONAFIDE.objects.filter(user=context['duser'])
         context['gatepasses_all'] = GATEPASS.objects.filter(user=context['duser'])
+        # Fetch last 5 notifications for the logged-in student
+        student = context['duser'] if isinstance(context['duser'], Student) else Student.objects.filter(user=request.user).first()
+        context['recent_notifications'] = Notification.objects.filter(student=student).order_by('-created_at')[:5]
         return render(request, 'student/dash.html', context=context)
 
     elif context['duser'].position == 0 or AHOD.objects.filter(user=context['duser']).exists() or context['duser'].position2 == 1:
@@ -785,6 +942,8 @@ def dash(request):
                 ).distinct()
             except Staff.DoesNotExist:
                 context['bonafides'] = BONAFIDE.objects.none()
+            # Fetch last 5 notifications for the HOD
+            context['recent_notifications'] = Notification.objects.filter(staff=hod_staff, role__iexact='hod').order_by('-created_at')[:5]
             return render(request, "hod/dash.html", context)
         # If AHOD or Assistant HOD, show all student applications for their department
         else:
@@ -843,6 +1002,8 @@ def dash(request):
         context['mentee_bonafides'] = BONAFIDE.objects.filter(
             models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff)
         ).distinct()
+        # Fetch last 5 notifications for the staff
+        context['recent_notifications'] = Notification.objects.filter(staff=staff).order_by('-created_at')[:5]
         return render(request, 'staff/dash.html', context)
 
 
@@ -1273,8 +1434,6 @@ def staff_action_gatepass(request, id):
                 gatepass.Mstatus = STATUS[2][0]
                 gatepass.Astatus = STATUS[2][0]
                 gatepass.Hstatus = STATUS[2][0]
-            else:
-                gatepass.Hstatus = status
             Notification.objects.create(
                 student=gatepass.user,
                 message=f"Your Gatepass request was {gatepass.Hstatus} by HOD"
@@ -1408,7 +1567,11 @@ def student_feedback(request):
         except Exception:
             return render(request, 'student/feedback.html', context)
 
-    temp = list(i.id for i in duser.teaching_staffs.all())
+    ques = FeedbackQuestion.objects.all()
+    typ = request.GET.get('type', 'gen')
+    context['ques'] = ques
+    context['typ'] = typ
+
     context['s_rating'] = []
     context['cs_rating'] = []
     
@@ -1831,11 +1994,40 @@ def hod_action_bonafide(request, id):
                 bonafide.Hstatus = STATUS[2][0]
         from .models import Notification
         Notification.objects.create(
-            student=bonafide.user,
+                       student=bonafide.user,
             message=f"Your Bonafide request was {action_status} by {'Mentor' if role == 'mentor' else 'HOD'}"
         )
         bonafide.save()
         return redirect('hod_bonafide_view')
     return redirect('hod_bonafide_view')
+
+@login_required
+def ahod_timetable(request):
+    context = set_config(request)
+    ahod = AHOD.objects.get(user=context['duser'])
+    # Get department code for AHOD
+    ahod_dept = ahod.user.department
+    # Fetch timetable data for the department
+    context['days'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    context['periods'] = ['Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6', 'Period 7']
+    context['table'] = {}  # Replace with actual timetable data
+    context['my_table'] = {}  # Replace with actual personal timetable data
+    if request.method == 'POST':
+        # Save timetable data to the database
+        Timetable.objects.filter(user=request.user).delete()  # Clear existing data
+        for day in context['days']:
+            for period in context['periods']:
+                key = f"{day}_{period}"
+                subject = request.POST.get(f"my_{key}", '')
+                if subject:
+                    Timetable.objects.create(user=request.user, day=day, period=period, subject=subject)
+        messages.success(request, 'Timetable updated successfully!')
+
+    # Retrieve timetable data from the database
+    timetable_entries = Timetable.objects.filter(user=request.user)
+    my_table = {f"{entry.day}_{entry.period}": entry.subject for entry in timetable_entries}
+    context['my_table'] = my_table
+
+    return render(request, 'ahod/timetable.html', context)
 
 

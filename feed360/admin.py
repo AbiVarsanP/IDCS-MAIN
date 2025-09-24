@@ -2,9 +2,13 @@
 from django.contrib import admin
 from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse, FeedbackAggregate
 
+
+# Only register Subject if it's not SemesterSubject (which is already registered in core.admin)
 try:
 	from .models import Subject
-	admin.site.register(Subject)
+	from core.models import SemesterSubject
+	if Subject is not SemesterSubject:
+		admin.site.register(Subject)
 except ImportError:
 	pass
 

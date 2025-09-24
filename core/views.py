@@ -6,10 +6,11 @@ from .models import Department
 @user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
 def principal_department(request):
     from django.urls import reverse
+    from .models import Staff
     departments = Department.objects.all()
     for dept in departments:
-        staff_list = dept.staffs.all()
-        # Attach mentees URL for each staff
+        # Use HOD logic: all staff whose department ForeignKey matches this department
+        staff_list = Staff.objects.filter(department=dept)
         for staff in staff_list:
             staff.mentees_url = reverse('view_mentees', args=[staff.id])
         dept.staff_list = staff_list

@@ -5,7 +5,7 @@ from django.db import models
 def hod_view_comments_all_custom(request, custom_staff_name, form_id):
 	# Show all feedback comments for this custom staff name (across all forms/questions)
 	custom_staff_name = unquote(custom_staff_name)
-	from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse
+	from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse, Staff
 	# Only show comments for the given form_id and custom_staff_name
 	form_ids = list(FeedbackForm.objects.filter(staff_name_other=custom_staff_name, id=form_id).values_list('id', flat=True))
 	q_ids = list(FeedbackQuestion.objects.filter(staff_name_other=custom_staff_name, form_id=form_id).values_list('id', flat=True))
@@ -21,9 +21,15 @@ def hod_view_comments_all_custom(request, custom_staff_name, form_id):
 				'submitted_at': resp.submitted_at,
 			})
 	comments = sorted(comments, key=lambda x: x['submitted_at'], reverse=True)
+	# Add duser for sidebar context
+	try:
+		duser = Staff.objects.get(user=request.user)
+	except Exception:
+		duser = None
 	return render(request, 'feed360/hod_view_comments_custom.html', {
 		'custom_staff_name': custom_staff_name,
 		'comments': comments,
+		'duser': duser,
 	})
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST

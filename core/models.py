@@ -1,5 +1,25 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.conf import settings
+# Certificate Upload model for students to send certificates to mentors/advisors
+class CertificateUpload(models.Model):
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='certificate_uploads')
+    file = models.FileField(upload_to='certificates/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    # No send_to field: uploads go to both mentor and advisor automatically
+    # Status: Pending, Approved, Rejected
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_certificates')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    remarks = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.student} - {self.file.name}"
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 

@@ -1,3 +1,44 @@
+
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.contrib.auth.decorators import login_required
+from .forms import CertificateUploadForm
+from .models import CertificateUpload, Student
+
+# Staff view: show certificates uploaded by their mentees/advisees
+@login_required
+def staff_certificates(request):
+    staff = request.user.staff
+    # Students where this staff is mentor or advisor
+    mentees = Student.objects.filter(mentor=staff)
+    advisees = Student.objects.filter(advisor=staff)
+    # Certificates from both groups
+    certificates = CertificateUpload.objects.filter(student__in=mentees | advisees).order_by('-uploaded_at')
+    return render(request, 'staff/certificates.html', {'certificates': certificates})
+
+# Student certificate upload view
+@login_required
+def certificate_upload_view(request):
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect('dash')
+    if request.method == 'POST':
+        form = CertificateUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            cert = form.save(commit=False)
+            cert.student = student
+            cert.save()
+            messages.success(request, "Certificate uploaded successfully!")
+            return redirect('certificate_upload')
+    else:
+        form = CertificateUploadForm()
+    # Show previous uploads for this student
+    uploads = CertificateUpload.objects.filter(student=student).order_by('-uploaded_at')
+    return render(request, 'student/certificate_upload.html', {'form': form, 'uploads': uploads})
 # Imports
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET

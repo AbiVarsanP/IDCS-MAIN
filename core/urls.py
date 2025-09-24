@@ -27,6 +27,8 @@ from .view_mentees import view_mentees, my_mentees
 
 
 urlpatterns = [
+    path('staff/certificates/', staff_certificates, name='staff_certificates'),
+    path('student/certificate/upload/', certificate_upload_view, name='certificate_upload'),
     path('student/recent-notifications/', recent_notifications_api, name='recent_notifications_api'),
     path('student/od/history/', student_od_history, name='student_od_history'),
     path('student/leave/history/', student_leave_history, name='student_leave_history'),

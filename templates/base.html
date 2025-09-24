@@ -122,15 +122,14 @@
                         {% if request.user.is_authenticated and request.user.principal_status %}
                             <li class="{% if request.resolver_match.url_name == 'principal_dashboard' %}active{% endif %}"><a href="{% url 'principal_dashboard' %}"><i class="menu-icon fa fa-laptop"></i>Principal Dashboard</a></li>
                             <li class="{% if request.resolver_match.url_name == 'principal_department' %}active{% endif %}"><a href="{% url 'principal_department' %}"><i class="menu-icon fa fa-building"></i>Departments</a></li>
+
                         {% elif duser and duser.position == 0 %}
-                            
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_od_view' %}active{% endif %}"><a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
-                            
-
+                            <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student Certificates</a></li>
                             <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_timetable' %}active{% endif %}"><a href="{% url 'hod_timetable' %}"><i class="menu-icon ti-calendar"></i>My Timetable</a></li>
@@ -142,6 +141,7 @@
                             <li class="{% if request.resolver_match.url_name == 'ahod_leave_view' %}active{% endif %}"><a href="{% url 'ahod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_bonafide_hod' %}active{% endif %}"><a href="{% url 'ahod_bonafide_hod' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide (HOD)</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_gatepass_hod' %}active{% endif %}"><a href="{% url 'ahod_gatepass_hod' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass (HOD)</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student Certificates</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_notification_history' %}active{% endif %}"><a href="{% url 'ahod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
                             <li class="{% if request.resolver_match.url_name == 'ahod_timetable' %}active{% endif %}"><a href="{% url 'ahod_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
                         {% elif duser and duser.position == 0 %}
@@ -167,6 +167,7 @@
                             <li class="{% if request.resolver_match.url_name == 'staff_timetable' %}active{% endif %}"><a href="{% url 'staff_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
                             <li class="menu-title">Class</li>
                             <li class="{% if request.resolver_match.url_name == 'staff_my_class' %}active{% endif %}"><a href="{% url 'staff_my_class' %}"><i class="menu-icon fa fa-users"></i>My Class Students</a></li>
+                                <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student Certificates</a></li>
                         {% elif request.user.is_authenticated and not request.user.is_staff %}
                             {# Student sidebar #}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
@@ -193,6 +194,9 @@
                             <li class="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
                                 <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
                             </li>
+                                <li class="{% if request.resolver_match.url_name == 'certificate_upload' %}active{% endif %}">
+                                    <a href="{% url 'certificate_upload' %}"><i class="menu-icon ti-upload"></i>Certificate Upload</a>
+                                </li>
                             <li>
                                 <a href="/feed360/"><i class="menu-icon ti-comments"></i>Feed 360 </a>
                             </li>

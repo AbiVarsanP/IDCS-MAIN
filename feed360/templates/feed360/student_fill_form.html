@@ -7,32 +7,29 @@
     <h2>Fill Feedback Form: {{ form.title }}</h2>
     <form method="post">
         {% csrf_token %}
-        {% for subject in subjects %}
-            <div class="card mb-3">
-                <div class="card-header">
-                    <strong>Subject:</strong> {{ subject.name }}<br>
-                    <strong>Staff:</strong> {{ staff_map|dict_get:subject.id }}
-                </div>
-                <div class="card-body">
-                    {% for question in questions %}
-                        <div class="mb-3">
-                            <label>{{ question.text }}</label>
-                            {% if question.answer_type == 'stars' or question.answer_type == 'both' %}
-                                <div class="star-rating" data-input-name="star_{{ question.id }}_subject_{{ subject.id }}">
-                                    {% for i in "1234" %}
-                                        <span class="fa fa-star-o" data-value="{{ forloop.counter }}"></span>
-                                    {% endfor %}
-                                    <input type="hidden" name="star_{{ question.id }}_subject_{{ subject.id }}" required>
-                                </div>
-                            {% endif %}
-                            {% if question.answer_type == 'text' or question.answer_type == 'both' %}
-                                <textarea name="comment_{{ question.id }}_subject_{{ subject.id }}" class="form-control" rows="2"></textarea>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Staff:</strong> {{ staff_display_name }}
             </div>
-        {% endfor %}
+            <div class="card-body">
+                {% for question in questions %}
+                    <div class="mb-3">
+                        <label>{{ question.text }}</label>
+                        {% if question.answer_type == 'stars' or question.answer_type == 'both' %}
+                            <div class="star-rating" data-input-name="star_{{ question.id }}_staff">
+                                {% for i in "1234" %}
+                                    <span class="fa fa-star-o" data-value="{{ forloop.counter }}"></span>
+                                {% endfor %}
+                                <input type="hidden" name="star_{{ question.id }}_staff" required>
+                            </div>
+                        {% endif %}
+                        {% if question.answer_type == 'text' or question.answer_type == 'both' %}
+                            <textarea name="comment_{{ question.id }}_staff" class="form-control" rows="2"></textarea>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
         <button type="submit" class="btn btn-success">Submit Feedback</button>
     </form>
 </div>

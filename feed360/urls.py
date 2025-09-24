@@ -13,4 +13,5 @@ urlpatterns = [
     path('hod/view-comments/<int:staff_id>/<int:form_id>/<int:question_id>/', views.hod_view_comments, name='feed360_hod_view_comments'),
     path('hod/view-comments-all/<int:staff_id>/<int:form_id>/', views.hod_view_comments_all, name='feed360_hod_view_comments_all'),
     path('staff/my-results/', views.staff_my_results, name='feed360_staff_my_results'),
+    path('hod/view-comments-all-custom/<str:custom_staff_name>/<int:form_id>/', views.hod_view_comments_all_custom, name='feed360_hod_view_comments_all_custom'),
 ]

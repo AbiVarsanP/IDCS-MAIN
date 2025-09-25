@@ -154,6 +154,12 @@ urlpatterns += [
     path("hod/timetable/", hod_timetable, name="hod_timetable"),
 ]
 
+from django.contrib.auth import views as auth_views
+
+urlpatterns += [
+    path('password_change/', otp_verification, name='password_change'),
+]
+
 
 
 

@@ -1811,24 +1811,11 @@ def reset_password(request):
             error_message = 'Passwords do not match.'
         else:
             email = request.session.get('reset_email')
-            user_obj = None
-            try:
-                user_obj = Student.objects.get(user__email=email)
-                user_obj.user.set_password(new_password)
-                user_obj.user.save()
-            except Student.DoesNotExist:
-                try:
-                    user_obj = Staff.objects.get(email=email)
-                    user_obj.user.set_password(new_password)
-                    user_obj.user.save()
-                except Staff.DoesNotExist:
-                    error_message = 'User not found.'
-            if not error_message:
-                # Clear session
-                request.session.pop('reset_email', None)
-                request.session.pop('reset_otp', None)
-                request.session.pop('otp_verified', None)
-                return redirect('login')
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+            request.session.flush()
+            return redirect('login')
     return render(request, 'auth/reset_password.html', {'error_message': error_message})
 
 def student_timetable(request):

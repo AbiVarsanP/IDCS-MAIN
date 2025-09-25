@@ -1838,8 +1838,10 @@ def student_details(request):
     students = Student.objects.filter(advisor=staff).order_by('roll')
     student_data = []
     for student in students:
-        od_details = OD.objects.filter(user=student)
-        leave_details = LEAVE.objects.filter(user=student)
+        od_qs = OD.objects.filter(user=student)
+        leave_qs = LEAVE.objects.filter(user=student)
+        od_details = [f"{od.sub} ({od.start.strftime('%Y-%m-%d')} - {od.end.strftime('%Y-%m-%d')}) [{od.status}]" for od in od_qs]
+        leave_details = [f"{leave.sub} ({leave.start.strftime('%Y-%m-%d')} - {leave.end.strftime('%Y-%m-%d')}) [{leave.status}]" for leave in leave_qs]
         student_data.append({
             'id': student.id,
             'roll_no': student.roll,
@@ -1847,10 +1849,10 @@ def student_details(request):
             'email': student.user.email,
             'department': student.department.name if student.department else 'N/A',
             'mobile': student.mobile,
-            'od_details': od_details,
-            'leave_details': leave_details,
+            'od_details': ", ".join(od_details) if od_details else "None",
+            'leave_details': ", ".join(leave_details) if leave_details else "None",
             'address': student.address,
-            'dob': student.dob,
+            'dob': student.dob.strftime('%Y-%m-%d') if student.dob else '',
         })
     return render(request, 'staff/student_details.html', {'students': student_data})
 

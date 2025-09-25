@@ -428,6 +428,10 @@ class GATEPASS(models.Model):
     Hstatus = models.CharField(choices=STATUS, max_length=50, default="Pending")
     ahod_reason = models.TextField(blank=True, null=True)  # Reason by AHOD for HOD action
 
+        # --- ADD THESE TWO FIELDS ---
+    exit_time = models.DateTimeField(null=True, blank=True, verbose_name="Scanned Exit Time")
+    entry_time = models.DateTimeField(null=True, blank=True, verbose_name="Scanned Entry Time")
+        # --------------------------
 
     created = models.DateTimeField(auto_now_add=True)
 

@@ -59,7 +59,9 @@
                             <th>ADVISOR</th>
                         
                             <th>HOD</th>
-
+                            <th>Exit Time</th>
+                            <th>Entry Time</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,10 +80,19 @@
                             <td>
                                 <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
                             </td>
+                            <td>{{ i.exit_time|date:"d M, H:i"|default:"--/--" }}</td>
+                            <td>{{ i.entry_time|date:"d M, H:i"|default:"--/--" }}</td>
+                            <td>
+                                {% if i.Hstatus == 'Approved' and not i.entry_time %}
+                                    <a href="{% url 'gatepass_scanner' %}" class="btn btn-primary btn-sm">Scan QR Code</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr><td colspan="6">No Gatepass records found</td></tr>
+                        <tr><td colspan="9">No Gatepass records found</td></tr>
                         {% endif %}
 
                     </tbody>

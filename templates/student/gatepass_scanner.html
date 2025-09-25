@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4 text-center">
+    <h3 class="mb-4">Scan Gate QR Code</h3>
+    <div id="reader" style="width: 100%; max-width: 400px; margin: auto; border: 2px solid #1976d2; border-radius: 8px;"></div>
+    <div id="result" class="mt-3"></div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    function onScanSuccess(decodedText, decodedResult) {
+        // decodedText is the URL from the QR code.
+        console.log(`Code scanned = ${decodedText}`, decodedResult);
+        // Stop scanning
+        html5QrcodeScanner.clear();
+        // Redirect the browser to the URL, which will trigger our backend view
+        window.location.href = decodedText;
+    }
+    function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning.
+        // console.warn(`Code scan error = ${error}`);
+    }
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", 
+        { fps: 10, qrbox: {width: 250, height: 250} },
+        /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>
+{% endblock %}

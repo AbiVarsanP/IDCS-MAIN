@@ -39,6 +39,8 @@ urlpatterns = [
     path('student/bonafide/history/', student_bonafide_history, name='student_bonafide_history'),
     path('student/gatepass/history/', student_gatepass_history, name='student_gatepass_history'),
     path('staff/my_class/', my_class_students, name='staff_my_class'),
+    # QR scan processing endpoint
+    path('student/gatepass/scan/', process_gatepass_qr_scan, name='process_gatepass_qr_scan'),
     path('student/attendance/', student_attendance_view, name='student_attendance'),
     path("",dash,name='dash'),
     path("notifications/", notifications_view, name="notifications_view"),
@@ -88,6 +90,8 @@ urlpatterns += [
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
     path("ahleaves/check", ahod_leave_view, name='ahod_leave_view'),
     path("ahods/action/<int:id>", ahod_action_od, name="ahod_action_od"),
+    path('gatepass/scan/', scan_gatepass_qr, name='scan_gatepass_qr'),
+    path('gatepass/scanner/', lambda request: render(request, 'student/gatepass_scanner.html'), name='gatepass_scanner'),
     path("ahleaves/action/<int:id>", ahod_action_leave, name="ahod_action_leave"),
 
 ]

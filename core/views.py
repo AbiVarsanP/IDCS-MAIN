@@ -5,6 +5,42 @@ def is_hod(user):
     return user.is_staff and hasattr(user, 'staff') and user.staff.position == 0
 
 @login_required
+def scan_gatepass_qr(request):
+    from django.utils import timezone
+    context = set_config(request)
+    student = context.get('duser')
+    message = ""
+    error = ""
+
+    # Find an approved gate pass for today that hasn't been fully used
+    today = timezone.now().date()
+    active_gatepass = GATEPASS.objects.filter(
+        user=student,
+        Hstatus='Approved',
+        start__date__lte=today,
+        end__date__gte=today
+    ).order_by('-created').first()
+
+    if not active_gatepass:
+        error = "You do not have an approved gate pass for today."
+    else:
+        # Check if this is an exit or an entry scan
+        if not active_gatepass.exit_time:
+            active_gatepass.exit_time = timezone.now()
+            message = f"Exit successful at {active_gatepass.exit_time.strftime('%I:%M %p')}. You are now out of campus."
+        elif not active_gatepass.entry_time:
+            scan_time = timezone.now()
+            active_gatepass.entry_time = scan_time
+            message = f"Entry successful at {scan_time.strftime('%I:%M %p')}. Welcome back to campus."
+        else:
+            error = "This gate pass has already been used for both exit and entry."
+        if not error:
+            active_gatepass.save()
+
+    context['message'] = message
+    context['error'] = error
+    # This new template will simply show the success/error message
+    return render(request, 'student/scan_result.html', context)
 @user_passes_test(is_hod)
 def hod_sports_od_view(request):
     context = set_config(request)
@@ -273,6 +309,36 @@ from django.conf import settings
 
 # View for HOD to see all staff in their department
 from django.contrib.auth.decorators import login_required
+
+# --- QR Scan Processing View ---
+from django.http import JsonResponse
+from core.models import GATEPASS, Student
+
+@login_required
+def process_gatepass_qr_scan(request):
+    """
+    Expects POST with: gatepass_id, scan_type ('exit' or 'entry')
+    Updates the corresponding timestamp in GATEPASS.
+    """
+    if request.method == 'POST':
+        gatepass_id = request.POST.get('gatepass_id')
+        scan_type = request.POST.get('scan_type')
+        try:
+            gatepass = GATEPASS.objects.get(id=gatepass_id, user__user=request.user)
+        except GATEPASS.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Gatepass not found.'}, status=404)
+        now = timezone.now()
+        if scan_type == 'exit':
+            gatepass.exit_time = now
+            gatepass.save()
+            return JsonResponse({'success': True, 'message': 'Exit time recorded.', 'exit_time': str(now)})
+        elif scan_type == 'entry':
+            gatepass.entry_time = now
+            gatepass.save()
+            return JsonResponse({'success': True, 'message': 'Entry time recorded.', 'entry_time': str(now)})
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid scan type.'}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect

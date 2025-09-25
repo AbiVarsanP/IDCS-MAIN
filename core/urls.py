@@ -74,6 +74,8 @@ from .ahod_actions import ahod_action_od
 from .ahod_actions_leave import ahod_action_leave
 
 urlpatterns += [
+    path('advisor/student/<int:student_id>/od_status/', advisor_student_od_status, name='advisor_student_od_status'),
+    path('advisor/student/<int:student_id>/leave_status/', advisor_student_leave_status, name='advisor_student_leave_status'),
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
     path("ahleaves/check", ahod_leave_view, name='ahod_leave_view'),
     path("ahods/action/<int:id>", ahod_action_od, name="ahod_action_od"),
@@ -93,6 +95,7 @@ urlpatterns += [
     path("bonafides/", staff_bonafides, name="staff_bonafides"),
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
     path("timetable/", staff_timetable, name="staff_timetable"),
+# ...existing code...
     path("my_class_students/", my_class_students, name="my_class_students"),
     path("staff/attendance/", staff_attendance_view, name="staff_attendance"),
 
@@ -104,6 +107,7 @@ urlpatterns += [
 
     path('staff/student/<int:student_id>/', view_student_details, name='view_student_details'),
 
+    path('staff/student/<int:student_id>/leave_details/', view_student_leave_details, name='view_student_leave_details'),
 ]
 # hod
 
@@ -131,10 +135,9 @@ urlpatterns += [
 ]
 
 # auth
-urlpatterns+=[
-    
-    path("login",login_user,name='login'),
-    path("logout",logout_user,name='logout')
+urlpatterns += [
+    path("login/", login_user, name='login'),
+    path("logout/", logout_user, name='logout')
 ]
 
 urlpatterns += [

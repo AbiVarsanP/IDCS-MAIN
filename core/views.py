@@ -1,3 +1,28 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+def is_advisor(user):
+    return hasattr(user, 'staff') and (getattr(user.staff, 'position', None) == 4 or getattr(user.staff, 'position2', None) == 4)
+
+@login_required
+@user_passes_test(is_advisor, login_url='/login/')
+def advisor_student_od_status(request, student_id):
+    context = set_config(request)
+    from .models import OD, Student
+    student = Student.objects.get(id=student_id)
+    od_records = OD.objects.filter(user=student)
+    context['od_records'] = od_records
+    context['student'] = student
+    return render(request, 'staff/od_status.html', context)
+
+@login_required
+@user_passes_test(is_advisor, login_url='/login/')
+def advisor_student_leave_status(request, student_id):
+    context = set_config(request)
+    from .models import LEAVE, Student
+    student = Student.objects.get(id=student_id)
+    leave_records = LEAVE.objects.filter(user=student)
+    context['leave_records'] = leave_records
+    context['student'] = student
+    return render(request, 'staff/leave_status.html', context)
 from django.contrib.auth import get_user_model
 from feed360.models import FeedbackQuestion
 
@@ -1585,7 +1610,7 @@ def staff_action_bonafide(request, id):
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
                 student=bonafide.user,
-                message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
+                message=f"Your Bonafide request was {action_status} by HOD"
             )
             bonafide.save()
             return redirect("hod_bonafide_view")
@@ -1790,6 +1815,7 @@ def hod_action_bonafide(request, id):
                 bonafide.Mstatus = STATUS[2][0]
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
+
         from .models import Notification
         Notification.objects.create(
                        student=bonafide.user,
@@ -1829,19 +1855,30 @@ def ahod_timetable(request):
     return render(request, 'ahod/timetable.html', context)
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from .models import Student, OD, LEAVE
-
 @login_required
 def student_details(request):
     staff = Staff.objects.get(user=request.user)
-    students = Student.objects.filter(advisor=staff).order_by('roll')
+    is_advisor = (getattr(staff, 'position', None) == 4 or getattr(staff, 'position2', None) == 4)
+    students = Student.objects.filter(advisor=staff).order_by('roll') if is_advisor else []
     student_data = []
     for student in students:
         od_qs = OD.objects.filter(user=student)
         leave_qs = LEAVE.objects.filter(user=student)
         od_details = [f"{od.sub} ({od.start.strftime('%Y-%m-%d')} - {od.end.strftime('%Y-%m-%d')}) [{od.status}]" for od in od_qs]
-        leave_details = [f"{leave.sub} ({leave.start.strftime('%Y-%m-%d')} - {leave.end.strftime('%Y-%m-%d')}) [{leave.status}]" for leave in leave_qs]
+        def get_final_leave_status(leave):
+            if 'Rejected' in [leave.Astatus, leave.Mstatus, leave.Hstatus, leave.AHstatus]:
+                return 'Rejected'
+            elif 'Pending' in [leave.Astatus, leave.Mstatus, leave.Hstatus, leave.AHstatus]:
+                return 'Pending'
+            elif leave.Astatus == 'Approved' and leave.Mstatus == 'Approved' and leave.Hstatus == 'Approved' and leave.AHstatus == 'Approved':
+                return 'Approved'
+            else:
+                return 'Pending'
+
+        leave_details = [f"{leave.sub} ({leave.start.strftime('%Y-%m-%d')} - {leave.end.strftime('%Y-%m-%d')}) [{get_final_leave_status(leave)}]" for leave in leave_qs]
         student_data.append({
             'id': student.id,
             'roll_no': student.roll,
@@ -1849,8 +1886,8 @@ def student_details(request):
             'email': student.user.email,
             'department': student.department.name if student.department else 'N/A',
             'mobile': student.mobile,
-            'od_details': ", ".join(od_details) if od_details else "None",
-            'leave_details': ", ".join(leave_details) if leave_details else "None",
+            'od_details': od_details,  # Pass as list for correct count
+            'leave_details': leave_details,  # Pass as list for correct count
             'address': student.address,
             'dob': student.dob.strftime('%Y-%m-%d') if student.dob else '',
         })
@@ -1862,5 +1899,11 @@ from .models import Student
 def view_student_details(request, student_id):
     student = get_object_or_404(Student, id=student_id)
     return render(request, 'student_details.html', {'student': student})
+
+def view_student_leave_details(request, student_id):
+    # TODO: Implement logic to show leave details for a student
+    from django.shortcuts import render
+    # leave_details = ... # fetch leave details for student_id
+    return render(request, 'staff/student_leave_details.html', {'student_id': student_id})
 
 

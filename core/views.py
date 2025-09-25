@@ -146,14 +146,25 @@ from .models import CertificateUpload, Student
 
 # Staff view: show certificates uploaded by their mentees/advisees
 @login_required
+
+@login_required
 def staff_certificates(request):
-    staff = request.user.staff
+    # Use set_config to get the correct user context (including HOD status)
+    context = set_config(request)
+    staff = context.get('duser')
+
+    if not staff:
+        messages.error(request, "Staff profile not found.")
+        return redirect('dash')
+
     # Students where this staff is mentor or advisor
     mentees = Student.objects.filter(mentor=staff)
     advisees = Student.objects.filter(advisor=staff)
     # Certificates from both groups
     certificates = CertificateUpload.objects.filter(student__in=mentees | advisees).order_by('-uploaded_at')
-    return render(request, 'staff/certificates.html', {'certificates': certificates})
+    # Add the certificates to the context and render
+    context['certificates'] = certificates
+    return render(request, 'staff/certificates.html', context)
 
 # Student certificate upload view
 @login_required

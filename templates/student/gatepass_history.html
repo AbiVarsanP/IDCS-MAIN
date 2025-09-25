@@ -1,93 +1,144 @@
 {% extends 'base.html' %}
 {% block root %}
 <style>
-    .card-header {
-        background: #1976d2 !important;
-        border-radius: 6px 6px 0 0 !important;
-        box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+/* Card styling */
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 2px 8px rgba(25,118,210,0.1);
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2rem;
+    padding: 12px 0;
+}
+
+.gatepass-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.gatepass-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    transition: transform 0.2s ease;
+}
+
+.gatepass-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Card header */
+.gatepass-card-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.gp-id {
+    font-weight: 700;
+    color: #1976d2;
+}
+
+.gp-title {
+    font-weight: 600;
+    flex: 1;
+    margin-left: 10px;
+    color: #212121;
+}
+
+/* Status badges */
+.status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.status-item {
+    flex: 1 1 45%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.badge {
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.82rem;
+}
+
+.badge-Approved {
+    background: #4caf50;
+}
+
+.badge-Pending {
+    background: #ff9800;
+}
+
+.badge-Rejected {
+    background: #f44336;
+}
+
+.badge-secondary {
+    background: #9e9e9e;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .gatepass-card-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
-</style>
-<style>
-    .table thead th {
-        background: #fff !important;
-        color: #222 !important;
-        font-weight: 700;
-        border-color: #1976d2 !important;
-        letter-spacing: 0.5px;
-        text-align: center;
+
+    .gp-title {
+        margin-left: 0;
+        margin-top: 4px;
     }
-    table tr[tabindex] {
-        outline: none;
-        transition: background 0.2s, box-shadow 0.2s;
+
+    .status-item {
+        flex: 1 1 100%;
+        justify-content: space-between;
     }
-    table tr[tabindex]:hover {
-        background: #e3f2fd !important;
-        outline: 2px solid #1976d2 !important;
-        z-index: 2;
-        position: relative;
-    }
-    table tr[tabindex]:hover * {
-        filter: none !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        color: inherit !important;
-    }
-    tbody:has(tr[tabindex]:hover) tr[tabindex]:not(:hover) {
-        filter: blur(2px) grayscale(0.2);
-        opacity: 0.5;
-        pointer-events: none;
-        transition: filter 0.2s, opacity 0.2s;
-    }
+}
 </style>
 
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header">
-                <center>
-                <strong class="card-title" style="background:#1976d2;color:#fff;padding:8px 20px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">Gatepass Status</strong>
-            </center>
+<div class="card-header">
+    Gatepass Status
+</div>
+
+<div class="gatepass-container">
+    {% if gatepasses %}
+    {% for i in gatepasses %}
+    <div class="gatepass-card">
+        <div class="gatepass-card-header">
+            <span class="gp-id">#GP{{ i.id }}</span>
+            <h5 class="gp-title">{{ i.sub }}</h5>
+        </div>
+
+        <div class="status-row">
+            <div class="status-item">
+                <span>Mentor</span> <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
             </div>
-            <div class="table-stats order-table ov-h">
-                <table class="table ">
-                    <thead>
-                        <tr>
-                            <th class="serial">#</th>
-                            <th>ID</th>
-                            <th>TITLE</th>
-                            <th>MENTOR</th>
-                            <th>ADVISOR</th>
-                        
-                            <th>HOD</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if gatepasses %}
-                        {% for i in gatepasses %}
-                        <tr tabindex="0">
-                            <td class="serial">{{ forloop.counter }}.</td>
-                            <td> #GP{{i.id}} </td>
-                            <td> <span class="name">{{i.sub}}</span> </td>
-                            <td>
-                                <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr><td colspan="6">No Gatepass records found</td></tr>
-                        {% endif %}
-
-                    </tbody>
-                </table>
-            </div> <!-- /.table-stats -->
+            <div class="status-item">
+                <span>Advisor</span> <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+            </div>
+            <div class="status-item">
+                <span>HOD</span> <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+            </div>
         </div>
     </div>
+    {% endfor %}
+    {% else %}
+    <p style="text-align:center;width:100%;padding:20px;">No Gatepass records found</p>
+    {% endif %}
 </div>
 {% endblock %}

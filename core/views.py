@@ -169,9 +169,9 @@ def staff_certificates(request):
 # Student certificate upload view
 @login_required
 def certificate_upload_view(request):
-    try:
-        student = Student.objects.get(user=request.user)
-    except Student.DoesNotExist:
+    context = set_config(request)
+    student = context.get('duser')
+    if not student:
         messages.error(request, "Student profile not found.")
         return redirect('dash')
     if request.method == 'POST':
@@ -186,7 +186,9 @@ def certificate_upload_view(request):
         form = CertificateUploadForm()
     # Show previous uploads for this student
     uploads = CertificateUpload.objects.filter(student=student).order_by('-uploaded_at')
-    return render(request, 'student/certificate_upload.html', {'form': form, 'uploads': uploads})
+    context['form'] = form
+    context['uploads'] = uploads
+    return render(request, 'student/certificate_upload.html', context)
 # Imports
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
@@ -334,16 +336,20 @@ def student_attendance_view(request):
 # Student OD history view
 @login_required
 def student_od_history(request):
-    student = Student.objects.get(user=request.user)
+    context = set_config(request)
+    student = context.get('duser')  # This is the Student object for the logged-in user
     ods = OD.objects.filter(user=student)
-    return render(request, 'student/od_history.html', {'ods': ods})
+    context['ods'] = ods
+    return render(request, 'student/od_history.html', context)
 
 # Student Leave history view
 @login_required
 def student_leave_history(request):
-    student = Student.objects.get(user=request.user)
+    context = set_config(request)
+    student = context.get('duser')  # This is the Student object for the logged-in user
     leaves = LEAVE.objects.filter(user=student)
-    return render(request, 'student/leave_history.html', {'leaves': leaves})
+    context['leaves'] = leaves
+    return render(request, 'student/leave_history.html', context)
 
 # Student Bonafide history view
 @login_required

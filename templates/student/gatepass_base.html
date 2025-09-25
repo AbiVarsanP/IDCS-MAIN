@@ -1,18 +1,24 @@
 {% extends 'base.html' %}
 
-
-
 {% block root %}
-<center>
-<div class="page-header float-center">
-    <h3 style="background:#1976d2;color:#fff;padding:10px 24px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">Gatepass Application</h3>
-</div>
-</center>
-<div id="gatepass-content">
-    {% if action == 'apply' or not action %}
-        {% include 'student/gatepass_apply.html' %}
-    {% elif action == 'status' %}
-        {% include 'student/gatepass_status.html' %}
-    {% endif %}
+<div class="animated fadeIn">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header text-center" style="background:#1976d2; color:#fff; font-weight:700; font-size:1.2rem; border-radius:8px 8px 0 0; box-shadow:0 2px 8px rgba(25,118,210,0.08);">
+                    Gatepass Application
+                </div>
+                <div class="card-body">
+                    <div id="gatepass-content">
+                        {% if action == 'apply' or not action %}
+                            {% include 'student/gatepass_apply.html' %}
+                        {% elif action == 'status' %}
+                            {% include 'student/gatepass_status.html' %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

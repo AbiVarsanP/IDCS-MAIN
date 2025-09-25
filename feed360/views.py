@@ -435,7 +435,11 @@ def list_active_forms(request):
 	# Print all FeedbackForm department values for debugging
 	all_forms = FeedbackForm.objects.all()
 	logger.warning(f"All FeedbackForm departments: {[f'department={f.department}, year={f.year}, section={f.section}' for f in all_forms]}")
-	return render(request, 'feed360/student_active_forms.html', {'forms': forms})
+	# Add duser for correct profile/header context
+	from core.helpers import set_config
+	context = set_config(request)
+	context['forms'] = forms
+	return render(request, 'feed360/student_active_forms.html', context)
 
 @login_required
 def fill_feedback_form(request, form_id):

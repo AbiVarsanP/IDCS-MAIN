@@ -1,51 +1,158 @@
-
 {% extends 'base.html' %}
 {% load static %}
-<script>
-// Live refresh for recent notifications
-function fetchRecentNotifications() {
-    fetch('{% url "recent_notifications_api" %}')
-        .then(response => response.json())
-        .then(data => {
-            const list = document.getElementById('recent-notifications-list');
-            if (!list) return;
-            let html = '';
-            if (data.notifications && data.notifications.length > 0) {
-                data.notifications.forEach(note => {
-                    html += `<li class="list-group-item"><small class="text-muted">${note.created_at}</small><br>${note.message}</li>`;
-                });
-            } else {
-                html = '<li class="list-group-item">No recent notifications.</li>';
-            }
-            list.innerHTML = html;
-        });
-}
-setInterval(fetchRecentNotifications, 10000);
-document.addEventListener('DOMContentLoaded', fetchRecentNotifications);
-</script>
-
 {% block head %}
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {% endblock %}
 
 {% block root %}
 <script>
-// Show/Hide View All logic
-function showViewAll(section) {
-    document.getElementById(section + '-viewall').style.display = 'block';
-}
-function hideViewAll(section) {
-    document.getElementById(section + '-viewall').style.display = 'none';
-}
-document.addEventListener('click', function(e) {
-    ['od','leave','bonafide','gatepass'].forEach(function(section) {
-        var el = document.getElementById(section + '-viewall');
-        if (el && el.style.display === 'block' && !el.contains(e.target) && !document.getElementById(section + '-btn').contains(e.target)) {
-            el.style.display = 'none';
-        }
+    // Show/Hide View All logic
+    function showViewAll(section) {
+        document.getElementById(section + '-viewall').style.display = 'block';
+    }
+    function hideViewAll(section) {
+        document.getElementById(section + '-viewall').style.display = 'none';
+    }
+    document.addEventListener('click', function (e) {
+        ['od', 'leave', 'bonafide', 'gatepass'].forEach(function (section) {
+            var el = document.getElementById(section + '-viewall');
+            if (el && el.style.display === 'block' && !el.contains(e.target) && !document.getElementById(section + '-btn').contains(e.target)) {
+                el.style.display = 'none';
+            }
+        });
     });
-});
+
+    // Live refresh for recent notifications
+    function fetchRecentNotifications() {
+        fetch('{% url "recent_notifications_api" %}')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('recent-notifications-list');
+                if (!list) return;
+                let html = '';
+                if (data.notifications && data.notifications.length > 0) {
+                    data.notifications.forEach(note => {
+                        html += `<li class="list-group-item"><small class="text-muted">${note.created_at}</small><br>${note.message}</li>`;
+                    });
+                } else {
+                    html = '<li class="list-group-item">No recent notifications.</li>';
+                }
+                list.innerHTML = html;
+            });
+    }
+    setInterval(fetchRecentNotifications, 10000);
+    document.addEventListener('DOMContentLoaded', fetchRecentNotifications);
 </script>
+
+<style>
+    /* Sidebar styles */
+    @media (min-width: 992px) {
+        #notification-sidebar {
+            position: fixed;
+            top: 170px;
+            /* move down to not hide student info */
+            right: 0;
+            width: 340px;
+            height: calc(100vh - 190px);
+            z-index: 1040;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.07);
+            background: transparent;
+            transition: transform 0.3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        #notification-sidebar.closed {
+            transform: translateX(110%);
+            pointer-events: none;
+        }
+
+        #main-content-with-sidebar {
+            margin-right: 360px;
+        }
+
+        #notification-fab {
+            display: block;
+            position: fixed;
+            right: 0;
+            bottom: 40px;
+            z-index: 1050;
+            background: #1756a9;
+            color: #fff;
+            border: none;
+            border-radius: 50% 0 0 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            font-size: 2rem;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            cursor: pointer;
+            transition: right 0.3s;
+        }
+
+        #notification-fab.hidden {
+            display: none;
+        }
+
+        .card.mb-3 {
+            min-width: 0;
+            max-width: 100%;
+            font-size: 0.95rem;
+        }
+
+        .card-body,
+        .card-header {
+            padding: 0.75rem 1rem;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        #notification-sidebar {
+            position: static;
+            width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+            box-shadow: none;
+            top: unset;
+        }
+
+        #main-content-with-sidebar {
+            margin-right: 0;
+        }
+
+        #notification-fab {
+            display: none;
+        }
+    }
+
+    .notification-close-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        margin-left: 8px;
+        margin-right: -8px;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .notification-close-btn:hover {
+        opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    .dashboard-main,
+    .dashboard-sidebar {
+        flex: 0 0 100% !important;
+        max-width: 100%;
+    }
+}
+</style>
 
 <div class="row">
     <div class="col-12 d-flex justify-content-center align-items-center">
@@ -53,20 +160,24 @@ document.addEventListener('click', function(e) {
             <div class="card-body d-flex flex-column flex-md-row align-items-center justify-content-between">
                 <div class="d-flex flex-column flex-md-row align-items-center w-80">
                     <div class="pr-4 d-flex align-items-center">
-                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" class="img-fluid" style="max-width: 100px; height: auto;">
+                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo"
+                            class="img-fluid" style="max-width: 100px; height: auto;">
                     </div>
                     <div class="d-flex flex-column align-items-start w-100">
-                        <h3 class="card-title mb-1 text-center text-md-left" style="font-weight: bold; color: #1756a9;">K. Ramakrishnan College of Technology</h3>
-                        <div class="text-center text-md-left" style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
+                        <h3 class="card-title mb-1 text-center text-md-left" style="font-weight: bold; color: #1756a9;">
+                            K. Ramakrishnan College of Technology</h3>
+                        <div class="text-center text-md-left"
+                            style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
                         <hr class="my-2 w-100">
                     </div>
                 </div>
                 <div style="display: flex; gap: 20px;">
                     <div class="mt-3 mt-md-0 text-center">
                         {% if duser.profile %}
-                            <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                        <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
                         {% else %}
-                            <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                        <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60"
+                            height="60">
                         {% endif %}
                     </div>
                     <div class="mt-3 mt-md-0 text-left text-md-left">
@@ -82,259 +193,200 @@ document.addEventListener('click', function(e) {
 
 <!-- Resume Builder & Path Pilot Horizontal Cards -->
 
-<div class="row mb-3">
-    <div class="col-12 col-md-3 mb-3 mb-md-0">
-                <div class="card">
-                        <div class="card-body">
-                                <div class="stat-widget-five">
-                                        <div class="stat-icon dib flat-color-5">
-                                                <i class="ti-comments"></i>
-                                        </div>
-                                        <div class="stat-content">
-                                                <div class="text-left dib">
-                                                        <div class="stat-text">Feed360 Feedback</div>
-                                                        <div class="stat-heading">
-                                                                <a href="{% url 'feed360_index' %}" class="btn btn-link btn-sm flat-color-5">View</a>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <div class="col-12 col-md-3 mb-3 mb-md-0">
-                <div class="card">
-                        <div class="card-body">
-                                <div class="stat-widget-five">
-                                        <div class="stat-icon dib flat-color-1">
-                                                <i class="ti-file"></i>
-                                        </div>
-                                        <div class="stat-content">
-                                                <div class="text-file">
-                                                        <div class="stat-text">Resume Builder</div>
-                                                        <div class="stat-heading">
-                                                                <a href="{% url 'resumebuilder:rb' %}" class="btn btn-link btn-sm flat-color-1">Create</a>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <div class="col-12 col-md-3 mb-3 mb-md-0">
-                <div class="card">
-                        <div class="card-body">
-                                <div class="stat-widget-five">
-                                        <div class="stat-icon dib flat-color-2">
-                                                <i class="ti-files"></i>
-                                        </div>
-                                        <div class="stat-content">
-                                                <div class="text-left dib">
-                                                        <div class="stat-text">ATS Resume Analysis</div>
-                                                        <div class="stat-heading">
-                                                                <a href="{% url 'ATS:upload_resume' %}" class="btn btn-link btn-sm flat-color-2">Analyse</a>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <div class="col-12 col-md-3">
-                <div class="card">
-                        <div class="card-body">
-                                <div class="stat-widget-five">
-                                        <div class="stat-icon dib flat-color-3">
-                                                <i class="ti-location-arrow"></i>
-                                        </div>
-                                        <div class="stat-content">
-                                                <div class="text-left dib">
-                                                        <div class="stat-text">Path Pilot</div>
-                                                        <div class="stat-heading">
-                                                                <a href="{% url 'pathpilot' %}" class="btn btn-link btn-sm flat-color-3">Create</a>
-                                                                <a href="{% url 'map_history' %}" class="btn btn-link btn-sm flat-color-3">Map History</a>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                </div>
-                        </div>
-                </div>
-        </div>
-</div>
-
-
-    
-
-    <!-- Second Row: Bonafide and Gatepass Applications -->
-
-
-
-<style>
-    /* Sidebar styles */
-    @media (min-width: 992px) {
-        #notification-sidebar {
-            position: fixed;
-            top: 170px; /* move down to not hide student info */
-            right: 0;
-            width: 340px;
-            height: calc(100vh - 190px);
-            z-index: 1040;
-            box-shadow: -2px 0 8px rgba(0,0,0,0.07);
-            background: transparent;
-            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-        }
-        #notification-sidebar.closed {
-            transform: translateX(110%);
-            pointer-events: none;
-        }
-        #main-content-with-sidebar {
-            margin-right: 360px;
-        }
-        #notification-fab {
-            display: block;
-            position: fixed;
-            right: 0;
-            bottom: 40px;
-            z-index: 1050;
-            background: #1756a9;
-            color: #fff;
-            border: none;
-            border-radius: 50% 0 0 50%;
-            width: 60px;
-            height: 60px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-            font-size: 2rem;
-            align-items: center;
-            justify-content: center;
-            display: flex;
-            cursor: pointer;
-            transition: right 0.3s;
-        }
-        #notification-fab.hidden {
-            display: none;
-        }
-        .card.mb-3 {
-            min-width: 0;
-            max-width: 100%;
-            font-size: 0.95rem;
-        }
-        .card-body, .card-header {
-            padding: 0.75rem 1rem;
-        }
-    }
-    @media (max-width: 991.98px) {
-        #notification-sidebar {
-            position: static;
-            width: 100%;
-            height: auto;
-            margin-bottom: 1rem;
-            box-shadow: none;
-            top: unset;
-        }
-        #main-content-with-sidebar {
-            margin-right: 0;
-        }
-        #notification-fab {
-            display: none;
-        }
-    }
-    .notification-close-btn {
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 1.5rem;
-        line-height: 1;
-        cursor: pointer;
-        margin-left: 8px;
-        margin-right: -8px;
-        opacity: 0.8;
-        transition: opacity 0.2s;
-    }
-    .notification-close-btn:hover {
-        opacity: 1;
-    }
-</style>
-
-
+<!-- Resume Builder & Path Pilot Horizontal Cards -->
 <div class="row">
-    <div id="main-content-with-sidebar" class="col-12 col-lg-8">
-        <div class="row">
-            <div class="col-md-6 mb-2">
-                <div class="card" style="font-size:0.95rem;">
-                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center" style="padding:0.6rem 1rem;">
-                        <span>Today's Bonafide Applications</span>
-                        <a href="{% url 'student_bonafide_history' %}" id="bonafide-btn" class="btn btn-light btn-sm">View All</a>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        {% for bonafide in bonafides_today %}
-                        <li class="list-group-item" style="padding:0.6rem 1rem;">
-                            <strong>{{ bonafide.sub }}</strong><br>
-                            <small>{{ bonafide.created|date:"d M Y H:i" }}</small>
-                            <div class="d-flex flex-row mt-2" style="gap: 12px;">
-                                <div class="text-center">
-                                    <div style="font-size: 0.85em; font-weight: bold;">Mentor</div>
-                                    <span class="badge {% if bonafide.Mstatus == 'Approved' %}badge-success{% elif bonafide.Mstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">{{bonafide.Mstatus}}</span>
-                                </div>
-                                <div class="text-center">
-                                    <div style="font-size: 0.85em; font-weight: bold;">Advisor</div>
-                                    <span class="badge {% if bonafide.Astatus == 'Approved' %}badge-success{% elif bonafide.Astatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">{{bonafide.Astatus}}</span>
-                                </div>
-                                <div class="text-center">
-                                    <div style="font-size: 0.85em; font-weight: bold;">HOD</div>
-                                    <span class="badge {% if bonafide.Hstatus == 'Approved' %}badge-success{% elif bonafide.Hstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">{{bonafide.Hstatus}}</span>
+    <!-- Left side (75% on desktop, 100% on mobile) -->
+    <div class="col-12 col-lg-9">
+        <div class="row mb-3">
+            <!-- Feed360 -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-5">
+                                <i class="ti-comments"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-left dib">
+                                    <div class="stat-text">Feed360 Feedback</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'feed360_index' %}" 
+                                           class="btn btn-link btn-sm flat-color-5">View</a>
+                                    </div>
                                 </div>
                             </div>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item" style="padding:0.6rem 1rem;">No Bonafide applications today.</li>
-                        {% endfor %}
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6 mb-2">
-                <div class="card" style="font-size:0.95rem;">
-                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center" style="padding:0.6rem 1rem;">
-                        <span>Today's Gatepass Applications</span>
-                        <a href="{% url 'student_gatepass_history' %}" id="gatepass-btn" class="btn btn-light btn-sm">View All</a>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        {% for gatepass in gatepasses_today %}
-                        <li class="list-group-item" style="padding:0.6rem 1rem;">
-                            <strong>{{ gatepass.sub }}</strong><br>
-                            <small>{{ gatepass.created|date:"d M Y H:i" }}</small>
-                            <div class="d-flex flex-row mt-2" style="gap: 12px;">
-                                <div class="text-center">
-                                    <div style="font-size: 0.85em; font-weight: bold;">Mentor</div>
-                                    <span class="badge {% if gatepass.Mstatus == 'Approved' %}badge-success{% elif gatepass.Mstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">{{gatepass.Mstatus}}</span>
-                                </div>
-                                <div class="text-center">
-                                    <div style="font-size: 0.85em; font-weight: bold;">Advisor</div>
-                                    <span class="badge {% if gatepass.Astatus == 'Approved' %}badge-success{% elif gatepass.Astatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">{{gatepass.Astatus}}</span>
-                                </div>
-                                <div class="text-center">
-                                    <div style="font-size: 0.85em; font-weight: bold;">HOD</div>
-                                    <span class="badge {% if gatepass.Hstatus == 'Approved' %}badge-success{% elif gatepass.Hstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">{{gatepass.Hstatus}}</span>
+
+            <!-- Resume Builder -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-1">
+                                <i class="ti-file"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-file">
+                                    <div class="stat-text">Resume Builder</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'resumebuilder:rb' %}" 
+                                           class="btn btn-link btn-sm flat-color-1">Create</a>
+                                    </div>
                                 </div>
                             </div>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item" style="padding:0.6rem 1rem;">No Gatepass applications today.</li>
-                        {% endfor %}
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- ATS -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-2">
+                                <i class="ti-files"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-left dib">
+                                    <div class="stat-text">ATS Resume Analysis</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'ATS:upload_resume' %}" 
+                                           class="btn btn-link btn-sm flat-color-2">Analyse</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Path Pilot -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-3">
+                                <i class="ti-location-arrow"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-left dib">
+                                    <div class="stat-text">Path Pilot</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'pathpilot' %}" 
+                                           class="btn btn-link btn-sm flat-color-3">Create</a>
+                                        <a href="{% url 'map_history' %}" 
+                                           class="btn btn-link btn-sm flat-color-3">Map History</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bonafide & Gatepass row -->
+            
+                <div class="col-12 col-md-6 mb-3">
+                    <!-- Bonafide Applications -->
+                    <div class="card" style="font-size:0.95rem;">
+                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center"
+                            style="padding:0.6rem 1rem;">
+                            <span>Today's Bonafide Applications</span>
+                            <a href="{% url 'student_bonafide_history' %}" id="bonafide-btn"
+                                class="btn btn-light btn-sm">View All</a>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for bonafide in bonafides_today %}
+                            <li class="list-group-item" style="padding:0.6rem 1rem;">
+                                <strong>{{ bonafide.sub }}</strong><br>
+                                <small>{{ bonafide.created|date:"d M Y H:i" }}</small>
+                                <div class="d-flex flex-row mt-2" style="gap: 12px;">
+                                    <div class="text-center">
+                                        <div style="font-size: 0.85em; font-weight: bold;">Mentor</div>
+                                        <span class="badge {% if bonafide.Mstatus == 'Approved' %}badge-success{% elif bonafide.Mstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{bonafide.Mstatus}}
+                                        </span>
+                                    </div>
+                                    <div class="text-center">
+                                        <div style="font-size: 0.85em; font-weight: bold;">Advisor</div>
+                                        <span class="badge {% if bonafide.Astatus == 'Approved' %}badge-success{% elif bonafide.Astatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{bonafide.Astatus}}
+                                        </span>
+                                    </div>
+                                    <div class="text-center">
+                                        <div style="font-size: 0.85em; font-weight: bold;">HOD</div>
+                                        <span class="badge {% if bonafide.Hstatus == 'Approved' %}badge-success{% elif bonafide.Hstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{bonafide.Hstatus}}
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item" style="padding:0.6rem 1rem;">No Bonafide applications today.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 mb-3">
+                    <!-- Gatepass Applications -->
+                    <div class="card" style="font-size:0.95rem;">
+                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center"
+                            style="padding:0.6rem 1rem;">
+                            <span>Today's Gatepass Applications</span>
+                            <a href="{% url 'student_gatepass_history' %}" id="gatepass-btn"
+                                class="btn btn-light btn-sm">View All</a>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for gatepass in gatepasses_today %}
+                            <li class="list-group-item" style="padding:0.6rem 1rem;">
+                                <strong>{{ gatepass.sub }}</strong><br>
+                                <small>{{ gatepass.created|date:"d M Y H:i" }}</small>
+                                <div class="d-flex flex-row mt-2" style="gap: 12px;">
+                                    <div class="text-center">
+                                        <div style="font-size: 0.85em; font-weight: bold;">Mentor</div>
+                                        <span class="badge {% if gatepass.Mstatus == 'Approved' %}badge-success{% elif gatepass.Mstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{gatepass.Mstatus}}
+                                        </span>
+                                    </div>
+                                    <div class="text-center">
+                                        <div style="font-size: 0.85em; font-weight: bold;">Advisor</div>
+                                        <span class="badge {% if gatepass.Astatus == 'Approved' %}badge-success{% elif gatepass.Astatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{gatepass.Astatus}}
+                                        </span>
+                                    </div>
+                                    <div class="text-center">
+                                        <div style="font-size: 0.85em; font-weight: bold;">HOD</div>
+                                        <span class="badge {% if gatepass.Hstatus == 'Approved' %}badge-success{% elif gatepass.Hstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{gatepass.Hstatus}}
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item" style="padding:0.6rem 1rem;">No Gatepass applications today.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
         </div>
     </div>
-    <div id="notification-sidebar" class="col-12 col-lg-4">
-        <div class="card mb-3" style="height:100%;">
+
+    <!-- Right side (25% on desktop, 100% on mobile) -->
+    <div class="col-12 col-lg-3">
+        <div class="card mb-3 h-100">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <span>Recent Notifications</span>
                 <div class="d-flex align-items-center">
                     <a href="{% url 'notifications_view' %}" class="btn btn-light btn-sm mr-2">View All</a>
-                    <button class="notification-close-btn" id="close-notification-sidebar" title="Close">&times;</button>
                 </div>
             </div>
-            <ul class="list-group list-group-flush" id="recent-notifications-list" style="max-height:calc(100vh - 220px);overflow-y:auto;">
+            <ul class="list-group list-group-flush" id="recent-notifications-list"
+                style="max-height:calc(100vh - 220px);overflow-y:auto;">
                 {% for note in recent_notifications %}
                 <li class="list-group-item">
                     <small class="text-muted">{{ note.created_at|date:"d M Y H:i" }}</small><br>
@@ -346,32 +398,6 @@ document.addEventListener('click', function(e) {
             </ul>
         </div>
     </div>
-    <button id="notification-fab" class="hidden" title="Show Notifications">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16zm6-2a1 1 0 0 1-1-1V7c0-3.07-1.64-5.64-5-5.96V0a1 1 0 0 0-2 0v1.04C3.64 1.36 2 3.92 2 7v6a1 1 0 0 1-1 1h12z"/>
-        </svg>
-    </button>
 </div>
-
-<script>
-// Sidebar open/close logic
-const sidebar = document.getElementById('notification-sidebar');
-const fab = document.getElementById('notification-fab');
-const closeBtn = document.getElementById('close-notification-sidebar');
-function openSidebar() {
-    sidebar.classList.remove('closed');
-    fab.classList.add('hidden');
-}
-function closeSidebar() {
-    sidebar.classList.add('closed');
-    fab.classList.remove('hidden');
-}
-if (closeBtn && fab && sidebar) {
-    closeBtn.onclick = closeSidebar;
-    fab.onclick = openSidebar;
-}
-// Open by default on load
-openSidebar();
-</script>
 
 {% endblock %}

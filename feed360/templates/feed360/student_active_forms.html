@@ -1,66 +1,144 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
+{% block root %}
 <style>
-    .table thead th {
-        background: #fff !important;
-        color: #222 !important;
+    /* Card style wrapper */
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+        border: none;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        background: #1976d2;
+        color: #fff;
         font-weight: 700;
-        border-color: #1976d2 !important;
-        letter-spacing: 0.5px;
+        font-size: 1.2rem;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
         text-align: center;
+        padding: 12px 20px;
     }
-    table tr[tabindex] {
-        outline: none;
-        transition: background 0.2s, box-shadow 0.2s;
+
+    /* Table style */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
     }
-    table tr[tabindex]:hover {
-        background: #e3f2fd !important;
-        outline: 2px solid #1976d2 !important;
-        z-index: 2;
-        position: relative;
+
+    .table thead th {
+        background: #1976d2;
+        color: #fff;
+        font-weight: 700;
+        text-align: center;
+        padding: 10px;
+        border: none;
+        border-radius: 0;
     }
-    table tr[tabindex]:hover * {
-        filter: none !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        color: inherit !important;
+
+    .table tbody td {
+        text-align: center;
+        vertical-align: middle;
+        padding: 12px 8px;
+        border-bottom: 1px solid #e0e0e0;
+        color: #333;
+        font-size: 14px;
     }
-    tbody:has(tr[tabindex]:hover) tr[tabindex]:not(:hover) {
-        filter: blur(2px) grayscale(0.2);
-        opacity: 0.5;
-        pointer-events: none;
-        transition: filter 0.2s, opacity 0.2s;
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Action button style */
+    .btn-fill {
+        display: inline-block;
+        background-color: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 6px 14px;
+        transition: background 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-fill:hover {
+        background-color: #1565c0;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    /* Badge style for future use */
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 12px;
+        color: #fff;
+        background-color: #4caf50;
+    }
+
+    /* Responsive table */
+    @media (max-width: 767px) {
+        .table thead {
+            display: none;
+        }
+        .table tbody td {
+            display: block;
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+        }
+        .table tbody td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 0;
+            width: 50%;
+            padding-left: 15px;
+            font-weight: 700;
+            text-align: left;
+        }
     }
 </style>
-<div class="page-header float-center">
-    <center>
-    <h3 style="background:#1976d2;color:#fff;padding:10px 24px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">Active Feedback Forms</h3>
-    </center>
-    {% if forms %}
-        <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="serial">#</th>
-                    <th>Title</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for form in forms %}
-                <tr tabindex="0">
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ form.title }}</td>
-                    <td><a href="{% url 'feed360_fill' form.id %}" class="btn btn-primary btn-sm">Fill Feedback</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                Active Feedback Forms
+            </div>
+            <div class="card-body">
+                {% if forms %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Title</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for form in forms %}
+                                <tr>
+                                    <td data-label="#"> {{ forloop.counter }} </td>
+                                    <td data-label="Title" style="text-align:left;"> {{ form.title }} </td>
+                                    <td data-label="Action">
+                                        <a href="{% url 'feed360_fill' form.id %}" class="btn-fill">Fill Feedback</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center">No active feedback forms for your class.</div>
+                {% endif %}
+            </div>
         </div>
-    {% else %}
-        <div class="alert alert-info">No active feedback forms for your class.</div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

@@ -35,14 +35,220 @@
             letter-spacing: 0.5px;
             text-align: center;
         }
+        /* Header Responsive Fix */
+        header.header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            height: 60px;
+            background: var(--background-color, #fff);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 999;
+            min-width: 0;
+            max-width: 100vw;
+            width: 100vw;
+            flex-wrap: nowrap;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        .navbar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            max-width: 100vw;
+            box-sizing: border-box;
+        }
+        .navbar-header .navbar-brand img {
+            max-height: 40px;
+        }
+        .menutoggle {
+            font-size: 22px;
+            color: var(--primary-color, #1a73e8);
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .header-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            min-width: 0;
+            max-width: 100vw;
+            box-sizing: border-box;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-area {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            max-width: 100vw;
+            box-sizing: border-box;
+            margin-right: 12px;
+        }
+        @media (max-width: 1024px) {
+            header.header {
+                left: 0;
+                padding: 0 8px;
+            }
+        }
+        @media (max-width: 768px) {
+            header.header {
+                left: 0;
+                right: 0;
+                top: 0;
+                position: fixed;
+                z-index: 999;
+                padding: 0 8px;
+                flex-wrap: nowrap;
+            }
+                header.header {
+                    left: 0 !important;
+                    right: 0 !important;
+                    top: 0 !important;
+                    position: fixed !important;
+                    z-index: 1050 !important;
+                    padding: 0 8px;
+                    flex-wrap: nowrap;
+                    width: 100vw !important;
+                    min-width: 0 !important;
+                    max-width: 100vw !important;
+                    overflow-x: hidden !important;
+                }
+                body { padding-top: 60px !important; }
+            .header-menu {
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                flex: 0 1 auto;
+                min-width: 0;
+            }
+            .user-area .user-avatar {
+                height: 32px !important;
+                width: 32px !important;
+            }
+            .header-menu, .navbar-header {
+                white-space: nowrap;
+            }
+        }
     </style>
-        <style>
+    <style>
         @media print {
-            body > header, body > nav, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .footer, .page-header, .page-title, .main-header, .main-footer,
-            .resume-footer, .copyright, .print-hide, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
-            #header, #main-header, #main-footer, #footer, #logo, #idcs-logo, #idcs-header, #idcs-footer, .header, .footer, .top-bar, .bottom-bar, .site-header, .site-footer, .nav, .nav-bar, .navbar-fixed-top,
-            .navbar-fixed-bottom, .page-link, .page-links, .pagination, .copyright, .resume-footer, .print-header, .print-footer, .print-page-link, .print-copyright, .fa, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
-            .page-header, .page-footer, .footer, .copyright, .print-footer, .print-header, .print-page-link, .print-copyright, .site-header, .site-footer, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .main-header, .main-footer, .top-bar, .bottom-bar {
+
+            header.header {
+                left: 0;
+                position: relative;
+                padding: 0 8px;
+                flex-wrap: nowrap;
+                max-width: 100vw;
+                width: 100vw;
+                overflow-x: hidden;
+                box-sizing: border-box;
+            .navbar-nav,
+            .navbar-header {
+                flex: 0 1 auto;
+                min-width: 0;
+                gap: 8px;
+                max-width: 100vw;
+                box-sizing: border-box;
+            .page-header,
+            .header-menu {
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                flex: 0 1 auto;
+                min-width: 0;
+                max-width: 100vw;
+                box-sizing: border-box;
+            .fa-bell,
+            .user-area .user-avatar {
+                height: 32px !important;
+                width: 32px !important;
+                max-width: 100vw;
+                box-sizing: border-box;
+            .fa-sign-out,
+            .header-menu, .navbar-header {
+                white-space: nowrap;
+                max-width: 100vw;
+                box-sizing: border-box;
+            .fa-calendar,
+            .fa-clock,
+            .fa-linkedin,
+            .fa-github,
+            .fa-instagram,
+            .fa-facebook,
+            .fa-x,
+            #header,
+            #main-header,
+            #main-footer,
+            #footer,
+            #logo,
+            #idcs-logo,
+            #idcs-header,
+            #idcs-footer,
+            .header,
+            .footer,
+            .top-bar,
+            .bottom-bar,
+            .site-header,
+            .site-footer,
+            .nav,
+            .nav-bar,
+            .navbar-fixed-top,
+            .navbar-fixed-bottom,
+            .page-link,
+            .page-links,
+            .pagination,
+            .copyright,
+            .resume-footer,
+            .print-header,
+            .print-footer,
+            .print-page-link,
+            .print-copyright,
+            .fa,
+            .fa-bell,
+            .fa-user,
+            .fa-bars,
+            .fa-home,
+            .fa-sign-out,
+            .fa-cog,
+            .fa-envelope,
+            .fa-calendar,
+            .fa-clock,
+            .fa-linkedin,
+            .fa-github,
+            .fa-instagram,
+            .fa-facebook,
+            .fa-x,
+            .page-header,
+            .page-footer,
+            .footer,
+            .copyright,
+            .print-footer,
+            .print-header,
+            .print-page-link,
+            .print-copyright,
+            .site-header,
+            .site-footer,
+            .navbar,
+            .navbar-header,
+            .navbar-brand,
+            .navbar-nav,
+            .sidebar,
+            .sidebar-menu,
+            .sidebar-footer,
+            .main-header,
+            .main-footer,
+            .top-bar,
+            .bottom-bar {
                 display: none !important;
                 height: 0 !important;
                 width: 0 !important;
@@ -50,19 +256,22 @@
                 position: absolute !important;
                 left: -9999px !important;
             }
-            html, body {
+
+            html,
+            body {
                 background: #fff !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 height: auto !important;
                 overflow: visible !important;
             }
+
             @page {
                 margin: 20mm 10mm 20mm 10mm;
                 size: auto;
             }
         }
-        </style>
+    </style>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>IDCS</title>
@@ -93,7 +302,7 @@
 
     {% block extra_headers %}
     {% if 'resumebuilder' in request.resolver_match.app_name or 'resumebuilder' in request.path %}
-        <link rel="stylesheet" href="{% static 'css/resume.css' %}">
+    <link rel="stylesheet" href="{% static 'css/resume.css' %}">
     {% endif %}
     <script>
         // Prevent back navigation to cached pages after logout
@@ -101,7 +310,7 @@
             window.location.reload();
         }
         // Set cache control headers (for extra safety, but best set in Django views)
-        (function() {
+        (function () {
             if (window.history && window.history.replaceState) {
                 window.history.replaceState(null, '', window.location.href);
             }
@@ -119,104 +328,208 @@
 
                     {% block nav %}
 
-                        {% if request.user.is_authenticated and request.user.principal_status %}
-                            <li class="{% if request.resolver_match.url_name == 'principal_dashboard' %}active{% endif %}"><a href="{% url 'principal_dashboard' %}"><i class="menu-icon fa fa-laptop"></i>Principal Dashboard</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'principal_department' %}active{% endif %}"><a href="{% url 'principal_department' %}"><i class="menu-icon fa fa-building"></i>Departments</a></li>
+                    {% if request.user.is_authenticated and request.user.principal_status %}
+                    <li class="{% if request.resolver_match.url_name == 'principal_dashboard' %}active{% endif %}"><a
+                            href="{% url 'principal_dashboard' %}"><i class="menu-icon fa fa-laptop"></i>Principal
+                            Dashboard</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'principal_department' %}active{% endif %}"><a
+                            href="{% url 'principal_department' %}"><i
+                                class="menu-icon fa fa-building"></i>Departments</a></li>
 
-                        {% elif duser and duser.position == 0 %}
-                            <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'hod_od_view' %}active{% endif %}"><a href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
-                                <li class="{% if request.resolver_match.url_name == 'hod_sports_od_view' %}active{% endif %}"><a href="{% url 'hod_sports_od_view' %}"><i class="menu-icon fa fa-futbol-o"></i>Sports OD Approval</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student Certificates</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'hod_timetable' %}active{% endif %}"><a href="{% url 'hod_timetable' %}"><i class="menu-icon ti-calendar"></i>My Timetable</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}"><a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
+                    {% elif duser and duser.position == 0 %}
+                    <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a
+                            href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'hod_od_view' %}active{% endif %}"><a
+                            href="{% url 'hod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a
+                            href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a
+                            href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide
+                        </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a
+                            href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass
+                        </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'hod_sports_od_view' %}active{% endif %}"><a
+                            href="{% url 'hod_sports_od_view' %}"><i class="menu-icon fa fa-futbol-o"></i>Sports OD
+                            Approval</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a
+                            href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student
+                            Certificates</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a
+                            href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a
+                            href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'hod_timetable' %}active{% endif %}"><a
+                            href="{% url 'hod_timetable' %}"><i class="menu-icon ti-calendar"></i>My Timetable</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'hod_notification_history' %}active{% endif %}">
+                        <a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification
+                            History</a></li>
 
-                        {% elif duser and duser.position2 == 1 %}
-                            <li class="{% if request.resolver_match.url_name == 'ahod_dash' %}active{% endif %}"><a href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'ahod_od_view' %}active{% endif %}"><a href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'ahod_leave_view' %}active{% endif %}"><a href="{% url 'ahod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'ahod_bonafide_hod' %}active{% endif %}"><a href="{% url 'ahod_bonafide_hod' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide (HOD)</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'ahod_gatepass_hod' %}active{% endif %}"><a href="{% url 'ahod_gatepass_hod' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass (HOD)</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student Certificates</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'ahod_notification_history' %}active{% endif %}"><a href="{% url 'ahod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'ahod_timetable' %}active{% endif %}"><a href="{% url 'ahod_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
-                        {% elif duser and duser.position == 0 %}
-                            {# HOD sidebar #}
-                            ...existing code...
-                        {% elif duser and duser.position2 == 1 %}
-                            {# AHOD sidebar #}
-                            ...existing code...
-                        {# DEBUG: duser={{ duser }}, is_staff={{ request.user.is_staff }}, position={{ duser.position }}, position2={{ duser.position2 }} #}
-                        {% elif duser and request.user.is_staff and duser.position != 0 and duser.position2 != 1 %}
-                            {# Staff sidebar #}
-                            <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_od_view' %}active{% endif %}"><a href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_leave_view' %}active{% endif %}"><a href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_bonafides' %}active{% endif %}"><a href="{% url 'staff_bonafides' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_gatepass_view' %}active{% endif %}"><a href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
+                    {% elif duser and duser.position2 == 1 %}
+                    <li class="{% if request.resolver_match.url_name == 'ahod_dash' %}active{% endif %}"><a
+                            href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'ahod_od_view' %}active{% endif %}"><a
+                            href="{% url 'ahod_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'ahod_leave_view' %}active{% endif %}"><a
+                            href="{% url 'ahod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'ahod_bonafide_hod' %}active{% endif %}"><a
+                            href="{% url 'ahod_bonafide_hod' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide
+                            (HOD)</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'ahod_gatepass_hod' %}active{% endif %}"><a
+                            href="{% url 'ahod_gatepass_hod' %}"><i class="menu-icon ti ti-shift-right-alt"></i>Gatepass
+                            (HOD)</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a
+                            href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student
+                            Certificates</a></li>
+                    <li
+                        class="{% if request.resolver_match.url_name == 'ahod_notification_history' %}active{% endif %}">
+                        <a href="{% url 'ahod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification
+                            History</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'ahod_timetable' %}active{% endif %}"><a
+                            href="{% url 'ahod_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
+                    {% elif duser and duser.position == 0 %}
+                    {# HOD sidebar #}
+                    ...existing code...
+                    {% elif duser and duser.position2 == 1 %}
+                    {# AHOD sidebar #}
+                    ...existing code...
+                    {# DEBUG: duser={{ duser }}, is_staff={{ request.user.is_staff }}, position={{ duser.position }},
+                    position2={{ duser.position2 }} #}
+                    {% elif duser and request.user.is_staff and duser.position != 0 and duser.position2 != 1 %}
+                    {# Staff sidebar #}
+                    <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}"><a
+                            href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_od_view' %}active{% endif %}"><a
+                            href="{% url 'staff_od_view' %}"><i class="menu-icon fa fa-file"></i>OD's </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_leave_view' %}active{% endif %}"><a
+                            href="{% url 'staff_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_bonafides' %}active{% endif %}"><a
+                            href="{% url 'staff_bonafides' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+                    </li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_gatepass_view' %}active{% endif %}"><a
+                            href="{% url 'staff_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass
+                        </a></li>
 
-                           
 
-                            <!-- <li><a href="/feed360/staff/9/results/"><i class="menu-icon ti-comments"></i>Feedback</a></li> -->
 
-                            <li class="{% if request.resolver_match.url_name == 'staff_notifications' %}active{% endif %}"><a href="{% url 'staff_notifications' %}"><i class="menu-icon fa fa-bell"></i>Notification History</a></li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_timetable' %}active{% endif %}"><a href="{% url 'staff_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
-                            <li class="menu-title">Class</li>
-                            <li class="{% if request.resolver_match.url_name == 'staff_my_class' %}active{% endif %}"><a href="{% url 'staff_my_class' %}"><i class="menu-icon fa fa-users"></i>My Class Students</a></li>
-                                <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student Certificates</a></li>
-                        {% elif request.user.is_authenticated and not request.user.is_staff %}
-                            {# Student sidebar #}
-                            <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
-                                <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
-                            </li>
-                                <li class="{% if request.resolver_match.url_name == 'student_od_history' %}active{% endif %}">
-                                    <a href="{% url 'student_od_history' %}"><i class="menu-icon fa fa-list"></i>OD Status</a>
-                                </li>
+                    <!-- <li><a href="/feed360/staff/9/results/"><i class="menu-icon ti-comments"></i>Feedback</a></li> -->
+
+                    <li class="{% if request.resolver_match.url_name == 'staff_notifications' %}active{% endif %}"><a
+                            href="{% url 'staff_notifications' %}"><i class="menu-icon fa fa-bell"></i>Notification
+                            History</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_timetable' %}active{% endif %}"><a
+                            href="{% url 'staff_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a>
+                    </li>
+                    <li class="menu-title">Class</li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_my_class' %}active{% endif %}"><a
+                            href="{% url 'staff_my_class' %}"><i class="menu-icon fa fa-users"></i>My Class Students</a>
+                    </li>
+                    <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a
+                            href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student
+                            Certificates</a></li>
+                    {% elif request.user.is_authenticated and not request.user.is_staff %}
+                    {# Student sidebar #}
+                    <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">
+                        <a href="{% url 'dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+                    </li>
+
+                    <li class="dropdown {% if request.resolver_match.url_name == 'student_od_history' or request.resolver_match.url_name == 'od' %}active{% endif %}">
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentODDropdown" aria-expanded="{% if request.resolver_match.url_name == 'student_od_history' or request.resolver_match.url_name == 'od' %}true{% else %}false{% endif %}" aria-controls="studentODDropdown" style="display:flex;align-items:center;justify-content:space-between;">
+                            <span><i class="menu-icon fa fa-file sidebar-dropdown-icon"></i><span class="sidebar-label">OD</span></span>
+                            <span class="fa fa-caret-down" style="margin-left:8px;"></span>
+                        </a>
+                        <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'student_od_history' or request.resolver_match.url_name == 'od' %} show{% endif %}" id="studentODDropdown" style="padding-left:1.5rem;">
                             <li class="{% if request.resolver_match.url_name == 'od' %}active{% endif %}">
-                                <a href="{% url 'od' %}"><i class="menu-icon fa fa-file"></i>OD's </a>
+                                <a href="{% url 'od' %}"><i class="fa fa-file-text"></i> Apply OD</a>
                             </li>
+                            <li class="{% if request.resolver_match.url_name == 'student_od_history' %}active{% endif %}">
+                                <a href="{% url 'student_od_history' %}"><i class="fa fa-list"></i> OD Status</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <style>
+                        /* Ensure sidebar dropdown fits sidebar width and looks native */
+                        #main-menu .dropdown .collapse {
+                            background: none;
+                            box-shadow: none;
+                            width: 100%;
+                        }
+                        #main-menu .dropdown .collapse li a {
+                            padding-left: 0.5rem;
+                            font-size: 95%;
+                        }
+                    </style>
+
+                    <li class="dropdown {% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %}active{% endif %}">
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentLeaveDropdown" aria-expanded="{% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %}true{% else %}false{% endif %}" aria-controls="studentLeaveDropdown" style="display:flex;align-items:center;justify-content:space-between;">
+                            <span><i class="menu-icon fa fa-copy sidebar-dropdown-icon"></i><span class="sidebar-label">Leave</span></span>
+                            <span class="fa fa-caret-down" style="margin-left:8px;"></span>
+                        </a>
+                        <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %} show{% endif %}" id="studentLeaveDropdown" style="padding-left:1.5rem;">
                             <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
-                                <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
+                                <a href="{% url 'leave' %}"><i class="fa fa-copy"></i> Apply Leave</a>
                             </li>
+                            <li class="{% if request.resolver_match.url_name == 'student_leave_history' %}active{% endif %}">
+                                <a href="{% url 'student_leave_history' %}"><i class="fa fa-list"></i> Leave Status</a>
+                            </li>
+                        </ul>
+                    </li>
 
-                                <li class="{% if request.resolver_match.url_name == 'student_leave_history' %}active{% endif %}">
-                                    <a href="{% url 'student_leave_history' %}"><i class="menu-icon fa fa-list"></i>Leave Status</a>
-                                </li>
-
+                    <li class="dropdown {% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %}active{% endif %}">
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentBonafideDropdown" aria-expanded="{% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %}true{% else %}false{% endif %}" aria-controls="studentBonafideDropdown" style="display:flex;align-items:center;justify-content:space-between;">
+                            <span><i class="menu-icon fa fa-certificate sidebar-dropdown-icon"></i><span class="sidebar-label">Bonafide</span></span>
+                            <span class="fa fa-caret-down" style="margin-left:8px;"></span>
+                        </a>
+                        <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %} show{% endif %}" id="studentBonafideDropdown" style="padding-left:1.5rem;">
                             <li class="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
-                                <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
+                                <a href="{% url 'bonafide' %}"><i class="fa fa-certificate"></i> Apply Bonafide</a>
                             </li>
+                            <li class="{% if request.resolver_match.url_name == 'student_bonafide_history' %}active{% endif %}">
+                                <a href="{% url 'student_bonafide_history' %}"><i class="fa fa-list"></i> Bonafide Status</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown {% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %}active{% endif %}">
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentGatepassDropdown" aria-expanded="{% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %}true{% else %}false{% endif %}" aria-controls="studentGatepassDropdown" style="display:flex;align-items:center;justify-content:space-between;">
+                            <span><i class="menu-icon ti-shift-right-alt sidebar-dropdown-icon"></i><span class="sidebar-label">Gatepass</span></span>
+                            <span class="fa fa-caret-down" style="margin-left:8px;"></span>
+                        </a>
+                        <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %} show{% endif %}" id="studentGatepassDropdown" style="padding-left:1.5rem;">
                             <li class="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
-                                <a href="{% url 'gatepass' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a>
+                                <a href="{% url 'gatepass' %}"><i class="ti-shift-right-alt"></i> Apply Gatepass</a>
                             </li>
-                                <li class="{% if request.resolver_match.url_name == 'certificate_upload' %}active{% endif %}">
-                                    <a href="{% url 'certificate_upload' %}"><i class="menu-icon ti-upload"></i>Certificate Upload</a>
-                                </li>
-                            <li>
-                                <a href="/feed360/"><i class="menu-icon ti-comments"></i>Feed 360 </a>
+                            <li class="{% if request.resolver_match.url_name == 'student_gatepass_history' %}active{% endif %}">
+                                <a href="{% url 'student_gatepass_history' %}"><i class="fa fa-list"></i> Gatepass Status</a>
                             </li>
-                            <li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
-                                <a href="{% url 'notifications_view' %}" ><i class="menu-icon fa fa-bell"></i> Notification History</a>
-                            </li>
-                            
-                            {% if request.user.is_authenticated %}
-                                {% if not request.user.is_staff %}
-                                    <li class="{% if request.resolver_match.url_name == 'student_timetable' %}active{% endif %}">
-                                        <a href="{% url 'student_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a>
-                                    </li>
-                                        <li class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
-                                            <a href="{% url 'student_attendance' %}"><i class="menu-icon fa fa-check-square"></i>Attendance</a>
-                                        </li>
-                                {% elif request.user.is_staff %}
-                                    
-                                {% endif %}
-                            {% endif %}
-                        {% endif %}
+                        </ul>
+                    </li>
+                    <li class="{% if request.resolver_match.url_name == 'certificate_upload' %}active{% endif %}">
+                        <a href="{% url 'certificate_upload' %}"><i class="menu-icon ti-upload"></i>Certificate
+                            Upload</a>
+                    </li>
+                    <li>
+                        <a href="/feed360/"><i class="menu-icon ti-comments"></i>Feed 360 </a>
+                    </li>
+                    <li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
+                        <a href="{% url 'notifications_view' %}"><i class="menu-icon fa fa-bell"></i> Notification
+                            History</a>
+                    </li>
+
+                    {% if request.user.is_authenticated %}
+                    {% if not request.user.is_staff %}
+                    <li class="{% if request.resolver_match.url_name == 'student_timetable' %}active{% endif %}">
+                        <a href="{% url 'student_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a>
+                    </li>
+                    <li class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
+                        <a href="{% url 'student_attendance' %}"><i
+                                class="menu-icon fa fa-check-square"></i>Attendance</a>
+                    </li>
+                    {% elif request.user.is_staff %}
+
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
 
                     {% endblock %}
                     <li class="menu-title">Profile</li><!-- /.menu-title -->
@@ -225,141 +538,143 @@
                     </li>
 
                 </ul>
-                    <!-- Attendance Sidebar and Overlay (always present for student) -->
-                    <div id="sidebarOverlay" style="display:none;"></div>
-                    <div id="attendanceSidebar" style="left:-300px;">
-                        <h4>View Attendance</h4>
-                        <!-- Attendance form and menu removed: backend logic no longer exists -->
-                            <div class="mb-3">
-                                <label for="date" class="form-label">Select Date:</label>
-                                <input type="date" id="date" name="date" class="form-control" required value="{{ selected_date|default:'' }}">
-                            </div>
-                            <button type="submit" class="btn btn-success">View</button>
-                        </form>
-                        <div class="mt-4">
-                            {% if attendance_status is not None %}
-                                <h5>Status for {{ selected_date }}:</h5>
-                                <span class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-                                    {{ attendance_status }}
-                                </span>
-                            {% elif selected_date %}
-                                <div class="alert alert-info">No attendance record found for this date.</div>
-                            {% endif %}
-                        </div>
-                        <button class="btn btn-secondary mt-3" id="closeSidebarBtn">Close</button>
+                <!-- Attendance Sidebar and Overlay (always present for student) -->
+                <div id="sidebarOverlay" style="display:none;"></div>
+                <div id="attendanceSidebar" style="left:-300px;">
+                    <h4>View Attendance</h4>
+                    <!-- Attendance form and menu removed: backend logic no longer exists -->
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Select Date:</label>
+                        <input type="date" id="date" name="date" class="form-control" required
+                            value="{{ selected_date|default:'' }}">
                     </div>
-                    <style>
-                        #attendanceSidebar {
-                            position: fixed;
-                            top: 0;
-                            left: -300px;
-                            width: 300px;
-                            height: 100%;
-                            background: #f8f9fa;
-                            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-                            transition: left 0.3s;
-                            z-index: 1050;
-                            padding: 2rem 1rem;
+                    <button type="submit" class="btn btn-success">View</button>
+                    </form>
+                    <div class="mt-4">
+                        {% if attendance_status is not None %}
+                        <h5>Status for {{ selected_date }}:</h5>
+                        <span
+                            class="badge {% if attendance_status == 'Present' %}bg-success{% elif attendance_status == 'Absent' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {{ attendance_status }}
+                        </span>
+                        {% elif selected_date %}
+                        <div class="alert alert-info">No attendance record found for this date.</div>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-secondary mt-3" id="closeSidebarBtn">Close</button>
+                </div>
+                <style>
+                    #attendanceSidebar {
+                        position: fixed;
+                        top: 0;
+                        left: -300px;
+                        width: 300px;
+                        height: 100%;
+                        background: #f8f9fa;
+                        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+                        transition: left 0.3s;
+                        z-index: 1050;
+                        padding: 2rem 1rem;
+                    }
+
+                    #attendanceSidebar.active {
+                        left: 0;
+                    }
+
+                    #sidebarOverlay {
+                        display: none;
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100vw;
+                        height: 100vh;
+                        background: rgba(0, 0, 0, 0.2);
+                        z-index: 1040;
+                    }
+
+                    #sidebarOverlay.active {
+                        display: block;
+                    }
+
+                    /* Sidebar collapsed icon centering for OD/Leave dropdowns */
+                    @media (max-width: 1024px) {
+                        #left-panel.collapsed .dropdown > a .sidebar-label {
+                            display: none !important;
                         }
-                        #attendanceSidebar.active {
-                            left: 0;
+                        #left-panel.collapsed .dropdown > a .sidebar-dropdown-icon {
+                            display: block !important;
+                            margin: 0 auto !important;
+                            text-align: center !important;
+                            width: 100% !important;
+                            font-size: 1.5em !important;
                         }
-                        #sidebarOverlay {
-                            display: none;
-                            position: fixed;
-                            top: 0; left: 0; width: 100vw; height: 100vh;
-                            background: rgba(0,0,0,0.2);
-                            z-index: 1040;
+                        #left-panel.collapsed .dropdown > a {
+                            justify-content: center !important;
                         }
-                        #sidebarOverlay.active {
-                            display: block;
+                        #left-panel.collapsed .dropdown > a .fa-caret-down {
+                            display: none !important;
                         }
+                    }
                     </style>
             </div>
         </nav>
     </aside>
     <!-- /#left-panel -->
     <!-- Right Panel -->
-   <div id="right-panel" class="right-panel">
+    <div id="right-panel" class="right-panel">
         <!-- Header-->
         <header id="header" class="header">
-            <div class="top-left">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href=""><img width="40%" src="{% static 'images/logo.png' %}"
-                            alt="Logo"></a>
-                    <a class="navbar-brand hidden" href=""><img src="{% static 'images/logo.png' %}" alt="Logo"></a>
-                    <a id="menuToggle" class="menutoggle"><i class="fa fa-bars"></i></a>
-                </div>
+            <div class="navbar-header" style="flex:1;display:flex;align-items:center;gap:12px;">
+                <a id="menuToggle" class="menutoggle"><i class="fa fa-bars"></i></a>
+                <a class="navbar-brand" href=""><img width="40%" src="{% static 'images/logo.png' %}" alt="Logo"></a>
             </div>
-            <div class="top-right">
-                <div class="header-menu">
-                    <div class="header-left">
-                        <!-- <button class="search-trigger"><i class="fa fa-search"></i></button>
-                        <div class="form-inline">
-                            <form class="search-form">
-                                <input class="form-control mr-sm-2" type="text" placeholder="Search ..."
-                                    aria-label="Search">
-                                <button class="search-close" type="submit"><i class="fa fa-close"></i></button>
-                            </form>
-                        </div> -->
-
-                        <div class="dropdown for-notification">
-    {% if request.user.is_authenticated %}
-        {% if request.user.is_staff and duser.position == 0 %}
-            <a href="{% url 'hod_notification_history' %}" class="btn btn-secondary" id="notification">
-                <i class="fa fa-bell"></i>
-            </a>
-        {% elif request.user.is_staff %}
-            <a href="{% url 'staff_notifications' %}" class="btn btn-secondary" id="notification">
-                <i class="fa fa-bell"></i>
-            </a>
-        {% else %}
-            <a href="{% url 'notifications_view' %}" class="btn btn-secondary" id="notification">
-                <i class="fa fa-bell"></i>
-            </a>
-        {% endif %}
-    {% else %}
-        <a href="#" class="btn btn-secondary disabled" id="notification">
-            <i class="fa fa-bell"></i>
-        </a>
-    {% endif %}
-                        </div>
-                        
+            <div class="header-menu" style="display:flex;align-items:center;gap:20px;">
+                <div class="dropdown for-notification">
+                    {% if request.user.is_authenticated %}
+                    {% if request.user.is_staff and duser.position == 0 %}
+                    <a href="{% url 'hod_notification_history' %}" class="btn btn-secondary" id="notification">
+                        <i class="fa fa-bell"></i>
+                    </a>
+                    {% elif request.user.is_staff %}
+                    <a href="{% url 'staff_notifications' %}" class="btn btn-secondary" id="notification">
+                        <i class="fa fa-bell"></i>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'notifications_view' %}" class="btn btn-secondary" id="notification">
+                        <i class="fa fa-bell"></i>
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <a href="#" class="btn btn-secondary disabled" id="notification">
+                        <i class="fa fa-bell"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="user-area dropdown float-right">
+                    <a href="#" class="dropdown-toggle active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {% if duser.profile %}
+                        <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}" alt="Profile">
+                        {% else %}
+                        <img class="user-avatar rounded-circle" height="40px" src="/static/images/dp.jpg" alt="Default Profile">
+                        {% endif %}
+                    </a>
+                    <div class="user-menu dropdown-menu">
+                        <a class="nav-link" href="#" aria-disabled="true"><i class="fa fa- user"></i>{{duser.name}}</a>
+                        <a class="nav-link" href="{% url 'student_profile' %}"><i class="fa fa- user"></i>My Profile</a>
+                        {% if request.user.is_authenticated %}
+                        {% if request.user.is_staff and duser.position == 0 %}
+                        <a class="nav-link" href="{% url 'hod_notification_history' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        {% elif request.user.is_staff %}
+                        <a class="nav-link" href="{% url 'staff_notifications' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        {% else %}
+                        <a class="nav-link" href="{% url 'notifications_view' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        {% endif %}
+                        {% else %}
+                        <a class="nav-link" href="#"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        {% endif %}
+                        <a class="nav-link" href="#"><i class="fa fa -cog"></i>Settings</a>
+                        <a class="nav-link" href="{% url 'logout' %}"><i class="fa fa-power -off"></i>Logout</a>
                     </div>
-
-                    <div class="user-area dropdown float-right">
-                        <a href="#" class="dropdown-toggle active" data-toggle="dropdown" aria-haspopup="true"
-                            aria-expanded="false">
-                            {% if duser.profile %}
-                                <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}" alt="Profile">
-                            {% else %}
-                                <img class="user-avatar rounded-circle" height="40px" src="/static/images/dp.jpg" alt="Default Profile">
-                            {% endif %}
-                        </a>
-
-                        <div class="user-menu dropdown-menu">
-                            <a class="nav-link" href="#" aria-disabled="true"><i
-                                    class="fa fa- user"></i>{{duser.name}}</a>
-                            <a class="nav-link" href="{% url 'student_profile' %}"><i class="fa fa- user"></i>My Profile</a>
-
-                            {% if request.user.is_authenticated %}
-                                {% if request.user.is_staff and duser.position == 0 %}
-                                    <a class="nav-link" href="{% url 'hod_notification_history' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
-                                {% elif request.user.is_staff %}
-                                    <a class="nav-link" href="{% url 'staff_notifications' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
-                                {% else %}
-                                    <a class="nav-link" href="{% url 'notifications_view' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
-                                {% endif %}
-                            {% else %}
-                                <a class="nav-link" href="#"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
-                            {% endif %}
-
-                            <a class="nav-link" href="#"><i class="fa fa -cog"></i>Settings</a>
-
-                            <a class="nav-link" href="{% url 'logout' %}"><i class="fa fa-power -off"></i>Logout</a>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </header>
@@ -370,7 +685,7 @@
             <div class="animated fadeIn">
 
                 {% block content %}
-                    {% block root %}{% endblock %}
+                {% block root %}{% endblock %}
                 {% endblock %}
             </div>
             <!-- /.content -->
@@ -466,7 +781,7 @@
             function fetchData() {
                 var xhr = new XMLHttpRequest();
 
-                xhr.open("GET", "/your-api-endpoint/"); 
+                xhr.open("GET", "/your-api-endpoint/");
                 xhr.onload = function () {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         var response = JSON.parse(xhr.responseText);
@@ -485,10 +800,35 @@
 
 
         </script>
-</body>
-<script>
-    // Attendance sidebar logic (always present for student)
-    // Removed sidebar override for Attendance menu so it navigates normally
-</script>
+    </body>
+    <script>
+        // Attendance sidebar logic (always present for student)
+        // Removed sidebar override for Attendance menu so it navigates normally
+    </script>
+
+    <style>
+        /* Fix profile dropdown z-index and prevent header scroll */
+        .user-area .dropdown-menu {
+            z-index: 2000 !important;
+            position: absolute !important;
+            right: 0;
+            left: auto;
+            top: 100%;
+            min-width: 180px;
+            box-shadow: 0 4px 16px rgba(25,118,210,0.13);
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #e3e6f0;
+        }
+        .header, .header * {
+            overflow: visible !important;
+        }
+        .user-area {
+            position: relative;
+        }
+        .user-area .dropdown-menu a {
+            white-space: nowrap;
+        }
+    </style>
 
 </html>

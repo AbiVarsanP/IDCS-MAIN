@@ -1,140 +1,262 @@
 {% extends 'base.html' %}
 {% block root %}
 <style>
-</style>
-<style>
-    .card-header {
-        background: #1976d2 !important;
-        border-radius: 6px 6px 0 0 !important;
-        box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+    /* Card styling */
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 2px 8px rgba(25,118,210,0.1);
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 12px 0;
+}
+
+    .od-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
     }
-</style>
-</style>
-<style>
-    .table thead th {
-        background: #fff !important;
-        color: #222 !important;
+
+    .od-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 16px;
+        transition: transform 0.2s ease;
+    }
+
+    .od-card:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Card header */
+    .od-card-header {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .od-id {
         font-weight: 700;
-        border-color: #1976d2 !important;
-        letter-spacing: 0.5px;
+        color: #1976d2;
+    }
+
+    .od-title {
+        font-weight: 600;
+        flex: 1;
+        margin-left: 10px;
+        color: #212121;
+    }
+
+    /* Status badges */
+    .status-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .status-item {
+        flex: 1 1 45%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+    }
+
+    .badge {
+        padding: 5px 12px;
+        border-radius: 16px;
+        font-weight: 600;
+        color: #fff;
+        font-size: 0.82rem;
+    }
+
+    .badge-Approved {
+        background: #4caf50;
+    }
+
+    .badge-Pending {
+        background: #ff9800;
+    }
+
+    .badge-Rejected {
+        background: #f44336;
+    }
+
+    .badge-secondary {
+        background: #9e9e9e;
+    }
+
+    /* File upload buttons */
+    .od-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .od-actions input[type="file"] {
+        display: none;
+    }
+
+    .file-upload-label {
+        display: inline-block;
+        padding: 10px 14px;
+        background: #1976d2;
+        color: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
         text-align: center;
+        transition: background 0.2s ease;
     }
-    table tr[tabindex] {
-        outline: none;
-        transition: background 0.2s, box-shadow 0.2s;
+
+    .file-upload-label:hover {
+        background: #1565c0;
     }
-    table tr[tabindex]:hover {
-        background: #e3f2fd !important;
-        outline: 2px solid #1976d2 !important;
-        z-index: 2;
-        position: relative;
+
+    .btn-upload {
+        padding: 10px 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #fff;
+        background: #4caf50;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s ease;
     }
-    table tr[tabindex]:hover * {
-        filter: none !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        color: inherit !important;
+
+    .btn-upload:hover {
+        background: #388e3c;
     }
-    tbody:has(tr[tabindex]:hover) tr[tabindex]:not(:hover) {
-        filter: blur(2px) grayscale(0.2);
-        opacity: 0.5;
-        pointer-events: none;
-        transition: filter 0.2s, opacity 0.2s;
+
+    /* Modal adjustments */
+    .modal-body img,
+    .modal-body embed {
+        width: 100%;
+        max-height: 500px;
+    }
+
+    .modal-dialog {
+        max-width: 600px;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+        .od-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .od-title {
+            margin-left: 0;
+            margin-top: 4px;
+        }
+
+        .status-item {
+            flex: 1 1 100%;
+            justify-content: space-between;
+        }
+
+        .file-upload-label,
+        .btn-upload {
+            width: 100%;
+            text-align: center;
+        }
     }
 </style>
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header">
-                <center>
-                <strong class="card-title" style="background:#1976d2;color:#fff;padding:8px 20px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">OD's Status</strong>
-            </center>
-            </div>
-            <div class="table-stats order-table ov-h">
-                <table class="table ">
-                    <thead>
-                        <tr>
-                            <th class="serial">#</th>
-                            <th>ID</th>
-                            <th>TITLE</th>
-                            <th>MENTOR</th>
-                            <th>ADVISOR</th>
-                             <th>AHOD</th>
-                            <th>HOD</th>
 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if ods %}
-                        {% for i in ods %}
-                        <tr tabindex="0">
-                            <td class="serial">{{ forloop.counter }}.</td>
-
-                            <td> #OD{{i.id}} </td>
-                            <td> <span class="name">{{i.sub}}</span> </td>
-
-                            {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
-                                <td colspan="3">
-                                    {% if i.certificate %}
-                                        <button type="button" class="btn btn-outline-success mb-2" data-toggle="modal" data-target="#certModal{{i.id}}">View Certificate</button>
-                                        <!-- Modal for certificate preview -->
-                                        <div class="modal fade" id="certModal{{i.id}}" tabindex="-1" role="dialog" aria-labelledby="certModalLabel{{i.id}}" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="certModalLabel{{i.id}}">OD Certificate Preview</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body text-center">
-                                                        {% if ".pdf" in i.certificate.url|lower %}
-                                                            <embed src="{{i.certificate.url}}" type="application/pdf" width="100%" height="500px" />
-                                                        {% else %}
-                                                            <img src="{{i.certificate.url}}" alt="Certificate" style="max-width:100%; max-height:500px;" />
-                                                        {% endif %}
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                    <form action="{% url 'proof_od' i.id %}" enctype="multipart/form-data" method="POST" style="display:inline-block;">
-                                        {% csrf_token %}
-                                        <input class="form-group w-50" type="file" name="comp" required id="comp">
-                                        <button type="submit" class="btn btn-outline-primary">{% if i.certificate %}Update Certificate{% else %}Upload Certificate{% endif %}</button>
-                                    </form>
-                                </td>
-                            {% else %}
-                                <td>
-                                    <span class="badge badge-{{i.Mstatus}}">{{i.Mstatus}}</span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-{{i.Astatus}}">{{i.Astatus}}</span>
-                                </td>
-                                <td>
-                                    {% if i.user.ahod %}
-                                        <span class="badge badge-{{i.AHstatus}}">{{ i.AHstatus }}</span>
-                                    {% else %}
-                                        <span class="badge badge-secondary">N/A</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge badge-{{i.Hstatus}}">{{i.Hstatus}}</span>
-                                </td>
-                            {% endif %}
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                            <tr><td colspan="6">No OD records found</td></tr>
-                        {% endif %}
-                        </tbody>
-
-                </table>
-            </div> <!-- /.table-stats -->
-        </div>
+<div class="card-header">
+        OD's Status
     </div>
+<div class="od-container">
+    {% if ods %}
+    {% for i in ods %}
+    <div class="od-card">
+        <div class="od-card-header">
+            <span class="od-id">#OD{{ i.id }}</span>
+            <h5 class="od-title">{{ i.sub }}</h5>
+        </div>
+
+        {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
+        <div class="od-actions">
+            {% if i.certificate %}
+            <button type="button" class="btn btn-outline-primary" data-toggle="modal"
+                data-target="#certModal{{ i.id }}">
+                View Certificate
+            </button>
+
+            <!-- Modal for certificate preview -->
+            <div class="modal fade" id="certModal{{ i.id }}" tabindex="-1" role="dialog"
+                aria-labelledby="certModalLabel{{ i.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="certModalLabel{{ i.id }}">OD Certificate</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body d-flex justify-content-center align-items-center"
+                            style="max-height:80vh; overflow-y:auto; padding:0;">
+                            <div
+                                style="width:100%; height:100%; display:flex; justify-content:center; align-items:center; padding:1rem;">
+                                {% if ".pdf" in i.certificate.url|lower %}
+                                <iframe src="{{ i.certificate.url }}"
+                                    style="width:100%; height:75vh; border:none;"></iframe>
+                                {% else %}
+                                <img src="{{ i.certificate.url }}" alt="Certificate"
+                                    style="max-width:100%; max-height:75vh; object-fit:contain; display:block;" />
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endif %}
+
+            <form action="{% url 'proof_od' i.id %}" enctype="multipart/form-data" method="POST">
+                {% csrf_token %}
+                <label class="file-upload-label" for="fileInput{{ i.id }}">Choose File</label>
+                <input type="file" id="fileInput{{ i.id }}" name="comp" required>
+                <button type="submit" class="btn-upload">{% if i.certificate %}Update Certificate{% else %}Upload
+                    Certificate{% endif %}</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="status-row">
+            <div class="status-item">
+                <span>Mentor</span> <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+            </div>
+            <div class="status-item">
+                <span>Advisor</span> <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+            </div>
+            <div class="status-item">
+                <span>AHOD</span>
+                {% if i.user.ahod %}
+                <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
+                {% else %}
+                <span class="badge badge-secondary">N/A</span>
+                {% endif %}
+            </div>
+            <div class="status-item">
+                <span>HOD</span> <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="text-align:center;width:100%;padding:20px;">No OD records found</p>
+    {% endif %}
 </div>
 {% endblock %}

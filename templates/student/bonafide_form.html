@@ -1,90 +1,155 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
 {% block root %}
-<div class="w-100 vh-100" style="padding:0;margin:0;">
-    <div class="row m-0 p-0" style="height:100vh;">
-        <div class="col-12 p-0 m-0" style="height:100vh;">
-            <div class="card h-100 w-100 border-0 rounded-0" style="min-height:100vh;">
-                <h3 style="background:#1976d2;color:#fff;padding:10px 24px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">Bonafide Application</h3>
-                <div class="card-body" style="height:calc(100vh - 70px); overflow-y:auto;">
-                    <div class="mb-3 p-2 bg-light rounded">
+<style>
+    /* Card style */
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+        border: none;
+    }
+
+    .card-header {
+        background: #1976d2;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.2rem;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+        text-align: center;
+    }
+
+    /* Input group style */
+    .input-group-addon {
+        background: #2196f3 !important;
+        color: #fff !important;
+        font-weight: 600;
+        border: none !important;
+        border-radius: 0.25rem 0 0 0.25rem !important;
+        padding: 10px 12px;
+    }
+
+    .input-group .form-control[disabled],
+    .input-group .form-control:disabled {
+        background: #e3f2fd !important;
+        color: #333 !important;
+        border: none !important;
+        font-weight: 600;
+        border-radius: 0 0.25rem 0.25rem 0 !important;
+    }
+
+    /* Form controls */
+    .form-control, textarea {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    /* File upload button */
+    input[type="file"] {
+        display: none;
+    }
+
+    .custom-file-upload {
+        display: inline-block;
+        padding: 8px 16px;
+        cursor: pointer;
+        background: #1976d2;
+        color: #fff;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+
+    .custom-file-upload:hover {
+        background: #1565c0;
+    }
+
+    /* Buttons */
+    .btn-submit {
+        background: #4caf50;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #388e3c;
+    }
+
+    .btn-reset {
+        background: #fff;
+        border: 2px solid #f44336;
+        color: #f44336;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: 0.3s;
+    }
+
+    .btn-reset:hover {
+        background: #f44336;
+        color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+        .btn-group .btn {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+    }
+</style>
+
+<div class="animated fadeIn">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    Bonafide Application
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Mentors/Advisors/HOD -->
                         <div class="row">
-                            <div class="col-md-4 mb-2">
-                                <span class="font-weight-bold">Mentor</span>
-                                <input type="text" class="form-control" value="Mr/Mrs. {{ duser.mentor.name }}" readonly>
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">Mentor</div>
+                                    <input type="text" class="form-control" value="Mr/Mrs. {{ duser.mentor.name }}" disabled>
+                                </div>
                             </div>
-                            <div class="col-md-4 mb-2">
-                                <span class="font-weight-bold">Advisor</span>
-                                <input type="text" class="form-control" value="Mr/Mrs. {{ duser.advisor.name }}" readonly>
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">Advisor</div>
+                                    <input type="text" class="form-control" value="Mr/Mrs. {{ duser.advisor.name }}" disabled>
+                                </div>
                             </div>
-                            <div class="col-md-4 mb-2">
-                                <span class="font-weight-bold">HOD</span>
-                                <input type="text" class="form-control" value="Mr/Mrs. {{ duser.hod.name }}" readonly>
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">HOD</div>
+                                    <input type="text" class="form-control" value="Mr/Mrs. {{ duser.hod.name }}" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">AHOD</div>
+                                    <input type="text" class="form-control" value="{% if duser.ahod %}Mr/Mrs. {{ duser.ahod.user.name }}{% endif %}" disabled>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <form method="post" enctype="multipart/form-data">
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var purposeSelect = document.getElementById('purpose');
-    var otherPurposeInput = document.getElementById('other_purpose');
-    function toggleOtherPurpose() {
-        if (purposeSelect.value === 'Other') {
-            otherPurposeInput.style.display = '';
-            otherPurposeInput.required = true;
-        } else {
-            otherPurposeInput.style.display = 'none';
-            otherPurposeInput.required = false;
-            otherPurposeInput.value = '';
-        }
-    }
-    purposeSelect.addEventListener('change', toggleOtherPurpose);
-    toggleOtherPurpose();
 
-
-    // Scholar type logic
-    var scholarRadios = document.getElementsByName('scholar_type');
-    var busTypeRow = document.querySelector('.form-row .form-group label[for="college_bus_type"]').closest('.form-row');
-    var busFareGroup = document.getElementById('bus_fare').closest('.form-group');
-    var busTypeRadios = document.getElementsByName('bus_type');
-
-    function toggleBusFields() {
-        var selected = document.querySelector('input[name="scholar_type"]:checked').value;
-        if (selected === 'Hostel') {
-            busTypeRow.style.display = 'none';
-            busFareGroup.style.display = 'none';
-        } else {
-            busTypeRow.style.display = '';
-            // Also check bus type
-            toggleBusFare();
-        }
-    }
-
-    function toggleBusFare() {
-        var busTypeSelected = document.querySelector('input[name="bus_type"]:checked');
-        if (busTypeSelected && busTypeSelected.value === 'Out Bus') {
-            busFareGroup.style.display = 'none';
-        } else {
-            busFareGroup.style.display = '';
-        }
-    }
-
-    scholarRadios.forEach(function(radio) {
-        radio.addEventListener('change', toggleBusFields);
-    });
-    busTypeRadios.forEach(function(radio) {
-        radio.addEventListener('change', toggleBusFare);
-    });
-    toggleBusFields();
-
-});
-</script>
-                        {% csrf_token %}
+                        <!-- Purpose -->
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="sub">Purpose (Subject)</label>
+                                <label for="purpose">Purpose (Subject)</label>
                                 <select class="form-control" id="purpose" name="sub" required>
                                     <option value="">Select Purpose</option>
                                     <option>Bank Loan</option>
@@ -103,6 +168,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <input type="text" class="form-control" id="fathers_name" name="fathers_name" required>
                             </div>
                         </div>
+
+                        <!-- Branch/Year/Community -->
                         <div class="form-row">
                             <div class="form-group col-md-4">
                                 <label for="branch">Branch</label>
@@ -141,6 +208,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </select>
                                 <input type="text" class="form-control mt-2" id="other_community" name="other_community" placeholder="Specify other community" style="display:none;">
                             </div>
+                        </div>
+
+                        <!-- Scholar / Hostel -->
+                        <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label>Day Scholar / Hostel</label><br>
                                 <div class="form-check form-check-inline">
@@ -153,6 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Bus Options -->
                         <div class="form-row" id="bus_options" style="display:none;">
                             <div class="form-group col-md-6">
                                 <label>College Bus?</label><br>
@@ -170,6 +243,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <input type="text" class="form-control" id="boarding_point" name="boarding_point">
                             </div>
                         </div>
+
+                        <!-- College / Out Bus -->
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label>College Bus / Out Bus</label><br>
@@ -187,6 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <input type="number" class="form-control" id="bus_fare" name="bus_fare" min="0">
                             </div>
                         </div>
+
+                        <!-- First Graduate / Gov-Management -->
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label>First Graduate</label><br>
@@ -211,23 +288,29 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Date -->
                         <div class="form-row">
                             <div class="form-group col-md-3">
                                 <label for="date">Date</label>
                                 <input type="date" class="form-control" id="date" name="date" required>
                             </div>
                         </div>
+
+                        <!-- Proof -->
                         <div class="form-group">
-                            <label for="proof">Proof (optional)</label>
-                            <input type="file" class="form-control-file" id="proof" name="proof" accept="image/*,application/pdf">
+                            <label for="proof">Proof (optional)</label><br>
+                            <label class="custom-file-upload">
+                                <input type="file" id="proof" name="proof" accept="image/*,application/pdf">
+                                Choose File
+                            </label>
+                            <span id="file-name" style="margin-left:10px; font-weight:500;">No file chosen</span>
                         </div>
-                        <div class="row">
-                            <div class="col-md-9">
-                                <button type="submit" class="btn btn-success btn-block">Submit</button>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="reset" class="btn btn-danger btn-block">Reset</button>
-                            </div>
+
+                        <!-- Buttons -->
+                        <div class="btn-group mt-3" style="width:100%;">
+                            <button type="submit" class="btn btn-submit mr-2 col-md-8">Submit</button>
+                            <button type="reset" class="btn btn-reset col-md-4">Reset</button>
                         </div>
                     </form>
                 </div>
@@ -235,4 +318,30 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+<script>
+    // Show selected file name
+    const fileInput = document.getElementById('proof');
+    const fileName = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', () => {
+        fileName.textContent = fileInput.files[0]?.name || 'No file chosen';
+    });
+
+    // Purpose "Other" toggle
+    const purposeSelect = document.getElementById('purpose');
+    const otherPurposeInput = document.getElementById('other_purpose');
+    function toggleOtherPurpose() {
+        if(purposeSelect.value === 'Other') {
+            otherPurposeInput.style.display = '';
+            otherPurposeInput.required = true;
+        } else {
+            otherPurposeInput.style.display = 'none';
+            otherPurposeInput.required = false;
+            otherPurposeInput.value = '';
+        }
+    }
+    purposeSelect.addEventListener('change', toggleOtherPurpose);
+    toggleOtherPurpose();
+</script>
 {% endblock %}

@@ -1,6 +1,3 @@
-
-
-
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -77,7 +74,6 @@ class FeedbackAggregate(models.Model):
 	avg_rating = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
 	sentiment_score = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
 	last_computed = models.DateTimeField(default=timezone.now)
-	# New fields for advanced analytics
 	avg_star_rating = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
 	avg_sentiment_score = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
 	sentiment_distribution = models.JSONField(null=True, blank=True)

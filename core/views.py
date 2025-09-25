@@ -1,9 +1,218 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+from collections import defaultdict
+
+from django.contrib import messages
+from django.shortcuts import redirect, render
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import Student
+def is_hod(user):
+    return user.is_staff and hasattr(user, 'staff') and user.staff.position == 0
+
+@login_required
+@user_passes_test(is_hod)
+def hod_sports_od_view(request):
+    context = set_config(request)
+    hod_staff = Staff.objects.get(user=request.user)
+    # Get all players from the HOD's department
+    players = SportsODPlayer.objects.filter(
+        student__department=hod_staff.department
+    ).select_related('student', 'sports_od__created_by').order_by('-sports_od__created_at')
+
+    # Group players by event
+    players_by_event = defaultdict(list)
+    for player in players:
+        players_by_event[player.sports_od].append(player)
+
+    context['players_by_event'] = dict(players_by_event)
+    return render(request, 'hod/sports_od_approval.html', context)
+
+
+@login_required
+@user_passes_test(is_hod)
+def hod_sports_od_action(request, player_id):
+    if request.method == 'POST':
+        player = SportsODPlayer.objects.get(id=player_id)
+        action = request.POST.get('action') # 'Approved' or 'Rejected'
+        remark = request.POST.get('hod_remark')
+
+        # Security check: ensure HOD is acting on a student from their department
+        hod_staff = Staff.objects.get(user=request.user)
+        if player.student.department == hod_staff.department:
+            player.status = action
+            player.hod_remark = remark
+            player.save()
+
+            # Notify the PET staff
+            Notification.objects.create(
+                staff=player.sports_od.created_by,
+                message=f"Sports OD for {player.student.name} ({player.sports_od.event_name}) has been {action.lower()} by HOD."
+            )
+            messages.success(request, f"Action '{action}' recorded for {player.student.name}.")
+        else:
+            messages.error(request, "You are not authorized to perform this action.")
+
+    return redirect('hod_sports_od_view')
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import SportsOD, SportsODPlayer, Student, Staff, Notification
+from django.db import transaction
+
+# Helper function to check if a user is a PET Staff
+def is_pet_staff(user):
+    return user.is_staff and hasattr(user, 'staff') and user.staff.position == 5
+
+@login_required
+@user_passes_test(is_pet_staff, login_url='/dash/')
+def pet_dashboard(request):
+    context = set_config(request)
+    return render(request, 'pet/dash.html', context)
+
+@login_required
+@user_passes_test(is_pet_staff, login_url='/dash/')
+@transaction.atomic
+def pet_sports_od_apply(request):
+    context = set_config(request)
+    if request.method == 'POST':
+        event_name = request.POST.get('event_name')
+        body = request.POST.get('body') # Get the new body field
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        student_rolls = request.POST.getlist('student_roll')
+
+        pet_staff = Staff.objects.get(user=request.user)
+        # Create the main SportsOD event
+        sports_od = SportsOD.objects.create(
+            event_name=event_name,
+            body=body, # Save the new body field
+            start_date=start_date,
+            end_date=end_date,
+            created_by=pet_staff
+        )
+
+        # Find students by user__username (the long ID) instead of roll
+        students_found = Student.objects.filter(user__username__in=student_rolls)
+        hods_to_notify = set()
+
+        for student in students_found:
+            SportsODPlayer.objects.create(sports_od=sports_od, student=student)
+            if student.hod:
+                hods_to_notify.add(student.hod)
+
+        # Notify the relevant HODs
+        for hod in hods_to_notify:
+            Notification.objects.create(
+                staff=hod,
+                role='hod',
+                message=f"New Sports OD approval request for '{event_name}' needs your attention."
+            )
+
+        messages.success(request, 'Sports OD application submitted successfully!')
+        return redirect('pet_sports_od_status')
+
+    return render(request, 'pet/sports_od_apply.html', context)
+
+@login_required
+@user_passes_test(is_pet_staff, login_url='/dash/')
+def pet_sports_od_status(request):
+    context = set_config(request)
+    pet_staff = Staff.objects.get(user=request.user)
+    context['sports_ods'] = SportsOD.objects.filter(created_by=pet_staff).prefetch_related('players__student__department')
+    return render(request, 'pet/sports_od_status.html', context)
+
+# ...existing code...
+
+@login_required
+def get_student_details(request, user_id): # Changed parameter name
+    """
+    API endpoint to fetch student details by user_id (username).
+    """
+    try:
+        # Changed query to search by user__username
+        student = Student.objects.get(user__username=user_id)
+        data = {
+            'exists': True,
+            'name': student.name,
+            'department': student.department.name if student.department else 'N/A', # Changed .code to .name
+            'year': student.year,
+        }
+    except Student.DoesNotExist:
+        data = {'exists': False, 'error': 'Student not found.'}
+    return JsonResponse(data)
+from django.views.decorators.http import require_GET
+from django.contrib.auth.decorators import login_required
+from .forms import CertificateUploadForm
+from .models import CertificateUpload, Student
+
+# Staff view: show certificates uploaded by their mentees/advisees
+@login_required
+
+@login_required
+def staff_certificates(request):
+    # Use set_config to get the correct user context (including HOD status)
+    context = set_config(request)
+    staff = context.get('duser')
+
+    if not staff:
+        messages.error(request, "Staff profile not found.")
+        return redirect('dash')
+
+    # Students where this staff is mentor or advisor
+    mentees = Student.objects.filter(mentor=staff)
+    advisees = Student.objects.filter(advisor=staff)
+    # Certificates from both groups
+    certificates = CertificateUpload.objects.filter(student__in=mentees | advisees).order_by('-uploaded_at')
+    # Add the certificates to the context and render
+    context['certificates'] = certificates
+    return render(request, 'staff/certificates.html', context)
+
+# Student certificate upload view
+@login_required
+def certificate_upload_view(request):
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect('dash')
+    if request.method == 'POST':
+        form = CertificateUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            cert = form.save(commit=False)
+            cert.student = student
+            cert.save()
+            messages.success(request, "Certificate uploaded successfully!")
+            return redirect('certificate_upload')
+    else:
+        form = CertificateUploadForm()
+    # Show previous uploads for this student
+    uploads = CertificateUpload.objects.filter(student=student).order_by('-uploaded_at')
+    return render(request, 'student/certificate_upload.html', {'form': form, 'uploads': uploads})
+# Imports
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 # Subject-wise staff attendance view
 from .models import Attendance
 from django.utils import timezone
 
+# API endpoint for recent notifications (for live refresh)
+@login_required
+@require_GET
+def recent_notifications_api(request):
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return JsonResponse({'notifications': []})
+    notes = Notification.objects.filter(student=student).order_by('-created_at')[:5]
+    notifications = [
+        {
+            'created_at': note.created_at.strftime('%d %b %Y %H:%M'),
+            'message': note.message
+        }
+        for note in notes
+    ]
+    return JsonResponse({'notifications': notifications})
 @login_required
 def staff_attendance_view(request):
     context = set_config(request)
@@ -411,13 +620,22 @@ def my_class_students(request):
 @login_required
 def ahod_dash(request):
     context = set_config(request)
-    ahod = AHOD.objects.get(user=context['duser'])
+    ahod = AHOD.objects.filter(user=context['duser']).first()
+    if not ahod:
+        # Show a user-friendly error page or message
+        return render(request, 'ahod/ahod_dashboard.html', {
+            'error': 'AHOD record not found for your account. Please contact admin.',
+            'duser': context.get('duser'),
+        })
     # Get department code for AHOD
     ahod_dept = ahod.user.department
     # Get all students in the same department as AHOD
     students = Student.objects.filter(department=ahod_dept)
     context['all_od'] = OD.objects.filter(user__in=students).distinct()
     context['all_leave'] = LEAVE.objects.filter(user__in=students).distinct()
+    # Fetch last 5 notifications for the AHOD
+    from .models import Notification
+    context['recent_notifications'] = Notification.objects.filter(staff=ahod.user, role__iexact='ahod').order_by('-created_at')[:5]
     return render(request, 'ahod/dash.html', context)
 
 
@@ -656,6 +874,18 @@ def dash(request):
 
     # --- Add today's timetable for staff dashboard ---
     if request.user.is_staff:
+        # Check if the user is a PET Staff and redirect
+        if hasattr(request.user, 'staff'):
+            if request.user.staff.position == 5:
+                return redirect('pet_dashboard')
+            else:
+                # Debug: Not PET Staff, show message
+                from django.contrib import messages
+                messages.warning(request, f"Staff detected but position={request.user.staff.position}, not PET Staff (5).")
+        else:
+            # Debug: No Staff object linked
+            from django.contrib import messages
+            messages.warning(request, "No Staff object linked to this user. PET Staff portal not available.")
         from core.services.get_todays_timetable import get_todays_timetable
         context['todays_timetable'] = get_todays_timetable(context['duser'])
 
@@ -672,6 +902,9 @@ def dash(request):
         context['leaves_all'] = LEAVE.objects.filter(user=context['duser'])
         context['bonafides_all'] = BONAFIDE.objects.filter(user=context['duser'])
         context['gatepasses_all'] = GATEPASS.objects.filter(user=context['duser'])
+        # Fetch last 5 notifications for the logged-in student
+        student = context['duser'] if isinstance(context['duser'], Student) else Student.objects.filter(user=request.user).first()
+        context['recent_notifications'] = Notification.objects.filter(student=student).order_by('-created_at')[:5]
         return render(request, 'student/dash.html', context=context)
 
     elif context['duser'].position == 0 or AHOD.objects.filter(user=context['duser']).exists() or context['duser'].position2 == 1:
@@ -699,6 +932,8 @@ def dash(request):
                 ).distinct()
             except Staff.DoesNotExist:
                 context['bonafides'] = BONAFIDE.objects.none()
+            # Fetch last 5 notifications for the HOD
+            context['recent_notifications'] = Notification.objects.filter(staff=hod_staff, role__iexact='hod').order_by('-created_at')[:5]
             return render(request, "hod/dash.html", context)
         # If AHOD or Assistant HOD, show all student applications for their department
         else:
@@ -757,6 +992,8 @@ def dash(request):
         context['mentee_bonafides'] = BONAFIDE.objects.filter(
             models.Q(user__advisor=staff) | models.Q(user__mentor=staff) | models.Q(user__hod=staff)
         ).distinct()
+        # Fetch last 5 notifications for the staff
+        context['recent_notifications'] = Notification.objects.filter(staff=staff).order_by('-created_at')[:5]
         return render(request, 'staff/dash.html', context)
 
 

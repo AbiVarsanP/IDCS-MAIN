@@ -1,3 +1,56 @@
+
+from urllib.parse import unquote
+from django.db import models
+
+def hod_view_comments_all_custom(request, custom_staff_name, form_id):
+	# Show all feedback comments for this custom staff name (across all forms/questions)
+	custom_staff_name = unquote(custom_staff_name)
+	from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse, Staff
+	# Only show comments for the given form_id and custom_staff_name
+	form_ids = list(FeedbackForm.objects.filter(staff_name_other=custom_staff_name, id=form_id).values_list('id', flat=True))
+	q_ids = list(FeedbackQuestion.objects.filter(staff_name_other=custom_staff_name, form_id=form_id).values_list('id', flat=True))
+	responses = FeedbackResponse.objects.filter((models.Q(form_id__in=form_ids) | models.Q(question_id__in=q_ids)), staff__isnull=True)
+	comments = []
+	for resp in responses:
+		if resp.comment:
+			comments.append({
+				'form_title': resp.form.title,
+				'question_text': resp.question.text,
+				'comment': resp.comment,
+				'student': getattr(resp.student, 'name', str(resp.student)),
+				'submitted_at': resp.submitted_at,
+			})
+	comments = sorted(comments, key=lambda x: x['submitted_at'], reverse=True)
+	# Add duser for sidebar context
+	try:
+		duser = Staff.objects.get(user=request.user)
+	except Exception:
+		duser = None
+	return render(request, 'feed360/hod_view_comments_custom.html', {
+		'custom_staff_name': custom_staff_name,
+		'comments': comments,
+		'duser': duser,
+	})
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
+# HOD deactivate feedback form
+@login_required
+@require_POST
+def hod_deactivate_form(request, form_id):
+	user = request.user
+	staff = getattr(user, 'staff', None)
+	if not staff or staff.position != 0:
+		messages.error(request, "Permission denied. HODs only.")
+		return redirect('feed360_hod_list_forms')
+	form = get_object_or_404(FeedbackForm, pk=form_id, department=staff.department.name)
+	if not form.active:
+		messages.info(request, "Form is already inactive.")
+	else:
+		form.active = False
+		form.save()
+		messages.success(request, f"Feedback form '{form.title}' deactivated.")
+	return redirect('feed360_hod_list_forms')
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -399,50 +452,41 @@ def fill_feedback_form(request, form_id):
 		return redirect('dash')
 	feedback_form = FeedbackForm.objects.get(pk=form_id, active=True)
 	questions = FeedbackQuestion.objects.filter(form=feedback_form)
-	# Find subjects and staff for this form
-	subjects = set()
-	staff_map = {}
-	for q in questions:
-		subj = q.subject or None
-		if subj:
-			subjects.add(subj)
-			staff = getattr(subj, 'staff', None)
-			if staff:
-				staff_map[subj.id] = staff
+	# Use staff_name and staff_name_other for feedback linking
+	# If staff_name is '__other__', use staff_name_other
+	staff_display_name = feedback_form.staff_name_other if feedback_form.staff_name == '__other__' else feedback_form.staff_name
+	# For backward compatibility, if not set, fallback to subject logic
+	use_staff_name_linking = bool(staff_display_name)
 	if request.method == 'POST':
 		responses = []
 		affected_staff = set()
 		for q in questions:
-			for subj in subjects:
-				staff = staff_map.get(subj.id)
-				star_key = f'star_{q.id}_subject_{subj.id}'
-				comment_key = f'comment_{q.id}_subject_{subj.id}'
-				rating = request.POST.get(star_key)
-				comment = request.POST.get(comment_key)
-				if q.answer_type in ['stars', 'both'] and not rating:
-					messages.error(request, f"Rating required for question '{q.text}' and subject '{subj.name}'.")
-					return render(request, 'feed360/student_fill_form.html', {
-						'form': feedback_form,
-						'questions': questions,
-						'subjects': subjects,
-						'staff_map': staff_map,
-					})
-				# Analyze sentiment if comment exists
-				sentiment_result = None
-				if comment:
-					# Sentiment analysis (TextBlob only, no AI)
-					sentiment_result = analyzer.analyze_text_with_perplexity(comment)
-				FeedbackResponse.objects.create(
-					form=feedback_form,
-					question=q,
-					student=student,
-					staff=staff,
-					rating=rating if rating else None,
-					comment=comment if comment else None,
-				)
-				if staff:
-					print(f"[DEBUG] Adding staff to affected_staff: staff_id={staff.id}, staff_name={staff.name}")
-					affected_staff.add(staff)
+			# Only one staff per form (by design)
+			staff_name = q.staff_name_other if q.staff_name == '__other__' else q.staff_name
+			star_key = f'star_{q.id}_staff'
+			comment_key = f'comment_{q.id}_staff'
+			rating = request.POST.get(star_key)
+			comment = request.POST.get(comment_key)
+			if q.answer_type in ['stars', 'both'] and not rating:
+				messages.error(request, f"Rating required for question '{q.text}' and staff '{staff_name}'.")
+				return render(request, 'feed360/student_fill_form.html', {
+					'form': feedback_form,
+					'questions': questions,
+					'staff_display_name': staff_display_name,
+				})
+			# Analyze sentiment if comment exists
+			sentiment_result = None
+			if comment:
+				sentiment_result = analyzer.analyze_text_with_perplexity(comment)
+			# For now, staff FK is not set for custom names; can be null or a dummy staff
+			FeedbackResponse.objects.create(
+				form=feedback_form,
+				question=q,
+				student=student,
+				staff=None,  # Not linking to Staff FK for custom names
+				rating=rating if rating else None,
+				comment=comment if comment else None,
+			)
 		# Trigger aggregation for affected staff and this form
 		for staff in affected_staff:
 			responses = FeedbackResponse.objects.filter(form=feedback_form, staff=staff)
@@ -497,8 +541,7 @@ def fill_feedback_form(request, form_id):
 	return render(request, 'feed360/student_fill_form.html', {
 		'form': feedback_form,
 		'questions': questions,
-		'subjects': subjects,
-		'staff_map': staff_map,
+		'staff_display_name': staff_display_name,
 	})
 
 from django.shortcuts import render, redirect
@@ -533,6 +576,8 @@ def create_feedback_form(request):
 				answer_type = form.cleaned_data.get('answer_type')
 				subject = form.cleaned_data.get('subject')
 				subject_text = form.cleaned_data.get('subject_text')
+				staff_name = form.cleaned_data.get('staff_name')
+				staff_name_other = form.cleaned_data.get('staff_name_other') if staff_name == '__other__' else ''
 				# Save questions with common fields
 				questions = formset.save(commit=False)
 				for q in questions:
@@ -540,6 +585,8 @@ def create_feedback_form(request):
 					q.answer_type = answer_type
 					q.subject = subject
 					q.subject_text = subject_text
+					q.staff_name = staff_name
+					q.staff_name_other = staff_name_other
 					q.save()
 				formset.save_m2m()
 			messages.success(request, "Feedback form created successfully.")
@@ -548,9 +595,15 @@ def create_feedback_form(request):
 		form = FeedbackFormCreateForm(user=request.user)
 		formset = FeedbackQuestionFormSet()
 
+	duser = None
+	try:
+		duser = Staff.objects.get(user=request.user)
+	except Exception:
+		duser = None
 	return render(request, 'feed360/hod_create_form.html', {
 		'form': form,
 		'formset': formset,
+		'duser': duser,
 	})
 
 @login_required
@@ -707,14 +760,50 @@ def hod_staff_feedback_results(request):
 		messages.error(request, "Permission denied. HODs only.")
 		return redirect('feed360_index')
 	dept = staff.department
-	staff_list = Staff.objects.filter(department=dept)
+	staff_list = list(Staff.objects.filter(department=dept))
+	from .models import FeedbackForm, FeedbackQuestion
+	custom_staff_names = set()
+	# From FeedbackForm
+	for form in FeedbackForm.objects.filter(department=dept.name):
+		if form.staff_name == '__other__' and form.staff_name_other:
+			custom_staff_names.add(form.staff_name_other)
+		elif form.staff_name and form.staff_name != '__other__':
+			if not any(s.name == form.staff_name for s in staff_list):
+				custom_staff_names.add(form.staff_name)
+	# From FeedbackQuestion (for legacy or per-question custom names)
+	for q in FeedbackQuestion.objects.filter(form__department=dept.name):
+		if q.staff_name == '__other__' and q.staff_name_other:
+			custom_staff_names.add(q.staff_name_other)
+		elif q.staff_name and q.staff_name != '__other__':
+			if not any(s.name == q.staff_name for s in staff_list):
+				custom_staff_names.add(q.staff_name)
+	# Build staff_dropdown as (value, label) tuples
+	staff_dropdown = [(str(s.id), s.name) for s in staff_list] + [(f"custom_{name}", name) for name in sorted(custom_staff_names)]
 	selected_staff_id = request.GET.get('staff_id')
 	selected_staff = None
 	results = []
+	is_custom_staff = False
+	import json
+	from collections import Counter
+	from django.db import models
+	from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse
+	trend_json = '[]'
+	aspect_labels_json = '[]'
+	aspect_data_json = '{}'
+	sentiment_dist_json = '{}'
+	responses = []
 	if selected_staff_id:
-		try:
-			selected_staff = Staff.objects.get(id=selected_staff_id, department=dept)
-			responses = FeedbackResponse.objects.filter(staff=selected_staff)
+		if str(selected_staff_id).startswith('custom_'):
+			is_custom_staff = True
+			# Custom staff name (Others)
+			custom_name = str(selected_staff_id)[7:]
+			form_ids = list(FeedbackForm.objects.filter(staff_name_other=custom_name).values_list('id', flat=True))
+			q_ids = list(FeedbackQuestion.objects.filter(staff_name_other=custom_name).values_list('id', flat=True))
+			responses = FeedbackResponse.objects.filter(
+				(models.Q(form_id__in=form_ids) | models.Q(question_id__in=q_ids)),
+				staff__isnull=True
+			)
+			selected_staff = custom_name
 			# Group by form and question
 			agg_map = {}
 			for resp in responses:
@@ -724,30 +813,26 @@ def hod_staff_feedback_results(request):
 				if resp.rating:
 					agg_map[key]['ratings'].append(resp.rating)
 				if resp.comment:
-					# Sentiment analysis (TextBlob only, no AI)
 					sent_result = analyzer.analyze_text_with_perplexity(resp.comment)
 					agg_map[key]['sentiments'].append(sent_result)
+			sentiment_dist = Counter()
 			for (form_id, question_id), data in agg_map.items():
 				avg_rating = round(sum(data['ratings']) / len(data['ratings']), 2) if data['ratings'] else None
-				# Aggregate sentiment: majority label and average score
 				sentiment_labels = [s.get('sentiment_label', 'Neutral') for s in data['sentiments']]
 				sentiment_scores = [float(s.get('sentiment_score', 0.0)) for s in data['sentiments']]
 				if sentiment_labels:
-					from collections import Counter
 					label_counter = Counter(sentiment_labels)
 					majority = label_counter.most_common(1)[0][0]
-					# Average score for the majority label
 					majority_scores = [score for label, score in zip(sentiment_labels, sentiment_scores) if label == majority]
 					avg_conf = sum(majority_scores) / len(majority_scores) if majority_scores else 0.0
+					sentiment_dist.update(sentiment_labels)
 				else:
 					majority = 'Neutral'
 					avg_conf = 0.0
-				# Collect all comments for this group
 				comments = []
 				for resp in responses:
 					if resp.form_id == form_id and resp.question_id == question_id and resp.comment:
 						comments.append(resp.comment)
-				# Defensive: Only add result if form_id is an integer
 				try:
 					form_id_int = int(form_id)
 				except Exception:
@@ -764,62 +849,108 @@ def hod_staff_feedback_results(request):
 					'confidence': avg_conf,
 					'comments': comments,
 				})
-			# --- Add staff dashboard chart data ---
-			from .models import FeedbackAggregate
-			import json
-			aggregates = FeedbackAggregate.objects.filter(staff_id=selected_staff.id).order_by('-last_computed')
-			trend = []
-			aspect_labels = set()
-			prev_score = None
-			from collections import Counter
-			for agg in aggregates:
-				overall_score = None
-				if agg.avg_star_rating is not None and agg.avg_sentiment_score is not None:
-					overall_score = float(agg.avg_star_rating) * 0.7 + float(agg.avg_sentiment_score) * 0.3
-				anomaly = False
-				if prev_score is not None and overall_score is not None:
-					if prev_score > 0 and (prev_score - overall_score) / prev_score > 0.2:
-						anomaly = True
-				# Benchmarking: department average for this form
-				dept_avg = None
-				if agg.form_id and selected_staff and selected_staff.department:
-					dept_staff = Staff.objects.filter(department=selected_staff.department)
-					dept_aggregates = FeedbackAggregate.objects.filter(form_id=agg.form_id, staff__in=dept_staff)
-					dept_scores = []
-					for da in dept_aggregates:
-						if da.avg_star_rating is not None and da.avg_sentiment_score is not None:
-							score = float(da.avg_star_rating) * 0.7 + float(da.avg_sentiment_score) * 0.3
-							dept_scores.append(score)
-					if dept_scores:
-						dept_avg = round(sum(dept_scores) / len(dept_scores), 2)
-				trend.append({
-					'form_id': agg.form_id,
-					'overall_score': overall_score,
-					'anomaly': anomaly,
-					'department_average': dept_avg,
-				})
-				prev_score = overall_score if overall_score is not None else prev_score
-				if agg.aspect_scores:
-					aspect_labels.update(agg.aspect_scores.keys())
-			aspect_labels = sorted(list(aspect_labels))
-			aspect_data = {label: [] for label in aspect_labels}
-			for agg in aggregates:
-				for label in aspect_labels:
-					aspect_data[label].append(agg.aspect_scores.get(label, 0.0) if agg.aspect_scores else 0.0)
-			sentiment_dist = Counter()
-			for agg in aggregates:
-				if agg.sentiment_distribution:
-					sentiment_dist.update(agg.sentiment_distribution)
-			trend_json = json.dumps(trend)
-			aspect_labels_json = json.dumps(aspect_labels)
-			aspect_data_json = json.dumps(aspect_data)
 			sentiment_dist_json = json.dumps(dict(sentiment_dist))
-		except Staff.DoesNotExist:
-			selected_staff = None
-			trend_json = '[]'
-			aspect_labels_json = '[]'
-			aspect_data_json = '{}'
-			sentiment_dist_json = '{}'
+			# No trend/aspect/sentiment charts for custom staff
+		else:
+			try:
+				selected_staff = Staff.objects.get(id=selected_staff_id, department=dept)
+				responses = FeedbackResponse.objects.filter(staff=selected_staff)
+				# Group by form and question
+				agg_map = {}
+				for resp in responses:
+					key = (resp.form_id, resp.question_id)
+					if key not in agg_map:
+						agg_map[key] = {'ratings': [], 'sentiments': [], 'form_title': resp.form.title, 'question_text': resp.question.text}
+					if resp.rating:
+						agg_map[key]['ratings'].append(resp.rating)
+					if resp.comment:
+						sent_result = analyzer.analyze_text_with_perplexity(resp.comment)
+						agg_map[key]['sentiments'].append(sent_result)
+				for (form_id, question_id), data in agg_map.items():
+					avg_rating = round(sum(data['ratings']) / len(data['ratings']), 2) if data['ratings'] else None
+					sentiment_labels = [s.get('sentiment_label', 'Neutral') for s in data['sentiments']]
+					sentiment_scores = [float(s.get('sentiment_score', 0.0)) for s in data['sentiments']]
+					if sentiment_labels:
+						label_counter = Counter(sentiment_labels)
+						majority = label_counter.most_common(1)[0][0]
+						majority_scores = [score for label, score in zip(sentiment_labels, sentiment_scores) if label == majority]
+						avg_conf = sum(majority_scores) / len(majority_scores) if majority_scores else 0.0
+					else:
+						majority = 'Neutral'
+						avg_conf = 0.0
+					comments = []
+					for resp in responses:
+						if resp.form_id == form_id and resp.question_id == question_id and resp.comment:
+							comments.append(resp.comment)
+					try:
+						form_id_int = int(form_id)
+					except Exception:
+						import logging
+						logging.warning(f"Skipping result with invalid form_id: {form_id}")
+						continue
+					results.append({
+						'form_title': data['form_title'],
+						'form_id': form_id_int,
+						'question_id': question_id,
+						'question_text': data['question_text'],
+						'avg_rating': avg_rating,
+						'sentiment': majority,
+						'confidence': avg_conf,
+						'comments': comments,
+					})
+				# --- Add staff dashboard chart data ---
+				from .models import FeedbackAggregate
+				aggregates = FeedbackAggregate.objects.filter(staff_id=selected_staff.id).order_by('-last_computed')
+				trend = []
+				aspect_labels = set()
+				prev_score = None
+				for agg in aggregates:
+					overall_score = None
+					if agg.avg_star_rating is not None and agg.avg_sentiment_score is not None:
+						overall_score = float(agg.avg_star_rating) * 0.7 + float(agg.avg_sentiment_score) * 0.3
+					anomaly = False
+					if prev_score is not None and overall_score is not None:
+						if prev_score > 0 and (prev_score - overall_score) / prev_score > 0.2:
+							anomaly = True
+					dept_avg = None
+					if agg.form_id and selected_staff and selected_staff.department:
+						dept_staff = Staff.objects.filter(department=selected_staff.department)
+						dept_aggregates = FeedbackAggregate.objects.filter(form_id=agg.form_id, staff__in=dept_staff)
+						dept_scores = []
+						for da in dept_aggregates:
+							if da.avg_star_rating is not None and da.avg_sentiment_score is not None:
+								score = float(da.avg_star_rating) * 0.7 + float(da.avg_sentiment_score) * 0.3
+								dept_scores.append(score)
+						if dept_scores:
+							dept_avg = round(sum(dept_scores) / len(dept_scores), 2)
+					trend.append({
+						'form_id': agg.form_id,
+						'overall_score': overall_score,
+						'anomaly': anomaly,
+						'department_average': dept_avg,
+					})
+					prev_score = overall_score if overall_score is not None else prev_score
+					if agg.aspect_scores:
+						aspect_labels.update(agg.aspect_scores.keys())
+				aspect_labels = sorted(list(aspect_labels))
+				aspect_data = {label: [] for label in aspect_labels}
+				for agg in aggregates:
+					for label in aspect_labels:
+						aspect_data[label].append(agg.aspect_scores.get(label, 0.0) if agg.aspect_scores else 0.0)
+				sentiment_dist = Counter()
+				for agg in aggregates:
+					if agg.sentiment_distribution:
+						sentiment_dist.update(agg.sentiment_distribution)
+				trend_json = json.dumps(trend)
+				aspect_labels_json = json.dumps(aspect_labels)
+				aspect_data_json = json.dumps(aspect_data)
+				sentiment_dist_json = json.dumps(dict(sentiment_dist))
+			except Staff.DoesNotExist:
+				selected_staff = None
+				trend_json = '[]'
+				aspect_labels_json = '[]'
+				aspect_data_json = '{}'
+				sentiment_dist_json = '{}'
 	else:
 		trend_json = '[]'
 		aspect_labels_json = '[]'
@@ -828,6 +959,7 @@ def hod_staff_feedback_results(request):
 	duser = Staff.objects.get(user=request.user)
 	return render(request, 'feed360/hod_staff_feedback_results.html', {
 		'staff_list': staff_list,
+		'staff_dropdown': staff_dropdown,
 		'selected_staff': selected_staff,
 		'selected_staff_id': selected_staff_id,
 		'results': results,
@@ -836,4 +968,5 @@ def hod_staff_feedback_results(request):
 		'aspect_data_json': aspect_data_json,
 		'sentiment_dist_json': sentiment_dist_json,
 		'duser': duser,
+		'is_custom_staff': is_custom_staff,
 	})

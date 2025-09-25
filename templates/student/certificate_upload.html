@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
+
+{% block root %}
+<div class="container mt-4">
+    <h2>Upload Certificate</h2>
+    <form method="post" enctype="multipart/form-data" class="mb-4">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_file">Certificate File</label>
+            {{ form.file }}
+        </div>
+        <!-- Send To field removed: uploads go to both mentor and advisor automatically -->
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+    <h4>Your Uploaded Certificates</h4>
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>File</th>
+                <!-- Sent To column removed -->
+                <th>Status</th>
+                <th>Remarks</th>
+                <th>Uploaded At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cert in uploads %}
+            <tr>
+                <td><a href="{{ cert.file.url }}" target="_blank">{{ cert.file.name|slice:'12:' }}</a></td>
+                <!-- Sent To value removed -->
+                <td>{{ cert.get_status_display }}</td>
+                <td>{{ cert.remarks|default:'-' }}</td>
+                <td>{{ cert.uploaded_at|date:"d M Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No certificates uploaded yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,10 +1,54 @@
 {% extends 'base.html' %}
 {% block root %}
+<style>
+</style>
+<style>
+    .card-header {
+        background: #1976d2 !important;
+        border-radius: 6px 6px 0 0 !important;
+        box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+    }
+</style>
+</style>
+<style>
+    .table thead th {
+        background: #fff !important;
+        color: #222 !important;
+        font-weight: 700;
+        border-color: #1976d2 !important;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+    table tr[tabindex] {
+        outline: none;
+        transition: background 0.2s, box-shadow 0.2s;
+    }
+    table tr[tabindex]:hover {
+        background: #e3f2fd !important;
+        outline: 2px solid #1976d2 !important;
+        z-index: 2;
+        position: relative;
+    }
+    table tr[tabindex]:hover * {
+        filter: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        color: inherit !important;
+    }
+    tbody:has(tr[tabindex]:hover) tr[tabindex]:not(:hover) {
+        filter: blur(2px) grayscale(0.2);
+        opacity: 0.5;
+        pointer-events: none;
+        transition: filter 0.2s, opacity 0.2s;
+    }
+</style>
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <strong class="card-title">OD's Status</strong>
+                <center>
+                <strong class="card-title" style="background:#1976d2;color:#fff;padding:8px 20px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">OD's Status</strong>
+            </center>
             </div>
             <div class="table-stats order-table ov-h">
                 <table class="table ">
@@ -23,7 +67,7 @@
                     <tbody>
                         {% if ods %}
                         {% for i in ods %}
-                        <tr>
+                        <tr tabindex="0">
                             <td class="serial">{{ forloop.counter }}.</td>
 
                             <td> #OD{{i.id}} </td>

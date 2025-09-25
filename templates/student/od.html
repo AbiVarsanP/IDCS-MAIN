@@ -4,6 +4,23 @@
 
 
 {% block root %}
+<style>
+    .input-group-addon {
+        background: #1976d2 !important;
+        color: #fff !important;
+        border: none !important;
+        font-weight: 600;
+        border-radius: 0.25rem 0 0 0.25rem !important;
+    }
+    .input-group .form-control[disabled],
+    .input-group .form-control:disabled {
+        background: #2196f3 !important;
+        color: #fff !important;
+        border: none !important;
+        font-weight: 600;
+        border-radius: 0 0.25rem 0.25rem 0 !important;
+    }
+</style>
 <div class="animated fadeIn">
     <div class="breadcrumbs">
         <div class="breadcrumbs-inner">
@@ -11,17 +28,14 @@
                 <div class="col-sm-4">
                     <div class="page-header float-center">
                         <div class="page-title">
-                            <h1>Dashboard</h1>
+                          
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-8">
-                    <div class="page-header float-right">
+                    <div class="page-header float-center">
                         <div class="page-title">
-                            <ol class="breadcrumb text-right">
-                                <li><a href="{% url 'dash' %}">Dashboard</a></li>
-                                <li class="active">On-Duty Application</li>
-                            </ol>
+                                <h3 style="background:#1976d2;color:#fff;padding:10px 24px;border-radius:6px;display:inline-block;box-shadow:0 2px 8px rgba(25,118,210,0.08);">On-Duty Application</h3>
                         </div>
                     </div>
                 </div>
@@ -104,6 +118,7 @@
                         </div>
 
                         <div class="col-md-12">
+                            <label for="proof">Upload Proof (PDF, JPG, PNG):</label>
                             <input type="file" class="form-control" name="proof" id="proof" required>
                         </div>
 

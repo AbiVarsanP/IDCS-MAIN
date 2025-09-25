@@ -15,6 +15,7 @@ except ImportError:
 		def __str__(self):
 			return f"{self.code} - {self.name}"
 
+
 class FeedbackForm(models.Model):
 	title = models.CharField(max_length=200)
 	created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -23,6 +24,9 @@ class FeedbackForm(models.Model):
 	section = models.CharField(max_length=10)
 	created_at = models.DateTimeField(auto_now_add=True)
 	active = models.BooleanField(default=True)
+	# New fields for staff linking
+	staff_name = models.CharField(max_length=100, blank=True, null=True, help_text="Selected staff name for feedback linking")
+	staff_name_other = models.CharField(max_length=100, blank=True, null=True, help_text="Custom staff name if 'Others' selected")
 
 	class Meta:
 		ordering = ['-created_at']
@@ -36,6 +40,7 @@ ANSWER_TYPE_CHOICES = [
 	('both', 'Stars & Text'),
 ]
 
+
 class FeedbackQuestion(models.Model):
 	form = models.ForeignKey(FeedbackForm, on_delete=models.CASCADE, related_name='questions')
 	text = models.CharField(max_length=300)
@@ -44,6 +49,9 @@ class FeedbackQuestion(models.Model):
 	subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
 	# If no Subject model, fallback to CharField
 	subject_text = models.CharField(max_length=100, blank=True, null=True)
+	# New fields for staff linking
+	staff_name = models.CharField(max_length=100, blank=True, null=True, help_text="Selected staff name for feedback linking")
+	staff_name_other = models.CharField(max_length=100, blank=True, null=True, help_text="Custom staff name if 'Others' selected")
 
 	class Meta:
 		ordering = ['form', 'id']
@@ -55,7 +63,7 @@ class FeedbackResponse(models.Model):
 	form = models.ForeignKey(FeedbackForm, on_delete=models.CASCADE)
 	question = models.ForeignKey(FeedbackQuestion, on_delete=models.CASCADE)
 	student = models.ForeignKey(Student, on_delete=models.CASCADE)
-	staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+	staff = models.ForeignKey(Staff, on_delete=models.CASCADE, null=True, blank=True)
 	rating = models.IntegerField(null=True, blank=True)
 	comment = models.TextField(null=True, blank=True)
 	sentiment_label = models.CharField(max_length=16, blank=True, null=True)  # Store sentiment at submission

@@ -6,10 +6,13 @@ from .models import FeedbackForm, FeedbackQuestion, FeedbackResponse, Subject
 from core.constants import YEAR, SECTION
 
 
+
 class FeedbackFormCreateForm(forms.ModelForm):
 	answer_type = forms.ChoiceField(choices=[('stars', 'Stars'), ('text', 'Text'), ('both', 'Stars & Text')], label='Answer Type (common for all questions)')
 	subject = forms.ModelChoiceField(queryset=Subject.objects.all(), required=False, label='Subject (common for all questions)')
 	subject_text = forms.CharField(max_length=100, required=False, label='Subject Text (if no subject)')
+	staff_name = forms.ChoiceField(label='Staff Name (for feedback linking)', required=True)
+	staff_name_other = forms.CharField(label='Other Staff Name', required=False, max_length=100)
 
 	def clean(self):
 		cleaned_data = super().clean()
@@ -31,10 +34,15 @@ class FeedbackFormCreateForm(forms.ModelForm):
 		section = self.cleaned_data.get('section')
 		instance.year = int(year) if year else None
 		instance.section = str(section) if section is not None else ''
+		# Save staff name fields
+		staff_name = self.cleaned_data.get('staff_name')
+		staff_name_other = self.cleaned_data.get('staff_name_other')
+		instance.staff_name = staff_name
+		instance.staff_name_other = staff_name_other if staff_name == '__other__' else ''
 		# Debug: print what is being saved
 		import logging
 		logger = logging.getLogger('django')
-		logger.warning(f"Saving FeedbackForm: department={instance.department}, year={instance.year}, section={instance.section}")
+		logger.warning(f"Saving FeedbackForm: department={instance.department}, year={instance.year}, section={instance.section}, staff_name={instance.staff_name}, staff_name_other={instance.staff_name_other}")
 		if commit:
 			instance.save()
 		return instance
@@ -45,13 +53,21 @@ class FeedbackFormCreateForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		user = kwargs.pop('user', None)
+		staff_choices = []
+		dept_name = None
+		if user and hasattr(user, 'staff') and user.staff.department:
+			dept = user.staff.department
+			dept_name = getattr(dept, 'name', None)
+			# Get staff in this department
+			from core.models import Staff
+			staff_qs = Staff.objects.filter(department=dept)
+			staff_choices = [(s.name, s.name) for s in staff_qs if s.name]
+		staff_choices.append(('__other__', 'Others'))
 		super().__init__(*args, **kwargs)
+		self.fields['staff_name'].choices = [('', '-- Select Staff --')] + staff_choices
 		# Set department as hidden and required False
 		self.fields['department'].widget = forms.HiddenInput()
 		self.fields['department'].required = False
-		dept_name = None
-		if user and hasattr(user, 'staff') and user.staff.department:
-			dept_name = getattr(user.staff.department, 'name', None)
 		if dept_name:
 			self.fields['department'].initial = dept_name
 			self.data = self.data.copy()

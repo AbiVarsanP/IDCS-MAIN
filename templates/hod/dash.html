@@ -1,3 +1,79 @@
+<style>
+    @media (min-width: 992px) {
+        #notification-sidebar {
+            position: fixed;
+            top: 170px;
+            right: 0;
+            width: 340px;
+            height: calc(100vh - 190px);
+            z-index: 1040;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.07);
+            background: transparent;
+            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        #notification-sidebar.closed {
+            transform: translateX(110%);
+            pointer-events: none;
+        }
+        #main-content-with-sidebar {
+            margin-right: 360px;
+        }
+        #notification-fab {
+            display: block;
+            position: fixed;
+            right: 0;
+            bottom: 40px;
+            z-index: 1050;
+            background: #1756a9;
+            color: #fff;
+            border: none;
+            border-radius: 50% 0 0 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            font-size: 2rem;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            cursor: pointer;
+            transition: right 0.3s;
+        }
+        #notification-fab.hidden {
+            display: none;
+        }
+    }
+    @media (max-width: 991.98px) {
+        #notification-sidebar {
+            position: static;
+            width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+            box-shadow: none;
+            top: unset;
+        }
+        #main-content-with-sidebar {
+            margin-right: 0;
+        }
+        #notification-fab {
+            display: none;
+        }
+    }
+    .notification-close-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        margin-left: 8px;
+        margin-right: -8px;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+    .notification-close-btn:hover {
+        opacity: 1;
+    }
+</style>
 {% extends 'base.html' %}
 {% load static %}
 
@@ -44,20 +120,83 @@
 </style>
 
 <div class="row">
-    {% if duser and duser.position == 0 %}
-    <div class="col-12 col-md-3 mb-3 mb-md-0">
-        <div class="card">
-            <div class="card-body">
-                <div class="stat-widget-five">
-                    <div class="stat-icon dib flat-color-5">
-                        <i class="ti-comments"></i>
+    <div id="main-content-with-sidebar" class="col-12 col-lg-8">
+        <div class="row">
+            {% if duser and duser.position == 0 %}
+            <div class="col-12 col-md-3 mb-3 mb-md-0">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-5">
+                                <i class="ti-comments"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-left dib">
+                                    <div class="stat-text">Feed360 Feedback</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'feed360_create' %}" class="btn btn-link btn-sm flat-color-5">Create</a>
+                                        <a href="{% url 'feed360_hod_staff_feedback_results' %}" class="btn btn-link btn-sm flat-color-5">View</a>
+                                        <a href="{% url 'feed360_hod_list_forms' %}" class="btn btn-link btn-sm flat-color-5">View All</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <div class="text-left dib">
-                            <div class="stat-text">Feed360 Feedback</div>
-                            <div class="stat-heading">
-                                <a href="{% url 'feed360_create' %}" class="btn btn-link btn-sm flat-color-5">Create</a>
-                                <a href="{% url 'feed360_staff_results' staff_id=request.user.staff.id %}" class="btn btn-link btn-sm flat-color-5">View</a>
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-12 col-md-3 mb-3 mb-md-0">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-1">
+                                <i class="ti-file"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-left dib">
+                                    <div class="stat-text">OD's</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'hod_od_view' %}" class="btn btn-link btn-sm  flat-color-1">View &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3 mb-3 mb-md-0">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-2">
+                                <i class="ti-files"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-left dib">
+                                    <div class="stat-text">Leave's</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'hod_leave_view' %}" class="btn btn-link btn-sm  flat-color-2">View &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-3 mb-3 mb-md-0">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-3">
+                                <i class="menu-icon fa fa-certificate"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-left dib">
+                                    <div class="stat-text">Bonafide</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'hod_bonafide_view' %}" class="btn btn-link btn-sm  flat-color-2">View &nbsp;<i class="fa fa-arrow-right"></i></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -65,65 +204,54 @@
             </div>
         </div>
     </div>
-    {% endif %}
-    <div class="col-12 col-md-3 mb-3 mb-md-0">
-        <div class="card">
-            <div class="card-body">
-                <div class="stat-widget-five">
-                    <div class="stat-icon dib flat-color-1">
-                        <i class="ti-file"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="text-left dib">
-                            <div class="stat-text">OD's</div>
-                            <div class="stat-heading">
-                                <a href="{% url 'hod_od_view' %}" class="btn btn-link btn-sm  flat-color-1">View &nbsp;<i class="fa fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
+    <div id="notification-sidebar" class="col-12 col-lg-4">
+        <div class="card mb-3" style="height:100%;">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span>Recent Notifications</span>
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'hod_notification_history' %}" class="btn btn-light btn-sm mr-2">View All</a>
+                    <button class="notification-close-btn" id="close-notification-sidebar" title="Close">&times;</button>
                 </div>
             </div>
+            <ul class="list-group list-group-flush" id="recent-notifications-list" style="max-height:calc(100vh - 220px);overflow-y:auto;">
+                {% for note in recent_notifications %}
+                <li class="list-group-item">
+                    <small class="text-muted">{{ note.created_at|date:"d M Y H:i" }}</small><br>
+                    {{ note.message }}
+                </li>
+                {% empty %}
+                <li class="list-group-item">No recent notifications.</li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
-    <div class="col-12 col-md-3 mb-3 mb-md-0">
-        <div class="card">
-            <div class="card-body">
-                <div class="stat-widget-five">
-                    <div class="stat-icon dib flat-color-2">
-                        <i class="ti-files"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="text-left dib">
-                            <div class="stat-text">Leave's</div>
-                            <div class="stat-heading">
-                                <a href="{% url 'hod_leave_view' %}" class="btn btn-link btn-sm  flat-color-2">View &nbsp;<i class="fa fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <div class="stat-widget-five">
-                    <div class="stat-icon dib flat-color-3">
-                        <i class="menu-icon fa fa-certificate"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="text-left dib">
-                            <div class="stat-text">Bonafide</div>
-                            <div class="stat-heading">
-                                <a href="{% url 'hod_bonafide_view' %}" class="btn btn-link btn-sm  flat-color-2">View &nbsp;<i class="fa fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <button id="notification-fab" class="hidden" title="Show Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16zm6-2a1 1 0 0 1-1-1V7c0-3.07-1.64-5.64-5-5.96V0a1 1 0 0 0-2 0v1.04C3.64 1.36 2 3.92 2 7v6a1 1 0 0 1-1 1h12z"/>
+        </svg>
+    </button>
 </div>
+
+<script>
+// Sidebar open/close logic
+const sidebar = document.getElementById('notification-sidebar');
+const fab = document.getElementById('notification-fab');
+const closeBtn = document.getElementById('close-notification-sidebar');
+function openSidebar() {
+    sidebar.classList.remove('closed');
+    fab.classList.add('hidden');
+}
+function closeSidebar() {
+    sidebar.classList.add('closed');
+    fab.classList.remove('hidden');
+}
+if (closeBtn && fab && sidebar) {
+    closeBtn.onclick = closeSidebar;
+    fab.onclick = openSidebar;
+}
+// Open by default on load
+openSidebar();
+</script>
 
 <div class="row">
     <div class="col-12 col-md-6">
@@ -199,5 +327,7 @@
         </div>
     </div>
 </div>
+
+
 
 {% endblock %}

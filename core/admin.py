@@ -124,13 +124,34 @@ except ImportError:
 	has_openpyxl = False
 
 
-from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester
+from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester, SportsOD, SportsODPlayer
 
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
+
 	list_display = ('code', 'name', 'hod', 'ahod')
 	search_fields = ('code', 'name')
+
+	def formfield_for_manytomany(self, db_field, request, **kwargs):
+		from .models import Staff
+		if db_field.name == 'staffs':
+			# Only show staff with this department assigned
+			if request.resolver_match and request.resolver_match.url_name == 'core_department_add':
+				kwargs['queryset'] = Staff.objects.none()
+			else:
+				# For change view, filter by department
+				obj_id = request.resolver_match.kwargs.get('object_id') if request.resolver_match else None
+				if obj_id:
+					from .models import Department
+					try:
+						dept = Department.objects.get(pk=obj_id)
+						kwargs['queryset'] = Staff.objects.filter(department=dept)
+					except Department.DoesNotExist:
+						kwargs['queryset'] = Staff.objects.none()
+				else:
+					kwargs['queryset'] = Staff.objects.none()
+		return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 
@@ -301,9 +322,18 @@ class StudentAdmin(admin.ModelAdmin):
 		return render(request, "admin/core/import_students.html", {"form": form})
 
 class StaffAdmin(admin.ModelAdmin):
-	list_display = ('user', 'name', 'department', 'position', 'position2', 'position3')
-	list_filter = ('department', 'position', 'position2', 'position3')
-	search_fields = ('name', 'user__username')
+		list_display = ('user', 'name', 'department', 'position', 'position2', 'position3')
+		list_filter = ('department', 'position', 'position2', 'position3')
+		search_fields = ('name', 'user__username')
+		list_editable = ('position',)
+		# Add PET Staff to position choices in the admin form
+		def formfield_for_choice_field(self, db_field, request, **kwargs):
+			if db_field.name == "position":
+				choices = list(db_field.choices)
+				if ("PET Staff", "PET Staff") not in choices:
+					choices.append(("PET Staff", "PET Staff"))
+				kwargs["choices"] = choices
+			return super().formfield_for_choice_field(db_field, request, **kwargs)
 
 admin.site.register(Staff, StaffAdmin)
 admin.site.register(OD)
@@ -311,6 +341,9 @@ admin.site.register(LEAVE)
 admin.site.register(GATEPASS)
 admin.site.register(BONAFIDE)
 admin.site.register(HOD)
+# Register new Sports OD models
+admin.site.register(SportsOD)
+admin.site.register(SportsODPlayer)
 class AHODAdmin(admin.ModelAdmin):
 	list_display = ('user', 'department')
 	list_filter = ('department',)

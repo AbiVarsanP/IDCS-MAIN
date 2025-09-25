@@ -1,5 +1,27 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.conf import settings
+from django.utils import timezone
+
+# Certificate Upload model for students to send certificates to mentors/advisors
+class CertificateUpload(models.Model):
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='certificate_uploads')
+    file = models.FileField(upload_to='certificates/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    # No send_to field: uploads go to both mentor and advisor automatically
+    # Status: Pending, Approved, Rejected
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_certificates')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    remarks = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.student} - {self.file.name}"
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
@@ -43,6 +65,7 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.subject} - {self.date} - {self.status}"
+
 
 # Section model to represent department sections (A, B, C, etc.)
 class Section(models.Model):
@@ -97,6 +120,86 @@ class Department(models.Model):
     
 
 # Attendance Model for Section 3.2: Track attendance, link to events/workshops/training, integrate with Leaves/ODs for deductions
+
+
+
+# Add PET Staff to POS constant
+POS = (
+    (0, "HOD"),
+    (1, "Assistant Head of the Department"),
+    (2, "Professor"),
+    (3, "Assistant Professor"),
+    (4, "Associate Professor"),
+    (5, "PET Staff"), # Add this new role
+)
+
+# Update Staff model position default if needed
+# (Already default=0, will change to default=3 for Assistant Professor)
+
+# ----------------------------
+# -- SPORTS OD MODELS START --
+# ----------------------------
+
+class SportsOD(models.Model):
+    event_name = models.CharField(max_length=200)
+    body = models.TextField(blank=True, null=True) # Add this field for the reason/body
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey('Staff', on_delete=models.CASCADE, related_name='sports_ods_created', help_text="The PET Staff who created this OD.")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date']
+        verbose_name = "Sports OD"
+        verbose_name_plural = "Sports ODs"
+
+    def __str__(self):
+        return self.event_name
+
+class SportsODPlayer(models.Model):
+    sports_od = models.ForeignKey(SportsOD, on_delete=models.CASCADE, related_name='players')
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='sports_od_participations')
+    status = models.CharField(max_length=20, choices=STATUS, default="Pending")
+    hod_remark = models.TextField(blank=True, null=True, help_text="Reason for approval/rejection by HOD.")
+
+    class Meta:
+        ordering = ['student__department', 'student__roll']
+        verbose_name = "Sports OD Player"
+        verbose_name_plural = "Sports OD Players"
+        unique_together = ('sports_od', 'student')
+
+    def __str__(self):
+        return f"{self.student.name} for {self.sports_od.event_name}"
+
+# --------------------------
+# -- SPORTS OD MODELS END --
+# --------------------------
+
+class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ('Present', 'Present'),
+        ('Absent', 'Absent'),
+        ('On Leave', 'On Leave'),
+        ('On Duty', 'On Duty'),
+    ]
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='attendances')
+    subject = models.ForeignKey('SemesterSubject', on_delete=models.CASCADE, related_name='attendances', null=True, blank=True)
+    date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    reason = models.TextField(blank=True, null=True, help_text="If absent/on leave/on duty, link to Leave/OD/Bonafide/Gatepass")
+    percentage = models.FloatField(default=0, help_text="Calculated overall attendance percentage")
+
+    # Foreign keys to related models for status updates (nullable, only one used per record)
+    leave = models.ForeignKey('LEAVE', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_leaves')
+    od = models.ForeignKey('OD', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_ods')
+    bonafide = models.ForeignKey('BONAFIDE', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_bonafides')
+    gatepass = models.ForeignKey('GATEPASS', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_gatepasses')
+
+    # Placeholder for event-specific attendance (One-to-Many to EventAttendance)
+    # event_attendance = models.ForeignKey('EventAttendance', on_delete=models.SET_NULL, blank=True, null=True, related_name='attendance_events')
+
+    def __str__(self):
+        return f"{self.student} - {self.subject} - {self.date} - {self.status}"
 
 
 

@@ -1,3 +1,80 @@
+<style>
+    @media (min-width: 992px) {
+        #notification-sidebar {
+            position: fixed;
+            top: 170px;
+            right: 0;
+            width: 340px;
+            height: calc(100vh - 190px);
+            z-index: 1040;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.07);
+            background: #fff;
+            border-radius: 12px 0 0 12px;
+            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+            overflow-y: auto;
+        }
+        #notification-sidebar.closed {
+            transform: translateX(110%);
+            pointer-events: none;
+        }
+        #notification-fab {
+            display: block;
+            position: fixed;
+            right: 0;
+            bottom: 40px;
+            z-index: 1050;
+            background: #1756a9;
+            color: #fff;
+            border: none;
+            border-radius: 50% 0 0 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            font-size: 2rem;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            cursor: pointer;
+            transition: right 0.3s;
+        }
+        #notification-fab.hidden {
+            display: none;
+        }
+    }
+        /* Removed margin-right so table does not shrink for sidebar */
+    @media (max-width: 991.98px) {
+        #notification-sidebar {
+            position: static;
+            width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+            box-shadow: none;
+            top: unset;
+            border-radius: 12px;
+        }
+        #main-content-with-sidebar {
+            margin-right: 0;
+        }
+        #notification-fab {
+            display: none;
+        }
+    }
+    .notification-close-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        margin-left: 8px;
+        margin-right: -8px;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+    .notification-close-btn:hover {
+        opacity: 1;
+    }
+</style>
 {% extends 'base.html' %}
 {% load static %}
 
@@ -34,7 +111,7 @@
                             <strong>Staff ID:</strong> {{ duser.user.username }}<br>
                             <strong>Name:</strong> {{ duser.name }}<br>
                             <strong>User:</strong> Assistant HOD<br>
-                            <a href="/feed360/staff/{{ duser.id }}/results/" class="btn btn-info btn-sm mt-2">View My Feedback Results</a>
+                            <!-- View My Feedback Results button moved to card below -->
                             <a href="{% url 'ahod_timetable' %}" class="btn btn-primary btn-sm mt-2">Go to Timetable</a>
                         </div>
                     </div>
@@ -50,7 +127,72 @@
     }
 </style>
 
-<div class="row mt-4">
+<div class="row" id="main-content-with-sidebar">
+    <div class="col-12 col-md-3 mb-3 mb-md-0 d-flex align-items-stretch">
+        <div class="card h-100 w-100 d-flex flex-column justify-content-center align-items-center" style="min-width:240px; min-height:180px;">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center w-100 h-100 p-4">
+                <div class="stat-widget-five w-100 d-flex flex-column justify-content-center align-items-center">
+                    <div class="stat-icon dib flat-color-5 mb-2" style="font-size:2.2rem;">
+                        <i class="ti-comments"></i>
+                    </div>
+                    <div class="stat-content w-100 d-flex flex-column justify-content-center align-items-center">
+                        <div class="text-file text-center w-100">
+                            <div class="stat-text mb-2" style="font-size:1.2rem; font-weight:600;">Feed360 Feedback</div>
+                            <div class="stat-heading d-flex flex-column gap-1 align-items-center">
+                                <a href="/feed360/staff/{{ duser.id }}/results/" class="btn btn-link btn-sm flat-color-5">View My Feedback Results</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div id="notification-sidebar" class="col-12 col-lg-4">
+    <div class="card mb-3" style="height:100%;">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <span>Recent Notifications</span>
+            <div class="d-flex align-items-center">
+                <a href="#" class="btn btn-light btn-sm mr-2">View All</a>
+                <button class="notification-close-btn" id="close-notification-sidebar" title="Close">&times;</button>
+            </div>
+        </div>
+        <ul class="list-group list-group-flush" id="recent-notifications-list" style="max-height:calc(100vh - 220px);overflow-y:auto;">
+            {% for note in recent_notifications %}
+            <li class="list-group-item">
+                <small class="text-muted">{{ note.created_at|date:"d M Y H:i" }}</small><br>
+                {{ note.message }}
+            </li>
+            {% empty %}
+            <li class="list-group-item">No recent notifications.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<button id="notification-fab" class="hidden" title="Show Notifications">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16zm6-2a1 1 0 0 1-1-1V7c0-3.07-1.64-5.64-5-5.96V0a1 1 0 0 0-2 0v1.04C3.64 1.36 2 3.92 2 7v6a1 1 0 0 1-1 1h12z"/>
+    </svg>
+</button>
+<script>
+// Sidebar open/close logic
+const sidebar = document.getElementById('notification-sidebar');
+const fab = document.getElementById('notification-fab');
+const closeBtn = document.getElementById('close-notification-sidebar');
+function openSidebar() {
+    sidebar.classList.remove('closed');
+    fab.classList.add('hidden');
+}
+function closeSidebar() {
+    sidebar.classList.add('closed');
+    fab.classList.remove('hidden');
+}
+if (closeBtn && fab && sidebar) {
+    closeBtn.onclick = closeSidebar;
+    fab.onclick = openSidebar;
+}
+// Open by default on load
+openSidebar();
+</script>
     <div class="col-12">
         <div class="card mb-4">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">

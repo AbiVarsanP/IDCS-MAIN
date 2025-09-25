@@ -129,6 +129,7 @@
                             <li class="{% if request.resolver_match.url_name == 'staff_timetable' %}active{% endif %}"><a href="{% url 'staff_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a></li>
                             <li class="menu-title">Class</li>
                             <li class="{% if request.resolver_match.url_name == 'staff_my_class' %}active{% endif %}"><a href="{% url 'staff_my_class' %}"><i class="menu-icon fa fa-users"></i>My Class Students</a></li>
+                            <li class="{% if request.resolver_match.url_name == 'student_details' %}active{% endif %}"><a href="{% url 'student_details' %}"><i class="menu-icon fa fa-info-circle"></i>Student Details</a></li>
                         {% elif request.user.is_authenticated and not request.user.is_staff %}
                             {# Student sidebar #}
                             <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">

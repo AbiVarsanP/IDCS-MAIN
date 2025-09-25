@@ -100,6 +100,10 @@ urlpatterns += [
     path('principal/dashboard/', principal_dashboard, name='principal_dashboard'),
     path('principal/department/', principal_department, name='principal_department'),
 
+    path('staff/student_details/', student_details, name='student_details'),
+
+    path('staff/student/<int:student_id>/', view_student_details, name='view_student_details'),
+
 ]
 # hod
 

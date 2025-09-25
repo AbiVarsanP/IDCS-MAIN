@@ -1828,4 +1828,37 @@ def ahod_timetable(request):
 
     return render(request, 'ahod/timetable.html', context)
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render
+from .models import Student, OD, LEAVE
+
+@login_required
+def student_details(request):
+    staff = Staff.objects.get(user=request.user)
+    students = Student.objects.filter(advisor=staff).order_by('roll')
+    student_data = []
+    for student in students:
+        od_details = OD.objects.filter(user=student)
+        leave_details = LEAVE.objects.filter(user=student)
+        student_data.append({
+            'id': student.id,
+            'roll_no': student.roll,
+            'name': student.user.get_full_name(),
+            'email': student.user.email,
+            'department': student.department.name if student.department else 'N/A',
+            'mobile': student.mobile,
+            'od_details': od_details,
+            'leave_details': leave_details,
+            'address': student.address,
+            'dob': student.dob,
+        })
+    return render(request, 'staff/student_details.html', {'students': student_data})
+
+from django.shortcuts import render, get_object_or_404
+from .models import Student
+
+def view_student_details(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    return render(request, 'student_details.html', {'student': student})
+
 

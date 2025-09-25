@@ -32,7 +32,6 @@ urlpatterns = [
     path('student/bonafide/history/', student_bonafide_history, name='student_bonafide_history'),
     path('student/gatepass/history/', student_gatepass_history, name='student_gatepass_history'),
     path('staff/my_class/', my_class_students, name='staff_my_class'),
-    path('student/attendance/', student_attendance_view, name='student_attendance'),
     path("",dash,name='dash'),
     path("notifications/", notifications_view, name="notifications_view"),
     path("notifications/delete_all/", delete_all_student_notifications, name="delete_all_student_notifications"),
@@ -99,6 +98,7 @@ urlpatterns += [
     path("timetable/", staff_timetable, name="staff_timetable"),
     path("my_class_students/", my_class_students, name="my_class_students"),
     path("staff/attendance/", staff_attendance_view, name="staff_attendance"),
+    path("student/attendance/", student_attendance_view, name="student_attendance"),
 
     # Principal URLs
     path('principal/dashboard/', principal_dashboard, name='principal_dashboard'),

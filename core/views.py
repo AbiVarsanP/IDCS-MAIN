@@ -1,5 +1,127 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+# Subject-wise staff attendance view
+from .models import Attendance
+from django.utils import timezone
+
+@login_required
+def staff_attendance_view(request):
+    context = set_config(request)
+    staff = Staff.objects.get(user=request.user)
+    assigned_subjects = SemesterSubject.objects.filter(
+        models.Q(staff1=staff) | models.Q(staff2=staff) | models.Q(staff3=staff)
+    )
+    success = None
+    error = None
+    if request.method == "POST":
+        # Find which subject and section this POST is for by parsing POST keys
+        subject_id = None
+        section_val = None
+        date_str = None
+        absent_last3 = None
+        for key in request.POST.keys():
+            if key.startswith("attendance_date_"):
+                # Format: attendance_date_{subject_id}_{section}
+                parts = key.split("_")
+                if len(parts) >= 4:
+                    subject_id = parts[2]
+                    section_val = parts[3]
+                    date_str = request.POST.get(key)
+                    absent_key = f"absent_last3_{subject_id}_{section_val}"
+                    absent_last3 = request.POST.get(absent_key, '')
+                    break
+        if subject_id and section_val and date_str:
+            try:
+                subject = SemesterSubject.objects.get(id=subject_id)
+                section = int(section_val)
+                date_obj = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
+                students = Student.objects.filter(
+                    department=subject.semester.department,
+                    semester=subject.semester.semester,
+                    section=section
+                )
+                absent_last3_list = [s.strip() for s in absent_last3.replace(",", " ").split() if s.strip()]
+                for student in students:
+                    last3 = str(student.roll)[-3:] if student.roll else None
+                    status = 'Absent' if last3 in absent_last3_list else 'Present'
+                    att, created = Attendance.objects.get_or_create(
+                        subject=subject,
+                        student=student,
+                        date=date_obj,
+                        defaults={'status': status}
+                    )
+                    if not created:
+                        att.status = status
+                        att.save()
+                success = f"Attendance marked for {subject.name} section {section} on {date_str}."
+            except Exception as e:
+                error = f"Error: {e}"
+    # Prepare context for template
+    subjects_with_students = []
+    for subject in assigned_subjects:
+        semester_obj = subject.semester
+        section_students = []
+        for idx, (section_field, staff_field) in enumerate([
+            ("section1", "staff1"), ("section2", "staff2"), ("section3", "staff3")
+        ], start=1):
+            section_val = getattr(subject, section_field)
+            staff_val = getattr(subject, staff_field)
+            if staff_val == staff and section_val is not None:
+                students = Student.objects.filter(
+                    department=semester_obj.department,
+                    semester=semester_obj.semester,
+                    section=section_val
+                )
+                students_with_attendance = []
+                for student in students:
+                    total = Attendance.objects.filter(student=student, subject=subject).count()
+                    present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
+                    percentage = (present / total * 100) if total > 0 else 0
+                    students_with_attendance.append({
+                        'student': student,
+                        'percentage': round(percentage, 2),
+                        'total': total,
+                        'present': present
+                    })
+                section_students.append((section_val, students_with_attendance))
+        subjects_with_students.append({
+            'subject': subject,
+            'section_students': section_students
+        })
+    context['subjects_with_students'] = subjects_with_students
+    context['success'] = success
+    context['error'] = error
+    return render(request, 'staff/attendance.html', context)
+
+# Student attendance view: show each subject's percentage
+@login_required
+def student_attendance_view(request):
+    context = set_config(request)
+    student = Student.objects.get(user=request.user)
+    # Get all subjects for this student: department+semester (non-electives) + assigned electives only
+    subjects_qs = SemesterSubject.objects.filter(
+        semester__department=student.department,
+        semester__semester=student.semester,
+        is_elective=False
+    )
+    electives = [student.elective1, student.elective2, student.elective3]
+    electives = [e for e in electives if e]
+    subjects = list(subjects_qs) + electives
+    # Remove duplicates
+    subjects = list({s.id: s for s in subjects}.values())
+    subject_percentages = []
+    for subject in subjects:
+        subj_total = Attendance.objects.filter(student=student, subject=subject).count()
+        subj_present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
+        subj_percentage = (subj_present / subj_total * 100) if subj_total > 0 else 0
+        subject_percentages.append({
+            'subject': subject,
+            'percentage': round(subj_percentage, 2)
+        })
+    context['subject_percentages'] = subject_percentages
+    context['subjects'] = subjects
+    return render(request, 'student/attendance.html', context)
+
 # Student OD history view
 @login_required
 def student_od_history(request):
@@ -79,276 +201,10 @@ def principal_dashboard(request):
 
 # Period-wise attendance view
 from django.http import HttpResponse
-@login_required
-def period_attendance_view(request):
-    context = set_config(request)
-    selected_date = request.GET.get('date')
-    roll = request.GET.get('roll')
-    period_attendance = {}
-    student = None
-    error = None
-    if roll:
-        student = Student.objects.filter(roll=roll).first()
-    else:
-        student = context.get('duser')
-    if not isinstance(student, Student):
-        error = 'Student not found.'
-    elif selected_date:
-        # Show 7 periods for the selected date (placeholder data)
-        period_attendance = {}
-        for i in range(1, 8):
-            period_attendance[f'Period {i}'] = {
-                'status': 'Present' if i % 2 == 1 else 'Absent',
-                'marked_by': f'Staff {chr(64+i)}',
-                'remarks': '' if i != 2 else 'Medical',
-            }
-    context['selected_date'] = selected_date
-    context['student'] = student
-    context['period_attendance'] = period_attendance
-    context['error'] = error
-    return render(request, 'student/period_attendance.html', context)
+
 
 # Student attendance view for date-wise lookup
-@login_required
-def staff_attendance_view(request):
-    context = set_config(request)
-    staff = None
-    assigned_subjects = []
-    subjects_with_students = []
-    from .models import Attendance
-    success = None
-    error = None
-    try:
-        staff = Staff.objects.get(user=request.user)
-        assigned_subjects = SemesterSubject.objects.filter(
-            models.Q(staff1=staff) | models.Q(staff2=staff) | models.Q(staff3=staff)
-        )
-        if request.method == "POST":
-            # Find which subject and section this POST is for
-            post_keys = list(request.POST.keys())
-            subject_id = None
-            section_val = None
-            for key in post_keys:
-                if key.startswith("attendance_date_"):
-                    parts = key.split("_")
-                    if len(parts) >= 4:
-                        subject_id = parts[2]
-                        section_val = parts[3]
-                        break
-            if subject_id and section_val:
-                try:
-                    subject = SemesterSubject.objects.get(id=subject_id)
-                    section = int(section_val)
-                    date_str = request.POST.get(f"attendance_date_{subject_id}_{section}")
-                    absent_last3 = request.POST.get(f"absent_last3_{subject_id}_{section}", "")
-                    if not date_str:
-                        raise Exception("Date is required.")
-                    date_obj = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
-                    # Get students for this subject-section
-                    students = Student.objects.filter(
-                        department=subject.semester.department,
-                        semester=subject.semester.semester,
-                        section=section
-                    )
-                    absent_last3_list = [s.strip() for s in absent_last3.replace(",", " ").split() if s.strip()]
-                    for student in students:
-                        last3 = str(student.roll)[-3:] if student.roll else None
-                        status = 'Absent' if last3 in absent_last3_list else 'Present'
-                        att, created = Attendance.objects.get_or_create(
-                            student=student,
-                            subject=subject,
-                            date=date_obj,
-                            defaults={'status': status}
-                        )
-                        if not created:
-                            att.status = status
-                            att.save()
-                    success = f"Attendance marked for {subject.name} section {section} on {date_str}."
-                except Exception as e:
-                    error = f"Error: {e}"
-        # Prepare context as before
-        all_students_set = set()
-        for subject in assigned_subjects:
-            semester_obj = subject.semester
-            section_students = []
-            for idx, (section_field, staff_field) in enumerate([
-                ("section1", "staff1"), ("section2", "staff2"), ("section3", "staff3")
-            ], start=1):
-                section_val = getattr(subject, section_field)
-                staff_val = getattr(subject, staff_field)
-                if staff_val == staff and section_val is not None:
-                    students = Student.objects.filter(
-                        department=semester_obj.department,
-                        semester=semester_obj.semester,
-                        section=section_val
-                    )
-                    students_with_attendance = []
-                    for student in students:
-                        total = Attendance.objects.filter(student=student, subject=subject).count()
-                        present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
-                        percentage = (present / total * 100) if total > 0 else 0
-                        students_with_attendance.append({
-                            'student': student,
-                            'percentage': round(percentage, 2),
-                            'total': total,
-                            'present': present
-                        })
-                        all_students_set.add(student)
-                    section_students.append((section_val, students_with_attendance))
-            subjects_with_students.append({
-                'subject': subject,
-                'section_students': section_students
-            })
-        # Calculate overall attendance percentage for each student (across all subjects)
-        student_percentages = {}
-        for student in all_students_set:
-            # Get all subjects for this student: department+semester (non-electives) + assigned electives only
-            subjects_qs = SemesterSubject.objects.filter(
-                semester__department=student.department,
-                semester__semester=student.semester,
-                is_elective=False
-            )
-            electives = [student.elective1, student.elective2, student.elective3]
-            electives = [e for e in electives if e]
-            subjects = list(subjects_qs) + electives
-            subjects = list({s.id: s for s in subjects}.values())
-            subject_percentages = []
-            for subject in subjects:
-                subj_total = Attendance.objects.filter(student=student, subject=subject).count()
-                subj_present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
-                subj_percentage = (subj_present / subj_total * 100) if subj_total > 0 else 0
-                if subj_total > 0:
-                    subject_percentages.append(subj_percentage)
-            if subject_percentages:
-                overall_percentage = sum(subject_percentages) / len(subject_percentages)
-            else:
-                total_days = Attendance.objects.filter(student=student).count()
-                present_days = Attendance.objects.filter(student=student, status='Present').count()
-                overall_percentage = (present_days / total_days) * 100 if total_days > 0 else 0
-            student_percentages[student.id] = round(overall_percentage, 1)
-    except Staff.DoesNotExist:
-        assigned_subjects = []
-        student_percentages = {}
-    context['subjects_with_students'] = subjects_with_students
-    context['student_percentages'] = student_percentages
-    context['success'] = success
-    context['error'] = error
-    return render(request, 'staff/attendance.html', context)
-def student_attendance_view(request):
-    context = set_config(request)
 
-    from .models import Attendance, Student, SemesterSubject
-
-    attendance_status = None
-    selected_date = request.GET.get('date')
-    roll = request.GET.get('roll')
-    # If roll is provided, get that student, else use logged-in user
-    if roll:
-        student = Student.objects.filter(roll=roll).first()
-    else:
-        student = context.get('duser')
-    if not isinstance(student, Student):
-        context['attendance_status'] = None
-        context['selected_date'] = selected_date
-        context['attendance_map'] = {}
-        context['calendar_month'] = timezone.now().month
-        context['calendar_year'] = timezone.now().year
-        context['student'] = None
-        context['error'] = 'Student not found.'
-        context['subjects'] = []
-        return render(request, 'student/attendance.html', context)
-    # Get all attendance records for the current month for the selected student
-    today = timezone.now().date()
-    month = int(request.GET.get('month', today.month))
-    year = int(request.GET.get('year', today.year))
-    from calendar import monthrange
-    start_date = today.replace(day=1, month=month, year=year)
-    end_date = today.replace(day=monthrange(year, month)[1], month=month, year=year)
-    all_attendance = Attendance.objects.filter(student=student, date__range=[start_date, end_date])
-    attendance_map = {a.date.strftime('%Y-%m-%d'): a.status for a in all_attendance}
-    if selected_date:
-        try:
-            date_obj = timezone.datetime.strptime(selected_date, '%Y-%m-%d').date()
-            record = Attendance.objects.filter(student=student, date=date_obj).first()
-            if record:
-                attendance_status = record.status
-            else:
-                attendance_status = None
-        except Exception:
-            attendance_status = None
-    # Get subjects for this student: department+semester (non-electives) + assigned electives only
-    subjects_qs = SemesterSubject.objects.filter(
-        semester__department=student.department,
-        semester__semester=student.semester,
-        is_elective=False
-    )
-    electives = [student.elective1, student.elective2, student.elective3]
-    electives = [e for e in electives if e]
-    subjects = list(subjects_qs) + electives
-    # Remove duplicates
-    subjects = list({s.id: s for s in subjects}.values())
-    # Calculate subject-wise attendance percentage for this student
-    subject_attendance = []
-    subject_percentages = []
-    for subject in subjects:
-        subj_total = Attendance.objects.filter(student=student, subject=subject).count()
-        subj_present = Attendance.objects.filter(student=student, subject=subject, status='Present').count()
-        subj_percentage = (subj_present / subj_total * 100) if subj_total > 0 else 0
-        subject_attendance.append({
-            'subject': subject,
-            'total': subj_total,
-            'present': subj_present,
-            'percentage': round(subj_percentage, 2)
-        })
-        if subj_total > 0:
-            subject_percentages.append(subj_percentage)
-    # Overall: average of subject-wise percentages (if any), else fallback to old logic
-    if subject_percentages:
-        overall_percentage = sum(subject_percentages) / len(subject_percentages)
-    else:
-        total_days = Attendance.objects.filter(student=student).count()
-        present_days = Attendance.objects.filter(student=student, status='Present').count()
-        overall_percentage = (present_days / total_days) * 100 if total_days > 0 else 0
-    context['subject_attendance'] = subject_attendance
-    subject_percentages = []
-    for subject in subjects:
-        subject_percentages.append({
-            'subject': subject,
-            'percentage': overall_percentage
-        })
-    context['attendance_status'] = attendance_status
-    context['selected_date'] = selected_date
-    context['attendance_map'] = attendance_map
-    context['calendar_month'] = month
-    context['calendar_year'] = year
-    context['student'] = student
-    context['subjects'] = subjects
-    context['subject_percentages'] = subject_percentages
-    return render(request, 'student/attendance.html', context)
-
-# AHOD Bonafide (HOD) requests view
-
-
-@login_required
-def staff_list(request):
-    context = set_config(request)
-    user = request.user
-    # Get HOD staff object
-    try:
-        hod_staff = Staff.objects.get(user=user)
-        department = hod_staff.department
-        staff_members = Staff.objects.filter(department=department).exclude(id=hod_staff.id).order_by('name')
-    except Staff.DoesNotExist:
-        staff_members = Staff.objects.none()
-    # Ensure each staff has an email, fallback to user.email if not set
-    for staff in staff_members:
-        if not staff.email and staff.user and hasattr(staff.user, 'email') and staff.user.email:
-            staff.email = staff.user.email
-        # Fallback for mobile
-        if (not staff.mobile or staff.mobile == '') and staff.user and hasattr(staff.user, 'mobile') and staff.user.mobile:
-            staff.mobile = staff.user.mobile
-    context['staff_members'] = staff_members
-    return render(request, 'hod/staff_list.html', context)
 
 # AHOD Bonafide (HOD) requests view
 
@@ -539,7 +395,7 @@ def delete_all_notifications(request):
 
 @login_required
 def my_class_students(request):
-    from .models import Attendance
+    # removed Attendance import
     from django.utils import timezone
     staff = Staff.objects.get(user=request.user)
     students = Student.objects.filter(advisor=staff).order_by('roll')
@@ -547,75 +403,9 @@ def my_class_students(request):
         'students': students,
         'duser': staff,
     }
-    selected_date = None
-    if request.method == 'POST':
-        date_str = request.POST.get('attendance_date')
-        error_msg = None
-        success_msg = None
-        if date_str:
-            try:
-                selected_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
-            except Exception:
-                selected_date = timezone.now().date()
-        else:
-            selected_date = timezone.now().date()
-
-        # Debug: print students
-        print('DEBUG: students:', list(students))
-
-        if not students:
-            error_msg = 'No students found for your class.'
-        else:
-            # Parse last 3 digits input for absent students
-            absent_last3 = request.POST.get('absent_last3', '')
-            absent_last3 = absent_last3.replace(',', ' ').split()
-            absent_last3 = [x.strip() for x in absent_last3 if x.strip().isdigit() and len(x.strip()) == 3]
-            absent_set = set(absent_last3)
-
-            # Find students whose roll ends with any of the absent last 3 digits
-            absent_students = [s for s in students if s.roll and s.roll[-3:] in absent_set]
-            absent_ids = set(s.id for s in absent_students)
-
-            # Mark attendance for each student (no subject)
-            for student in students:
-                Attendance.objects.update_or_create(
-                    student=student,
-                    date=selected_date,
-                    defaults={'status': 'Absent' if student.id in absent_ids else 'Present'}
-                )
-
-            # Recalculate present percentage for each student (overall)
-            for student in students:
-                total_days = Attendance.objects.filter(student=student).count()
-                present_days = Attendance.objects.filter(student=student, status='Present').count()
-                percentage = (present_days / total_days) * 100 if total_days > 0 else 0
-                latest_attendance = Attendance.objects.filter(student=student).order_by('-date').first()
-                if latest_attendance:
-                    latest_attendance.percentage = percentage
-                    latest_attendance.save(update_fields=['percentage'])
-
-            # Now recalculate student_percentages for display
-            student_percentages = {}
-            for student in students:
-                total_days = Attendance.objects.filter(student=student).count()
-                present_days = Attendance.objects.filter(student=student, status='Present').count()
-                percentage = (present_days / total_days) * 100 if total_days > 0 else 0
-                student_percentages[student.id] = percentage
-            context['student_percentages'] = student_percentages
-            success_msg = 'Attendance marked successfully.'
-        context['error'] = error_msg
-        context['success'] = success_msg
-        context['selected_date'] = date_str
-    else:
-        # GET: recalculate student_percentages for display
-        student_percentages = {}
-        for student in students:
-            total_days = Attendance.objects.filter(student=student).count()
-            present_days = Attendance.objects.filter(student=student, status='Present').count()
-            percentage = (present_days / total_days) * 100 if total_days > 0 else 0
-            student_percentages[student.id] = percentage
-        context['student_percentages'] = student_percentages
-        context['selected_date'] = ''
+    # Do not calculate or display attendance percentages
+    context['student_percentages'] = {}
+    context['selected_date'] = ''
     return render(request, 'staff/my_class_students.html', context)
 
 @login_required

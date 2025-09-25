@@ -345,5 +345,3 @@ class SemesterAdmin(admin.ModelAdmin):
 	inlines = [SemesterSubjectInline]
 	list_display = ("department", "semester")
 	search_fields = ("department__name", "semester")
-from .models import Attendance
-admin.site.register(Attendance)

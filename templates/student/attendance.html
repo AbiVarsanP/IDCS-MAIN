@@ -10,26 +10,37 @@
 			{# Subjects heading and table removed as per request #}
 
 			<h5 class="mt-4">Attendance Percentage by Subject</h5>
-			{% if subject_percentages %}
-				<div class="mb-3">
-				{% for sp in subject_percentages %}
-					<div class="mb-2">
-						<div class="d-flex justify-content-between">
-							<span><strong>{{ sp.subject.name }}</strong></span>
-							<span>{{ sp.percentage|floatformat:1 }}%</span>
-						</div>
-						<div class="progress" style="height: 20px;">
-							<div class="progress-bar {% if sp.percentage >= 75 %}bg-success{% elif sp.percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
-								 role="progressbar" style="width: {{ sp.percentage }}%;" aria-valuenow="{{ sp.percentage }}" aria-valuemin="0" aria-valuemax="100">
-								{{ sp.percentage|floatformat:1 }}%
-							</div>
-						</div>
-					</div>
-				{% endfor %}
-				</div>
-			{% else %}
-				<div class="alert alert-info">No attendance data available for subjects.</div>
-			{% endif %}
+			<div class="mb-3">
+				{% if subject_percentages and subject_percentages|length > 0 %}
+				<table class="table table-bordered">
+					<thead>
+						<tr>
+							<th>Subject</th>
+							<th>Percentage</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for entry in subject_percentages %}
+						<tr>
+							<td>{{ entry.subject.name }}</td>
+							<td style="min-width:200px;">
+								<div class="progress" style="height: 24px;">
+									<div class="progress-bar {% if entry.percentage >= 75 %}bg-success{% elif entry.percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+										 role="progressbar"
+										 style="width: {{ entry.percentage }}%; font-weight:bold;"
+										 aria-valuenow="{{ entry.percentage }}" aria-valuemin="0" aria-valuemax="100">
+										{{ entry.percentage }}%
+									</div>
+								</div>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				{% else %}
+				<div class="alert alert-info">Attendance data is not available.</div>
+				{% endif %}
+			</div>
 
 			{# Date-based attendance status display removed as per request #}
 		</div>

@@ -24,7 +24,12 @@
                 {% for p in periods %}
                     {% with key=day|add:"_"|add:p|stringformat:"s" %}
                         <td>
-                            <input type="text" name="{{ key }}" value="{{ table|dict_get:key }}" class="form-control timetable-input" readonly>
+                            <select name="{{ key }}" class="form-control timetable-input" disabled>
+                                <option value="">-- Select Subject --</option>
+                                {% for subject in assigned_subjects %}
+                                    <option value="{{ subject.name }}" {% if table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
                         </td>
                     {% endwith %}
                 {% endfor %}
@@ -35,15 +40,15 @@
 </form>
 <script>
 function toggleEdit() {
-    const inputs = document.querySelectorAll('.timetable-input');
+    const selects = document.querySelectorAll('.timetable-input');
     const editBtn = document.getElementById('edit-btn');
     const saveBtn = document.getElementById('save-btn');
     if (editBtn.innerText === 'Edit') {
-        inputs.forEach(i => i.removeAttribute('readonly'));
+        selects.forEach(i => i.disabled = false);
         editBtn.innerText = 'Cancel';
         saveBtn.style.display = '';
     } else {
-        inputs.forEach(i => i.setAttribute('readonly', true));
+        selects.forEach(i => i.disabled = true);
         editBtn.innerText = 'Edit';
         saveBtn.style.display = 'none';
     }
@@ -71,7 +76,12 @@ function toggleEdit() {
                 {% for p in periods %}
                     {% with key=day|add:"_"|add:p|stringformat:"s" %}
                         <td>
-                            <input type="text" name="my_{{ key }}" value="{{ my_table|dict_get:key }}" class="form-control my-timetable-input" readonly>
+                            <select name="my_{{ key }}" class="form-control my-timetable-input" disabled>
+                                <option value="">-- Select Subject --</option>
+                                {% for subject in assigned_subjects %}
+                                    <option value="{{ subject.name }}" {% if my_table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
                         </td>
                     {% endwith %}
                 {% endfor %}
@@ -82,15 +92,15 @@ function toggleEdit() {
 </form>
 <script>
 function toggleMyEdit() {
-    const inputs = document.querySelectorAll('.my-timetable-input');
+    const selects = document.querySelectorAll('.my-timetable-input');
     const editBtn = document.getElementById('my-edit-btn');
     const saveBtn = document.getElementById('my-save-btn');
     if (editBtn.innerText === 'Edit') {
-        inputs.forEach(i => i.removeAttribute('readonly'));
+        selects.forEach(i => i.disabled = false);
         editBtn.innerText = 'Cancel';
         saveBtn.style.display = '';
     } else {
-        inputs.forEach(i => i.setAttribute('readonly', true));
+        selects.forEach(i => i.disabled = true);
         editBtn.innerText = 'Edit';
         saveBtn.style.display = 'none';
     }

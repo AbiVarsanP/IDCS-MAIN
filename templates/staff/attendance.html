@@ -28,11 +28,11 @@
                             <button type="submit" class="btn btn-primary mb-3">Submit Attendance</button>
                             <div class="mb-3">
                                 <label for="attendance_date_{{ item.subject.id }}_{{ section }}" class="form-label">Select Date:</label>
-                                <input type="date" id="attendance_date_{{ item.subject.id }}_{{ section }}" name="attendance_date" class="form-control" required>
+                                <input type="date" id="attendance_date_{{ item.subject.id }}_{{ section }}" name="attendance_date_{{ item.subject.id }}_{{ section }}" class="form-control" required>
                             </div>
                             <div class="mb-3">
                                 <label for="absent_last3_{{ item.subject.id }}_{{ section }}" class="form-label">Enter last 3 digits of roll numbers to mark absent:</label>
-                                <input type="text" id="absent_last3_{{ item.subject.id }}_{{ section }}" name="absent_last3" class="form-control" placeholder="e.g. 123, 456, 789">
+                                <input type="text" id="absent_last3_{{ item.subject.id }}_{{ section }}" name="absent_last3_{{ item.subject.id }}_{{ section }}" class="form-control" placeholder="e.g. 123, 456, 789">
                                 <small class="form-text text-muted">Separate multiple values with commas or spaces. Example: 123 456 789</small>
                             </div>
                             <table class="table table-bordered table-striped mt-3">

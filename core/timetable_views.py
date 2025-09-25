@@ -39,6 +39,14 @@ def staff_timetable(request):
                     table[key] = request.POST.get(key, '')
             StaffTimeTable.objects.update_or_create(staff=staff, defaults={'data': table, 'my_timetable_data': my_table})
             context['message'] = 'Timetable updated!'
+    # Get department subjects for dropdown
+    department = getattr(staff, 'department', None)
+    department_subjects = []
+    if department:
+        from .models import SemesterSubject, Semester
+        semesters = Semester.objects.filter(department=department)
+        department_subjects = SemesterSubject.objects.filter(semester__in=semesters)
+    context['assigned_subjects'] = department_subjects
     context['days'] = days
     context['periods'] = periods
     context['table'] = table

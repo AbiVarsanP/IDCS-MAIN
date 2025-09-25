@@ -141,9 +141,6 @@
                             <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
                                 <a href="{% url 'leave' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a>
                             </li>
-                            <li id="attendanceMenuItem" class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
-                                <a href="{% url 'student_attendance' %}"><i class="menu-icon fa fa-check-square-o"></i>Attendance</a>
-                            </li>
                             <li class="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
                                 <a href="{% url 'bonafide' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a>
                             </li>
@@ -162,6 +159,9 @@
                                     <li class="{% if request.resolver_match.url_name == 'student_timetable' %}active{% endif %}">
                                         <a href="{% url 'student_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a>
                                     </li>
+                                        <li class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
+                                            <a href="{% url 'student_attendance' %}"><i class="menu-icon fa fa-check-square"></i>Attendance</a>
+                                        </li>
                                 {% elif request.user.is_staff %}
                                     
                                 {% endif %}
@@ -179,7 +179,7 @@
                     <div id="sidebarOverlay" style="display:none;"></div>
                     <div id="attendanceSidebar" style="left:-300px;">
                         <h4>View Attendance</h4>
-                        <form method="get" id="attendanceForm" action="{% url 'student_attendance' %}">
+                        <!-- Attendance form and menu removed: backend logic no longer exists -->
                             <div class="mb-3">
                                 <label for="date" class="form-label">Select Date:</label>
                                 <input type="date" id="date" name="date" class="form-control" required value="{{ selected_date|default:'' }}">

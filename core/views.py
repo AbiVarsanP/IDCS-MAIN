@@ -1,7 +1,144 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+from collections import defaultdict
+
+def is_hod(user):
+    return user.is_staff and hasattr(user, 'staff') and user.staff.position == 0
+
+@login_required
+@user_passes_test(is_hod)
+def hod_sports_od_view(request):
+    context = set_config(request)
+    hod_staff = Staff.objects.get(user=request.user)
+    # Get all players from the HOD's department
+    players = SportsODPlayer.objects.filter(
+        student__department=hod_staff.department
+    ).select_related('student', 'sports_od__created_by').order_by('-sports_od__created_at')
+
+    # Group players by event
+    players_by_event = defaultdict(list)
+    for player in players:
+        players_by_event[player.sports_od].append(player)
+
+    context['players_by_event'] = dict(players_by_event)
+    return render(request, 'hod/sports_od_approval.html', context)
+
+
+@login_required
+@user_passes_test(is_hod)
+def hod_sports_od_action(request, player_id):
+    if request.method == 'POST':
+        player = SportsODPlayer.objects.get(id=player_id)
+        action = request.POST.get('action') # 'Approved' or 'Rejected'
+        remark = request.POST.get('hod_remark')
+
+        # Security check: ensure HOD is acting on a student from their department
+        hod_staff = Staff.objects.get(user=request.user)
+        if player.student.department == hod_staff.department:
+            player.status = action
+            player.hod_remark = remark
+            player.save()
+
+            # Notify the PET staff
+            Notification.objects.create(
+                staff=player.sports_od.created_by,
+                message=f"Sports OD for {player.student.name} ({player.sports_od.event_name}) has been {action.lower()} by HOD."
+            )
+            messages.success(request, f"Action '{action}' recorded for {player.student.name}.")
+        else:
+            messages.error(request, "You are not authorized to perform this action.")
+
+    return redirect('hod_sports_od_view')
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import SportsOD, SportsODPlayer, Student, Staff, Notification
+from django.db import transaction
+
+# Helper function to check if a user is a PET Staff
+def is_pet_staff(user):
+    return user.is_staff and hasattr(user, 'staff') and user.staff.position == 5
+
+@login_required
+@user_passes_test(is_pet_staff, login_url='/dash/')
+def pet_dashboard(request):
+    context = set_config(request)
+    return render(request, 'pet/dash.html', context)
+
+@login_required
+@user_passes_test(is_pet_staff, login_url='/dash/')
+@transaction.atomic
+def pet_sports_od_apply(request):
+    context = set_config(request)
+    if request.method == 'POST':
+        event_name = request.POST.get('event_name')
+        body = request.POST.get('body') # Get the new body field
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        student_rolls = request.POST.getlist('student_roll')
+
+        pet_staff = Staff.objects.get(user=request.user)
+        # Create the main SportsOD event
+        sports_od = SportsOD.objects.create(
+            event_name=event_name,
+            body=body, # Save the new body field
+            start_date=start_date,
+            end_date=end_date,
+            created_by=pet_staff
+        )
+
+        # Find students by user__username (the long ID) instead of roll
+        students_found = Student.objects.filter(user__username__in=student_rolls)
+        hods_to_notify = set()
+
+        for student in students_found:
+            SportsODPlayer.objects.create(sports_od=sports_od, student=student)
+            if student.hod:
+                hods_to_notify.add(student.hod)
+
+        # Notify the relevant HODs
+        for hod in hods_to_notify:
+            Notification.objects.create(
+                staff=hod,
+                role='hod',
+                message=f"New Sports OD approval request for '{event_name}' needs your attention."
+            )
+
+        messages.success(request, 'Sports OD application submitted successfully!')
+        return redirect('pet_sports_od_status')
+
+    return render(request, 'pet/sports_od_apply.html', context)
+
+@login_required
+@user_passes_test(is_pet_staff, login_url='/dash/')
+def pet_sports_od_status(request):
+    context = set_config(request)
+    pet_staff = Staff.objects.get(user=request.user)
+    context['sports_ods'] = SportsOD.objects.filter(created_by=pet_staff).prefetch_related('players__student__department')
+    return render(request, 'pet/sports_od_status.html', context)
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
+
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import Student
+# ...existing code...
+
+@login_required
+def get_student_details(request, user_id): # Changed parameter name
+    """
+    API endpoint to fetch student details by user_id (username).
+    """
+    try:
+        # Changed query to search by user__username
+        student = Student.objects.get(user__username=user_id)
+        data = {
+            'exists': True,
+            'name': student.name,
+            'department': student.department.name if student.department else 'N/A', # Changed .code to .name
+            'year': student.year,
+        }
+    except Student.DoesNotExist:
+        data = {'exists': False, 'error': 'Student not found.'}
+    return JsonResponse(data)
 from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
 from .forms import CertificateUploadForm
@@ -937,6 +1074,18 @@ def dash(request):
 
     # --- Add today's timetable for staff dashboard ---
     if request.user.is_staff:
+        # Check if the user is a PET Staff and redirect
+        if hasattr(request.user, 'staff'):
+            if request.user.staff.position == 5:
+                return redirect('pet_dashboard')
+            else:
+                # Debug: Not PET Staff, show message
+                from django.contrib import messages
+                messages.warning(request, f"Staff detected but position={request.user.staff.position}, not PET Staff (5).")
+        else:
+            # Debug: No Staff object linked
+            from django.contrib import messages
+            messages.warning(request, "No Staff object linked to this user. PET Staff portal not available.")
         from core.services.get_todays_timetable import get_todays_timetable
         context['todays_timetable'] = get_todays_timetable(context['duser'])
 

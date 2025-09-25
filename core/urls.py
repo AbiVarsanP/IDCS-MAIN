@@ -27,6 +27,10 @@ from .view_mentees import view_mentees, my_mentees
 
 
 urlpatterns = [
+
+    # Add these new includes
+    path('pet/', include('core.pet_urls')),
+    path('hod/', include('core.hod_urls')),
     path('staff/certificates/', staff_certificates, name='staff_certificates'),
     path('student/certificate/upload/', certificate_upload_view, name='certificate_upload'),
     path('student/recent-notifications/', recent_notifications_api, name='recent_notifications_api'),

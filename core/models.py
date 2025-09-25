@@ -25,6 +25,7 @@ from django.contrib.auth import get_user_model
 
 
 from .constants import *
+from django.utils import timezone
 # Section model to represent department sections (A, B, C, etc.)
 class Section(models.Model):
     code = models.PositiveIntegerField(choices=SECTION, unique=True)
@@ -78,6 +79,59 @@ class Department(models.Model):
     
 
 # Attendance Model for Section 3.2: Track attendance, link to events/workshops/training, integrate with Leaves/ODs for deductions
+
+
+# Add PET Staff to POS constant
+POS = (
+    (0, "HOD"),
+    (1, "Assistant Head of the Department"),
+    (2, "Professor"),
+    (3, "Assistant Professor"),
+    (4, "Associate Professor"),
+    (5, "PET Staff"), # Add this new role
+)
+
+# Update Staff model position default if needed
+# (Already default=0, will change to default=3 for Assistant Professor)
+
+# ----------------------------
+# -- SPORTS OD MODELS START --
+# ----------------------------
+
+class SportsOD(models.Model):
+    event_name = models.CharField(max_length=200)
+    body = models.TextField(blank=True, null=True) # Add this field for the reason/body
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey('Staff', on_delete=models.CASCADE, related_name='sports_ods_created', help_text="The PET Staff who created this OD.")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date']
+        verbose_name = "Sports OD"
+        verbose_name_plural = "Sports ODs"
+
+    def __str__(self):
+        return self.event_name
+
+class SportsODPlayer(models.Model):
+    sports_od = models.ForeignKey(SportsOD, on_delete=models.CASCADE, related_name='players')
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='sports_od_participations')
+    status = models.CharField(max_length=20, choices=STATUS, default="Pending")
+    hod_remark = models.TextField(blank=True, null=True, help_text="Reason for approval/rejection by HOD.")
+
+    class Meta:
+        ordering = ['student__department', 'student__roll']
+        verbose_name = "Sports OD Player"
+        verbose_name_plural = "Sports OD Players"
+        unique_together = ('sports_od', 'student')
+
+    def __str__(self):
+        return f"{self.student.name} for {self.sports_od.event_name}"
+
+# --------------------------
+# -- SPORTS OD MODELS END --
+# --------------------------
 
 class Attendance(models.Model):
     STATUS_CHOICES = [

@@ -129,6 +129,7 @@
                             <li class="{% if request.resolver_match.url_name == 'hod_leave_view' %}active{% endif %}"><a href="{% url 'hod_leave_view' %}"><i class="menu-icon fa fa-copy"></i>Leave's </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_bonafide_view' %}active{% endif %}"><a href="{% url 'hod_bonafide_view' %}"><i class="menu-icon fa fa-certificate"></i>Bonafide </a></li>
                             <li class="{% if request.resolver_match.url_name == 'hod_gatepass_view' %}active{% endif %}"><a href="{% url 'hod_gatepass_view' %}"><i class="menu-icon ti-shift-right-alt"></i>Gatepass </a></li>
+                                <li class="{% if request.resolver_match.url_name == 'hod_sports_od_view' %}active{% endif %}"><a href="{% url 'hod_sports_od_view' %}"><i class="menu-icon fa fa-futbol-o"></i>Sports OD Approval</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student Certificates</a></li>
                             <li class="{% if request.resolver_match.url_name == 'my_mentees' %}active{% endif %}"><a href="{% url 'my_mentees' %}"><i class="menu-icon fa fa-users"></i>My Mentees</a></li>
                             <li class="{% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}"><a href="{% url 'staff_list' %}"><i class="menu-icon fa fa-users"></i>Staff List</a></li>

@@ -167,6 +167,12 @@ urlpatterns += [
     path('password_change/', otp_verification, name='password_change'),
 ]
 
+from core.timetable_views import get_department_subjects
+
+urlpatterns += [
+    path('get-department-subjects/<int:department_id>/', get_department_subjects, name='get_department_subjects'),
+]
+
 
 
 

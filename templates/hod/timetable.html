@@ -23,8 +23,28 @@
                 {% for p in periods %}
                     {% with key=day|add:"_"|add:p|stringformat:"s" %}
                         <td>
-                            <input type="text" name="my_{{ key }}" value="{{ my_table|dict_get:key }}" class="form-control timetable-input" readonly>
+                            <select name="{{ key }}" class="form-control timetable-input" disabled>
+                                <option value="">-- Select Subject --</option>
+                                {% for subject in assigned_subjects %}
+                                    <option value="{{ subject.name }}" {% if my_table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                                <option value="others">Others</option>
+                            </select>
+                            <input type="text" name="custom_{{ key }}" class="form-control timetable-input" placeholder="Listing other department subjects..." style="display:none;" disabled>
                         </td>
+                        <script>
+                        document.querySelector('[name="{{ key }}"]').addEventListener('change', function() {
+                            const customInput = document.querySelector('[name="custom_{{ key }}"]');
+                            if (this.value === 'others') {
+                                customInput.style.display = '';
+                                customInput.disabled = false;
+                                customInput.placeholder = "Listing other department subjects...";
+                            } else {
+                                customInput.style.display = 'none';
+                                customInput.disabled = true;
+                            }
+                        });
+                        </script>
                     {% endwith %}
                 {% endfor %}
             </tr>

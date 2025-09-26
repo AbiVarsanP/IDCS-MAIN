@@ -24,13 +24,53 @@
                 {% for p in periods %}
                     {% with key=day|add:"_"|add:p|stringformat:"s" %}
                         <td>
-                            <select name="{{ key }}" class="form-control timetable-input" disabled>
+                            <select name="subject_{{ key }}" class="form-control timetable-input" onchange="handleSubjectChange(this, '{{ key }}')">
                                 <option value="">-- Select Subject --</option>
-                                {% for subject in assigned_subjects %}
-                                    <option value="{{ subject.name }}" {% if table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% for subject in all_subjects %}
+                                    <option value="{{ subject.id }}" {% if table|dict_get:key == subject.id|stringformat:'s' %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="department_{{ key }}" class="form-control timetable-input" style="display:none;" onchange="updateSubjects(this, '{{ key }}')">
+                                <option value="">-- Select Department --</option>
+                                {% for department in all_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
                                 {% endfor %}
                             </select>
                         </td>
+                        <script>
+                        function handleSubjectChange(subjectSelect, key) {
+                            const departmentSelect = document.querySelector(`[name='department_${key}']`);
+                            if (subjectSelect.value === 'others') {
+                                departmentSelect.style.display = '';
+                                departmentSelect.disabled = false;
+                            } else {
+                                departmentSelect.style.display = 'none';
+                                departmentSelect.disabled = true;
+                            }
+                        }
+
+                        function updateSubjects(departmentSelect, key) {
+                            const subjectSelect = document.querySelector(`[name='subject_${key}']`);
+                            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>'; // Clear previous options
+                            subjectSelect.value = '';
+                            if (departmentSelect.value) {
+                                fetch(`/get-department-subjects/${departmentSelect.value}/`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        data.subjects.forEach((subject, idx) => {
+                                            const option = document.createElement('option');
+                                            option.value = subject.id;
+                                            option.textContent = subject.name;
+                                            subjectSelect.appendChild(option);
+                                        });
+                                        // Auto-select the first subject if available
+                                        if (data.subjects.length > 0) {
+                                            subjectSelect.value = data.subjects[0].id;
+                                        }
+                                    });
+                            }
+                        }
+                        </script>
                     {% endwith %}
                 {% endfor %}
             </tr>
@@ -39,6 +79,10 @@
     </table>
 </form>
 <script>
+// Disable timetable inputs by default
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.timetable-input').forEach(i => i.disabled = true);
+});
 function toggleEdit() {
     const selects = document.querySelectorAll('.timetable-input');
     const editBtn = document.getElementById('edit-btn');
@@ -76,13 +120,49 @@ function toggleEdit() {
                 {% for p in periods %}
                     {% with key=day|add:"_"|add:p|stringformat:"s" %}
                         <td>
-                            <select name="my_{{ key }}" class="form-control my-timetable-input" disabled>
+                            <select name="my_subject_{{ key }}" class="form-control my-timetable-input" onchange="handleMySubjectChange(this, '{{ key }}')">
                                 <option value="">-- Select Subject --</option>
-                                {% for subject in assigned_subjects %}
-                                    <option value="{{ subject.name }}" {% if my_table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% for subject in all_subjects %}
+                                    <option value="{{ subject.id }}" {% if my_table|dict_get:key == subject.id|stringformat:'s' %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="my_department_{{ key }}" class="form-control my-timetable-input" style="display:none;" onchange="updateMySubjects(this, '{{ key }}')">
+                                <option value="">-- Select Department --</option>
+                                {% for department in all_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
                                 {% endfor %}
                             </select>
                         </td>
+                        <script>
+                        function handleMySubjectChange(subjectSelect, key) {
+                            const departmentSelect = document.querySelector(`[name='my_department_${key}']`);
+                            if (subjectSelect.value === 'others') {
+                                departmentSelect.style.display = '';
+                                departmentSelect.disabled = false;
+                            } else {
+                                departmentSelect.style.display = 'none';
+                                departmentSelect.disabled = true;
+                            }
+                        }
+
+                        function updateMySubjects(departmentSelect, key) {
+                            const subjectSelect = document.querySelector(`[name='my_subject_${key}']`);
+                            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>'; // Clear previous options
+
+                            if (departmentSelect.value) {
+                                fetch(`/get-department-subjects/${departmentSelect.value}/`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        data.subjects.forEach(subject => {
+                                            const option = document.createElement('option');
+                                            option.value = subject.id;
+                                            option.textContent = subject.name;
+                                            subjectSelect.appendChild(option);
+                                        });
+                                    });
+                            }
+                        }
+                        </script>
                     {% endwith %}
                 {% endfor %}
             </tr>
@@ -91,6 +171,10 @@ function toggleEdit() {
     </table>
 </form>
 <script>
+// Disable my timetable inputs by default
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.my-timetable-input').forEach(i => i.disabled = true);
+});
 function toggleMyEdit() {
     const selects = document.querySelectorAll('.my-timetable-input');
     const editBtn = document.getElementById('my-edit-btn');

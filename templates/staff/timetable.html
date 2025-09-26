@@ -3,6 +3,33 @@
 
 
 {% block root %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    table th, table td {
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px;
+        border: 1px solid #ddd;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    table th {
+        background-color: #f4f4f4;
+        font-weight: bold;
+    }
+    table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+    table {
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    }
+</style>
 <h3>Update Class Timetable</h3>
 <form method="post" id="timetable-form">
     {% csrf_token %}

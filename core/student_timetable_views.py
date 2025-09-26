@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .helpers import set_config
 from .models import Staff
 from .timetable_models import StaffTimeTable
+from .models import SemesterSubject
 
 @login_required
 def student_timetable(request):
@@ -20,7 +21,15 @@ def student_timetable(request):
     if staff:
         try:
             timetable_obj = StaffTimeTable.objects.get(staff=staff)
-            table = timetable_obj.data
+            table = timetable_obj.data.copy() if timetable_obj.data else {}
+            # Map subject IDs to names
+            for k, v in table.items():
+                if v and str(v).isdigit():
+                    try:
+                        subject = SemesterSubject.objects.get(id=v)
+                        table[k] = subject.name
+                    except SemesterSubject.DoesNotExist:
+                        pass
         except StaffTimeTable.DoesNotExist:
             pass
     context['days'] = days

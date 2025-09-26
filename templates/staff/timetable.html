@@ -24,13 +24,53 @@
                 {% for p in periods %}
                     {% with key=day|add:"_"|add:p|stringformat:"s" %}
                         <td>
-                            <select name="{{ key }}" class="form-control timetable-input" disabled>
+                            <select name="subject_{{ key }}" class="form-control timetable-input" onchange="handleSubjectChange(this, '{{ key }}')">
                                 <option value="">-- Select Subject --</option>
-                                {% for subject in assigned_subjects %}
-                                    <option value="{{ subject.name }}" {% if table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% for subject in all_subjects %}
+                                    {% if subject.department.name == "AI" %}
+                                        <option value="{{ subject.id }}" selected>{{ subject.name }}</option>
+                                    {% else %}
+                                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <select name="department_{{ key }}" class="form-control timetable-input" style="display:none;" onchange="updateSubjects(this, '{{ key }}')">
+                                <option value="">-- Select Department --</option>
+                                {% for department in all_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
                                 {% endfor %}
                             </select>
                         </td>
+                        <script>
+                        function handleSubjectChange(subjectSelect, key) {
+                            const departmentSelect = document.querySelector(`[name='department_${key}']`);
+                            if (subjectSelect.value === 'others') {
+                                departmentSelect.style.display = '';
+                                departmentSelect.disabled = false;
+                            } else {
+                                departmentSelect.style.display = 'none';
+                                departmentSelect.disabled = true;
+                            }
+                        }
+
+                        function updateSubjects(departmentSelect, key) {
+                            const subjectSelect = document.querySelector(`[name='subject_${key}']`);
+                            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>'; // Clear previous options
+
+                            if (departmentSelect.value) {
+                                fetch(`/get-department-subjects/${departmentSelect.value}/`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        data.subjects.forEach(subject => {
+                                            const option = document.createElement('option');
+                                            option.value = subject.id;
+                                            option.textContent = subject.name;
+                                            subjectSelect.appendChild(option);
+                                        });
+                                    });
+                            }
+                        }
+                        </script>
                     {% endwith %}
                 {% endfor %}
             </tr>
@@ -76,13 +116,49 @@ function toggleEdit() {
                 {% for p in periods %}
                     {% with key=day|add:"_"|add:p|stringformat:"s" %}
                         <td>
-                            <select name="my_{{ key }}" class="form-control my-timetable-input" disabled>
+                            <select name="my_subject_{{ key }}" class="form-control my-timetable-input" onchange="handleMySubjectChange(this, '{{ key }}')">
                                 <option value="">-- Select Subject --</option>
-                                {% for subject in assigned_subjects %}
-                                    <option value="{{ subject.name }}" {% if my_table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% for subject in all_subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="my_department_{{ key }}" class="form-control my-timetable-input" style="display:none;" onchange="updateMySubjects(this, '{{ key }}')">
+                                <option value="">-- Select Department --</option>
+                                {% for department in all_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
                                 {% endfor %}
                             </select>
                         </td>
+                        <script>
+                        function handleMySubjectChange(subjectSelect, key) {
+                            const departmentSelect = document.querySelector(`[name='my_department_${key}']`);
+                            if (subjectSelect.value === 'others') {
+                                departmentSelect.style.display = '';
+                                departmentSelect.disabled = false;
+                            } else {
+                                departmentSelect.style.display = 'none';
+                                departmentSelect.disabled = true;
+                            }
+                        }
+
+                        function updateMySubjects(departmentSelect, key) {
+                            const subjectSelect = document.querySelector(`[name='my_subject_${key}']`);
+                            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>'; // Clear previous options
+
+                            if (departmentSelect.value) {
+                                fetch(`/get-department-subjects/${departmentSelect.value}/`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        data.subjects.forEach(subject => {
+                                            const option = document.createElement('option');
+                                            option.value = subject.id;
+                                            option.textContent = subject.name;
+                                            subjectSelect.appendChild(option);
+                                        });
+                                    });
+                            }
+                        }
+                        </script>
                     {% endwith %}
                 {% endfor %}
             </tr>

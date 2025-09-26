@@ -3,6 +3,7 @@
 <h1>Principal - Departments</h1>
 <p>Manage and view all departments here.</p>
 
+
 <table class="table table-bordered table-striped">
 	<thead>
 		<tr>
@@ -11,75 +12,33 @@
 			<th>AHOD</th>
 			<th>Staff Count</th>
 			<th>Staff Members</th>
+			<th>Students</th>
 		</tr>
 	</thead>
 	<tbody>
-		{% for dept in departments %}
-		<tr>
-			<td>{{ dept.code }}</td>
-			<td>
-				{{ dept.name }}
-				<span class="text-muted small">
-					{% if dept.hod %} (HOD: {{ dept.hod.name }}){% endif %}
-				</span>
-			</td>
-			<td>{% if dept.ahod %}{{ dept.ahod.name }}{% else %}-{% endif %}</td>
-			<td>{{ dept.staff_count }}</td>
-			<td>
-				<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#staffModal{{ dept.id }}">
-					View Staff
-				</button>
-				<!-- Modal -->
-				<div class="modal fade" id="staffModal{{ dept.id }}" tabindex="-1" role="dialog" aria-labelledby="staffModalLabel{{ dept.id }}" aria-hidden="true">
-					<div class="modal-dialog" role="document" style="max-width: 900px; width: 90%;">
-				    <div class="modal-content">
-				      <div class="modal-header">
-				        <h5 class="modal-title" id="staffModalLabel{{ dept.id }}">Staff in {{ dept.name }}</h5>
-				        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-				          <span aria-hidden="true">&times;</span>
-				        </button>
-				      </div>
-				      <div class="modal-body">
-						{% if dept.staff_list and dept.staff_count > 0 %}
-						<div class="mb-2"><strong>Total Staff: {{ dept.staff_count }}</strong></div>
-						<div class="table-responsive">
-							<table class="table table-bordered table-hover align-middle">
-								<thead>
-									<tr>
-										<th>Name</th>
-										<th>Email</th>
-										<th>Mobile</th>
-										<th>Role</th>
-										<th>Actions</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for staff in dept.staff_list %}
-									<tr>
-										<td>{{ staff.name }}</td>
-										<td>{{ staff.email }}</td>
-										<td>{{ staff.mobile }}</td>
-										<td>{{ staff.role }}</td>
-										<td>
-											<a href="{{ staff.mentees_url }}" class="btn btn-info btn-sm">View Mentees</a>
-										</td>
-									</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						</div>
-						{% else %}
-						<p>No staff found in this department.</p>
-						{% endif %}
-				      </div>
-				      <div class="modal-footer">
-				        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-				      </div>
-				    </div>
-				  </div>
-				</div>
-			</td>
-		</tr>
+				{% for dept in departments %}
+				<tr>
+						<td>{{ dept.code }}</td>
+						<td>
+								{{ dept.name }}
+								<span class="text-muted small">
+										{% if dept.hod %} (HOD: {{ dept.hod.name }}){% endif %}
+								</span>
+						</td>
+						<td>{% if dept.ahod %}{{ dept.ahod.name }}{% else %}-{% endif %}</td>
+						<td>{{ dept.staff_count }}</td>
+						<td>
+									<a href="{% url 'principal_department_staff' dept.id %}" class="btn btn-primary btn-sm">
+										View Staff
+									</a>
+						</td>
+            
+						<td>
+							<a href="{% url 'principal_department_students' dept.id %}" class="btn btn-success btn-sm">
+								View Students
+							</a>
+						</td>
+				</tr>
 		{% empty %}
 		<tr><td colspan="5">No departments found.</td></tr>
 		{% endfor %}

@@ -2,20 +2,66 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render
 from .models import Department
 
+from django.shortcuts import get_object_or_404
+
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
 def principal_department(request):
     from django.urls import reverse
-    from .models import Staff
+    from .models import Staff, Student
     departments = Department.objects.all()
     for dept in departments:
-        # Use HOD logic: all staff whose department ForeignKey matches this department
+        # Staff logic
         staff_list = Staff.objects.filter(department=dept)
         for staff in staff_list:
             staff.mentees_url = reverse('view_mentees', args=[staff.id])
         dept.staff_list = staff_list
         dept.staff_count = staff_list.count()
+        # Student logic
+        student_list = Student.objects.filter(department=dept)
+        dept.student_list = student_list
+        dept.student_count = student_list.count()
     return render(request, 'principal/department.html', {'departments': departments})
+
+# New view for students by department
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
+def principal_department_students(request, dept_id):
+    from .models import Student, Department
+    department = get_object_or_404(Department, id=dept_id)
+    # Group students by section and order by section, then name
+    students = Student.objects.filter(department=department).order_by('section', 'name')
+    # Build a dict: section -> list of students
+    from collections import defaultdict
+    section_map = defaultdict(list)
+    for student in students:
+        section_map[student.section].append(student)
+    # Get section labels from SECTION choices
+    from core.constants import SECTION
+    section_labels = {code: label for code, label in SECTION}
+    # Prepare ordered sections
+    ordered_sections = sorted(section_map.keys())
+    section_data = [
+        {
+            'section_code': sec,
+            'section_label': section_labels.get(sec, str(sec)),
+            'students': section_map[sec]
+        }
+        for sec in ordered_sections
+    ]
+    return render(request, 'principal/department_students.html', {
+        'department': department,
+        'section_data': section_data
+    })
+
+# New view for staff by department
+@login_required
+@user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
+def principal_department_staff(request, dept_id):
+    from .models import Staff, Department
+    department = get_object_or_404(Department, id=dept_id)
+    staff_list = Staff.objects.filter(department=department).order_by('name')
+    return render(request, 'principal/department_staff.html', {'department': department, 'staff_list': staff_list})
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render

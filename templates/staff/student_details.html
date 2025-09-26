@@ -13,11 +13,10 @@
             <th>Name</th>
             <th>Email</th>
             <th>Department</th>
-            <th>Mobile</th>
-            <th>OD Details</th>
-            <th>Leave Details</th>
-            <th>Address</th>
-            <th>Date of Birth</th>
+            <th>OD</th>
+            <th>Leave</th>
+            <th>Gatepass</th>
+            <th>Bonafide</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -29,7 +28,6 @@
                 <td>{{ student.name }}</td>
                 <td>{{ student.email }}</td>
                 <td>{{ student.department }}</td>
-                <td>{{ student.mobile }}</td>
                 <td>
                     <a href="{% url 'advisor_student_od_status' student.id %}" title="View OD Status">
                         {{ student.od_details|length }} OD(s)
@@ -40,15 +38,31 @@
                         {{ student.leave_details|length }} Leave(s)
                     </a>
                 </td>
-                <td>{{ student.address }}</td>
-                <td>{{ student.dob }}</td>
+                <td>
+                    {% if student.gatepass_details %}
+                        <a href="{% url 'advisor_student_gatepass_status' student.id %}" title="View Gatepass Status">
+                            {{ student.gatepass_details|length }} Gatepass(es)
+                        </a>
+                    {% else %}
+                        0 Gatepass(es)
+                    {% endif %}
+                </td>
+                <td>
+                    {% if student.bonafide_details %}
+                        <a href="{% url 'advisor_student_bonafide_status' student.id %}" title="View Bonafide Status">
+                            {{ student.bonafide_details|length }} Bonafide(s)
+                        </a>
+                    {% else %}
+                        0 Bonafide(s)
+                    {% endif %}
+                </td>
                 <td>
                     <a href="{% url 'view_student_details' student.id %}" class="btn btn-primary">View All</a>
                 </td>
             </tr>
             {% endfor %}
         {% else %}
-            <tr><td colspan="10">No students found under your class.</td></tr>
+            <tr><td colspan="5">No students found under your class.</td></tr>
         {% endif %}
     </tbody>
 </table>

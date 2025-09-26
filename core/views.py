@@ -1890,15 +1890,69 @@ def student_details(request):
             'leave_details': leave_details,  # Pass as list for correct count
             'address': student.address,
             'dob': student.dob.strftime('%Y-%m-%d') if student.dob else '',
+            'gender': getattr(student, 'gender', ''),
+            'father_name': getattr(student, 'father_name', ''),
+            'mother_name': getattr(student, 'mother_name', ''),
+            'community': getattr(student, 'community', ''),
+            'religion': getattr(student, 'religion', ''),
+            'nationality': getattr(student, 'nationality', ''),
         })
-    return render(request, 'staff/student_details.html', {'students': student_data})
+    duser = getattr(request.user, 'staff', None)
+    return render(request, 'staff/student_details.html', {
+        'students': student_data,
+        'duser': duser,
+    })
 
 from django.shortcuts import render, get_object_or_404
 from .models import Student
 
 def view_student_details(request, student_id):
     student = get_object_or_404(Student, id=student_id)
-    return render(request, 'student_details.html', {'student': student})
+    # Add roll_no, email, gender, and mentor_name aliases for template compatibility
+    student.roll_no = student.roll
+    student.email = student.user.email if hasattr(student, 'user') and hasattr(student.user, 'email') else ''
+    student.gender = student.user.gender if hasattr(student, 'user') and hasattr(student.user, 'gender') else student.gender if hasattr(student, 'gender') else ''
+    student.mentor_name = student.mentor.name if student.mentor and hasattr(student.mentor, 'name') else ''
+
+    is_advisor = False
+    if request.user.is_authenticated and hasattr(request.user, 'staff') and (getattr(request.user.staff, 'position2', None) == 4 or getattr(request.user.staff, 'position', None) == 4):
+        is_advisor = True
+
+    # Handle POST for editing
+    if request.method == 'POST' and is_advisor:
+        gender = request.POST.get('gender')
+        father_name = request.POST.get('father_name', '')
+        mother_name = request.POST.get('mother_name', '')
+        community = request.POST.get('community', '')
+        religion = request.POST.get('religion', '')
+        nationality = request.POST.get('nationality', '')
+        other_nationality = request.POST.get('other_nationality', '')
+        # If nationality is 'Other', use the text field value
+        if nationality == 'Other' and other_nationality:
+            nationality = other_nationality
+        # Always update all fields, even if blank
+        student.gender = gender
+        student.father_name = father_name
+        student.mother_name = mother_name
+        student.community = community
+        student.religion = religion
+        student.nationality = nationality
+        student.save()
+        # If gender is on user, update user too
+        if hasattr(student.user, 'gender'):
+            student.user.gender = gender
+            student.user.save()
+        # Redirect to self to avoid resubmission and always show updated data
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        return HttpResponseRedirect(reverse('view_student_details', args=[student_id]))
+    # Pass duser for sidebar logic
+    duser = getattr(request.user, 'staff', None)
+    return render(request, 'staff/view_student_details.html', {
+        'student': student,
+        'is_advisor': is_advisor,
+        'duser': duser,
+    })
 
 def view_student_leave_details(request, student_id):
     # TODO: Implement logic to show leave details for a student

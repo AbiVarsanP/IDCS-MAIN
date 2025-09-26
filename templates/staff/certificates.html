@@ -13,8 +13,7 @@
             <tr>
                 <th>Student</th>
                 <th>File</th>
-                <th>Status</th>
-                <th>Remarks</th>
+                <th>Subject</th>
                 <th>Uploaded At</th>
             </tr>
         </thead>
@@ -23,12 +22,11 @@
             <tr>
                 <td>{{ cert.student.name }} ({{ cert.student.user.username }})</td>
                 <td><a href="{{ cert.file.url }}" target="_blank">{{ cert.file.name|slice:'12:' }}</a></td>
-                <td>{{ cert.get_status_display }}</td>
-                <td>{{ cert.remarks|default:'-' }}</td>
+                <td>{% if cert.subject %}{{ cert.subject }}{% else %}-{% endif %}</td>
                 <td>{{ cert.uploaded_at|date:"d M Y H:i" }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="5">No certificates uploaded by your students yet.</td></tr>
+            <tr><td colspan="4">No certificates uploaded by your students yet.</td></tr>
             {% endfor %}
         </tbody>
     </table>

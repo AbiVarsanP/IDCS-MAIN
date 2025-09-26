@@ -7,6 +7,7 @@ from django.utils import timezone
 class CertificateUpload(models.Model):
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='certificate_uploads')
     file = models.FileField(upload_to='certificates/')
+    subject = models.CharField(max_length=100, blank=True, help_text='Subject for which the certificate is uploaded')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     # No send_to field: uploads go to both mentor and advisor automatically
     # Status: Pending, Approved, Rejected

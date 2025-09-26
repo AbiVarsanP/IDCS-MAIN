@@ -99,6 +99,10 @@
             <form method="post" enctype="multipart/form-data" class="mb-4">
                 {% csrf_token %}
                 <div class="form-group">
+                    <label for="id_subject">Subject</label>
+                    {{ form.subject }}
+                </div>
+                <div class="form-group">
                     <label for="id_file">Certificate File</label><br>
                     <label class="custom-file-upload">
                         {{ form.file }}
@@ -112,23 +116,21 @@
                 <table class="table table-bordered table-hover table-sm">
                     <thead>
                         <tr>
+                            <th>Subject</th>
                             <th>File</th>
-                            <th>Status</th>
-                            <th>Remarks</th>
                             <th>Uploaded At</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for cert in uploads %}
                         <tr>
+                            <td>{% if cert.subject %}{{ cert.subject }}{% else %}-{% endif %}</td>
                             <td><a href="{{ cert.file.url }}" target="_blank">{{ cert.file.name|slice:'12:' }}</a></td>
-                            <td>{{ cert.get_status_display }}</td>
-                            <td>{{ cert.remarks|default:'-' }}</td>
                             <td>{{ cert.uploaded_at|date:"d M Y H:i" }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4">No certificates uploaded yet.</td>
+                            <td colspan="3">No certificates uploaded yet.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

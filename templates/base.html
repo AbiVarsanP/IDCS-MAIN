@@ -4,6 +4,10 @@
 
 <head>
     <style>
+        /* Hide dropdown menus in collapsed sidebar */
+        #left-panel.collapsed .collapse {
+            display: none !important;
+        }
         /* Global table hover/focus/blur and header styles */
         table tr[tabindex] {
             outline: none;
@@ -434,8 +438,9 @@
                     </li>
 
                     <li class="dropdown {% if request.resolver_match.url_name == 'student_od_history' or request.resolver_match.url_name == 'od' %}active{% endif %}">
-                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentODDropdown" aria-expanded="{% if request.resolver_match.url_name == 'student_od_history' or request.resolver_match.url_name == 'od' %}true{% else %}false{% endif %}" aria-controls="studentODDropdown" style="display:flex;align-items:center;justify-content:space-between;">
-                            <span><i class="menu-icon fa fa-file sidebar-dropdown-icon"></i><span class="sidebar-label">OD</span></span>
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentODDropdown" aria-expanded="{% if request.resolver_match.url_name == 'student_od_history' or request.resolver_match.url_name == 'od' %}true{% else %}false{% endif %}" aria-controls="studentODDropdown" style="display:flex;align-items:center;">
+                            <i class="menu-icon fa fa-file sidebar-dropdown-icon"></i>
+                            <span class="sidebar-label" style="flex-grow:1;">OD</span>
                             <span class="fa fa-caret-down" style="margin-left:8px;"></span>
                         </a>
                         <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'student_od_history' or request.resolver_match.url_name == 'od' %} show{% endif %}" id="studentODDropdown" style="padding-left:1.5rem;">
@@ -462,8 +467,9 @@
                     </style>
 
                     <li class="dropdown {% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %}active{% endif %}">
-                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentLeaveDropdown" aria-expanded="{% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %}true{% else %}false{% endif %}" aria-controls="studentLeaveDropdown" style="display:flex;align-items:center;justify-content:space-between;">
-                            <span><i class="menu-icon fa fa-copy sidebar-dropdown-icon"></i><span class="sidebar-label">Leave</span></span>
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentLeaveDropdown" aria-expanded="{% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %}true{% else %}false{% endif %}" aria-controls="studentLeaveDropdown" style="display:flex;align-items:center;">
+                            <i class="menu-icon fa fa-copy sidebar-dropdown-icon"></i>
+                            <span class="sidebar-label" style="flex-grow:1;">Leave</span>
                             <span class="fa fa-caret-down" style="margin-left:8px;"></span>
                         </a>
                         <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %} show{% endif %}" id="studentLeaveDropdown" style="padding-left:1.5rem;">
@@ -477,8 +483,9 @@
                     </li>
 
                     <li class="dropdown {% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %}active{% endif %}">
-                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentBonafideDropdown" aria-expanded="{% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %}true{% else %}false{% endif %}" aria-controls="studentBonafideDropdown" style="display:flex;align-items:center;justify-content:space-between;">
-                            <span><i class="menu-icon fa fa-certificate sidebar-dropdown-icon"></i><span class="sidebar-label">Bonafide</span></span>
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentBonafideDropdown" aria-expanded="{% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %}true{% else %}false{% endif %}" aria-controls="studentBonafideDropdown" style="display:flex;align-items:center;">
+                            <i class="menu-icon fa fa-certificate sidebar-dropdown-icon"></i>
+                            <span class="sidebar-label" style="flex-grow:1;">Bonafide</span>
                             <span class="fa fa-caret-down" style="margin-left:8px;"></span>
                         </a>
                         <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %} show{% endif %}" id="studentBonafideDropdown" style="padding-left:1.5rem;">
@@ -491,8 +498,9 @@
                         </ul>
                     </li>
                     <li class="dropdown {% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %}active{% endif %}">
-                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentGatepassDropdown" aria-expanded="{% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %}true{% else %}false{% endif %}" aria-controls="studentGatepassDropdown" style="display:flex;align-items:center;justify-content:space-between;">
-                            <span><i class="menu-icon ti-shift-right-alt sidebar-dropdown-icon"></i><span class="sidebar-label">Gatepass</span></span>
+                        <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#studentGatepassDropdown" aria-expanded="{% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %}true{% else %}false{% endif %}" aria-controls="studentGatepassDropdown" style="display:flex;align-items:center;">
+                            <i class="menu-icon ti-shift-right-alt sidebar-dropdown-icon"></i>
+                            <span class="sidebar-label" style="flex-grow:1;">Gatepass</span>
                             <span class="fa fa-caret-down" style="margin-left:8px;"></span>
                         </a>
                         <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %} show{% endif %}" id="studentGatepassDropdown" style="padding-left:1.5rem;">
@@ -596,22 +604,28 @@
                         display: block;
                     }
 
-                    /* Sidebar collapsed icon centering for OD/Leave dropdowns */
+                    /* Sidebar collapsed icon centering for ALL sidebar items (dropdown and non-dropdown) */
                     @media (max-width: 1024px) {
-                        #left-panel.collapsed .dropdown > a .sidebar-label {
-                            display: none !important;
+                        #left-panel.collapsed .navbar-nav > li > a {
+                            display: flex !important;
+                            flex-direction: column !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            width: 100% !important;
+                            padding-left: 0 !important;
+                            padding-right: 0 !important;
                         }
-                        #left-panel.collapsed .dropdown > a .sidebar-dropdown-icon {
-                            display: block !important;
+                        #left-panel.collapsed .navbar-nav > li > a .menu-icon,
+                        #left-panel.collapsed .navbar-nav > li > a .sidebar-dropdown-icon {
                             margin: 0 auto !important;
+                            display: block !important;
+                            float: none !important;
                             text-align: center !important;
                             width: 100% !important;
                             font-size: 1.5em !important;
                         }
-                        #left-panel.collapsed .dropdown > a {
-                            justify-content: center !important;
-                        }
-                        #left-panel.collapsed .dropdown > a .fa-caret-down {
+                        #left-panel.collapsed .navbar-nav > li > a .sidebar-label,
+                        #left-panel.collapsed .navbar-nav > li > a .fa-caret-down {
                             display: none !important;
                         }
                     }
@@ -624,56 +638,48 @@
     <div id="right-panel" class="right-panel">
         <!-- Header-->
         <header id="header" class="header">
-            <div class="navbar-header" style="flex:1;display:flex;align-items:center;gap:12px;">
-                <a id="menuToggle" class="menutoggle"><i class="fa fa-bars"></i></a>
-                <a class="navbar-brand" href=""><img width="40%" src="{% static 'images/logo.png' %}" alt="Logo"></a>
-            </div>
-            <div class="header-menu" style="display:flex;align-items:center;gap:20px;">
-                <div class="dropdown for-notification">
-                    {% if request.user.is_authenticated %}
-                    {% if request.user.is_staff and duser.position == 0 %}
-                    <a href="{% url 'hod_notification_history' %}" class="btn btn-secondary" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% elif request.user.is_staff %}
-                    <a href="{% url 'staff_notifications' %}" class="btn btn-secondary" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% else %}
-                    <a href="{% url 'notifications_view' %}" class="btn btn-secondary" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% endif %}
-                    {% else %}
-                    <a href="#" class="btn btn-secondary disabled" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% endif %}
+            <div class="top-left">
+                <div class="navbar-header">
+                    <a id="menuToggle" class="menutoggle"><i class="fa fa-bars"></i></a>
+                    <a class="navbar-brand" href=""><img width="40%" src="{% static 'images/logo.png' %}" alt="Logo"></a>
                 </div>
-                <div class="user-area dropdown float-right">
-                    <a href="#" class="dropdown-toggle active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        {% if duser.profile %}
-                        <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}" alt="Profile">
-                        {% else %}
-                        <img class="user-avatar rounded-circle" height="40px" src="/static/images/dp.jpg" alt="Default Profile">
-                        {% endif %}
-                    </a>
-                    <div class="user-menu dropdown-menu">
-                        <a class="nav-link" href="#" aria-disabled="true"><i class="fa fa- user"></i>{{duser.name}}</a>
-                        <a class="nav-link" href="{% url 'student_profile' %}"><i class="fa fa- user"></i>My Profile</a>
+            </div>
+            <div class="top-right">
+                <div class="header-menu">
+                    <div class="dropdown for-notification">
                         {% if request.user.is_authenticated %}
                         {% if request.user.is_staff and duser.position == 0 %}
-                        <a class="nav-link" href="{% url 'hod_notification_history' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        <a href="{% url 'hod_notification_history' %}" class="btn btn-secondary" id="notification">
+                            <i class="fa fa-bell"></i>
+                        </a>
                         {% elif request.user.is_staff %}
-                        <a class="nav-link" href="{% url 'staff_notifications' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        <a href="{% url 'staff_notifications' %}" class="btn btn-secondary" id="notification">
+                            <i class="fa fa-bell"></i>
+                        </a>
                         {% else %}
-                        <a class="nav-link" href="{% url 'notifications_view' %}"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        <a href="{% url 'notifications_view' %}" class="btn btn-secondary" id="notification">
+                            <i class="fa fa-bell"></i>
+                        </a>
                         {% endif %}
                         {% else %}
-                        <a class="nav-link" href="#"><i class="fa fa- user"></i>Notifications <span class="count">13</span></a>
+                        <a href="#" class="btn btn-secondary disabled" id="notification">
+                            <i class="fa fa-bell"></i>
+                        </a>
                         {% endif %}
-                        <a class="nav-link" href="#"><i class="fa fa -cog"></i>Settings</a>
-                        <a class="nav-link" href="{% url 'logout' %}"><i class="fa fa-power -off"></i>Logout</a>
+                    </div>
+                    <div class="user-area dropdown float-right">
+                        <a href="#" class="dropdown-toggle active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {% if duser.profile %}
+                            <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}" alt="Profile">
+                            {% else %}
+                            <img class="user-avatar rounded-circle" height="40px" src="/static/images/dp.jpg" alt="Default Profile">
+                            {% endif %}
+                        </a>
+                        <div class="user-menu dropdown-menu">
+                            <a class="nav-link" href="#" aria-disabled="true"><i class="fa fa- user"></i>{{duser.name}}</a>
+                            <a class="nav-link" href="{% url 'student_profile' %}"><i class="fa fa- user"></i>My Profile</a>
+                            <a class="nav-link" href="{% url 'logout' %}"><i class="fa fa-power -off"></i>Logout</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -800,6 +806,21 @@
 
 
         </script>
+    <script>
+    // jQuery fix: Prevent Bootstrap dropdown in collapsed sidebar, expand sidebar instead
+    $(function() {
+        $('#main-menu').on('click', 'a.dropdown-toggle', function(e) {
+            var $leftPanel = $('#left-panel');
+            if ($leftPanel.hasClass('collapsed')) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                $('#menuToggle').trigger('click');
+                return false;
+            }
+            // else: allow normal dropdown
+        });
+    });
+    </script>
     </body>
     <script>
         // Attendance sidebar logic (always present for student)

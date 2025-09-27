@@ -1,187 +1,155 @@
 {% extends 'base.html' %}
 {% block root %}
 <style>
-/* Card styling */
-.card-header {
+/* --- Header Bar --- */
+.leave-header-bar {
+    padding: 12px 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.home-icon i {
+    font-size: 1.5rem;
+}
+
+
+
+/* --- Table/Card styles --- */
+.leave-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.leave-header,
+.leave-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px 100px 100px 100px 220px;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.leave-header {
     background: #1976d2;
     color: #fff;
-    border-radius: 10px 10px 0 0;
-    box-shadow: 0 2px 8px rgba(25,118,210,0.1);
+    font-weight: 600;
     text-align: center;
-    font-weight: 600;
-    font-size: 1.2rem;
-    padding: 12px 0;
 }
 
-.leave-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
-}
-
-.leave-card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 16px;
-    transition: transform 0.2s ease;
-}
-
-.leave-card:hover {
-    transform: translateY(-2px);
-}
-
-/* Card header */
-.leave-card-header {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
-
-.leave-id {
-    font-weight: 700;
-    color: #1976d2;
-}
-
-.leave-title {
-    font-weight: 600;
-    flex: 1;
-    margin-left: 10px;
-    color: #212121;
-}
-
-/* Status badges */
-.status-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.status-item {
-    flex: 1 1 45%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-}
+.leave-row:nth-child(even) { background: #f9f9f9; }
+.leave-id { font-weight: 700; color: #1976d2; }
 
 .badge {
-    padding: 5px 12px;
-    border-radius: 16px;
+    padding: 5px 10px;
+    border-radius: 12px;
     font-weight: 600;
     color: #fff;
-    font-size: 0.82rem;
-}
-
-.badge-Approved {
-    background: #4caf50;
-}
-
-.badge-Pending {
-    background: #ff9800;
-}
-
-.badge-Rejected {
-    background: #f44336;
-}
-
-.badge-secondary {
-    background: #9e9e9e;
-}
-
-/* File upload and actions (optional, if needed later) */
-.leave-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.leave-actions input[type="file"] {
-    display: none;
-}
-
-.file-upload-label {
-    display: inline-block;
-    padding: 10px 14px;
-    background: #1976d2;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
+    font-size: 0.8rem;
     text-align: center;
-    transition: background 0.2s ease;
 }
+.badge-Approved { background: #4caf50; }
+.badge-Pending { background: #ff9800; }
+.badge-Rejected { background: #f44336; }
+.badge-secondary { background: #9e9e9e; }
 
-.file-upload-label:hover {
-    background: #1565c0;
+.leave-actions { display: flex; flex-direction: column; gap: 6px; }
+.leave-actions input[type="file"] { display: none; }
+.file-upload-label,
+.btn-upload,
+.btn-outline-primary {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.85rem;
 }
+.file-upload-label { background: #1976d2; color: #fff; }
+.file-upload-label:hover { background: #1565c0; }
+.btn-upload { background: #4caf50; border: none; color: #fff; }
+.btn-upload:hover { background: #388e3c; }
 
-/* Mobile adjustments */
-@media (max-width: 480px) {
-    .leave-card-header {
-        flex-direction: column;
-        align-items: flex-start;
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .leave-header, .leave-row {
+        grid-template-columns: 1fr;
+        text-align: left;
     }
-
-    .leave-title {
-        margin-left: 0;
-        margin-top: 4px;
+    .leave-header div { display: none; }
+    .leave-row {
+        border: 1px solid #e0e0e0;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
     }
-
-    .status-item {
-        flex: 1 1 100%;
+    .leave-row > div {
+        display: flex;
         justify-content: space-between;
+        padding: 4px 0;
     }
-
-    .file-upload-label {
-        width: 100%;
-        text-align: center;
+    .leave-row > div::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #555;
     }
 }
 </style>
 
-<div class="card-header">
-    Leave Status
+<!-- Header Bar -->
+<div class="leave-header-bar">
+    <h5 class="header-title mb-0">Leave Status</h5>
+    <a href="{% url 'dash' %}" class="home-icon">
+        <i class="fa fa-home"></i>
+    </a>
 </div>
 
-<div class="leave-container">
-    {% if leaves %}
+{% if leaves %}
+<div class="leave-table">
+    <!-- Table Header -->
+    <div class="leave-header">
+        <div>ID</div>
+        <div>Subject</div>
+        <div>Mentor</div>
+        <div>Advisor</div>
+        <div>AHOD</div>
+        <div>HOD</div>
+        <div>Actions</div>
+    </div>
+
     {% for i in leaves %}
-    <div class="leave-card">
-        <div class="leave-card-header">
-            <span class="leave-id">#LE{{ i.id }}</span>
-            <h5 class="leave-title">{{ i.sub }}</h5>
+    <div class="leave-row">
+        <div class="leave-id" data-label="ID">#LE{{ i.id }}</div>
+        <div class="leave-title" data-label="Subject">{{ i.sub }}</div>
+        <div data-label="Mentor"><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
+        <div data-label="Advisor"><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
+        <div data-label="AHOD">
+            {% if i.user.ahod %}
+            <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
+            {% else %}
+            <span class="badge badge-secondary">N/A</span>
+            {% endif %}
         </div>
+        <div data-label="HOD"><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
 
-        <div class="status-row">
-            <div class="status-item">
-                <span>Mentor</span>
-                <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
-            </div>
-            <div class="status-item">
-                <span>Advisor</span>
-                <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
-            </div>
-            <div class="status-item">
-                <span>AHOD</span>
-                {% if i.user.ahod %}
-                <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
-                {% else %}
-                <span class="badge badge-secondary">N/A</span>
-                {% endif %}
-            </div>
-            <div class="status-item">
-                <span>HOD</span>
-                <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-            </div>
-        </div>
-
-        {% if i.certificate %}
-        <div class="leave-actions">
+        <div class="leave-actions" data-label="Actions">
+            {% if i.certificate %}
             <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#certModal{{ i.id }}">
                 View Certificate
             </button>
@@ -211,12 +179,12 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
     {% endfor %}
-    {% else %}
-    <p style="text-align:center;width:100%;padding:20px;">No Leave records found</p>
-    {% endif %}
 </div>
+{% else %}
+<p style="text-align:center;width:100%;padding:20px;">No Leave records found</p>
+{% endif %}
 {% endblock %}

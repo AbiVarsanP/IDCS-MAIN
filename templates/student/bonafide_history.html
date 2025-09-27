@@ -1,144 +1,171 @@
 {% extends 'base.html' %}
 {% block root %}
 <style>
-/* Card styling */
-.card-header {
-    background: #1976d2;
-    color: #fff;
+/* --- Header Bar --- */
+.bf-header-bar {
+    padding: 12px 20px;
     border-radius: 10px 10px 0 0;
-    box-shadow: 0 2px 8px rgba(25,118,210,0.1);
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.header-title {
+    font-size: 1.25rem;
     font-weight: 600;
-    font-size: 1.2rem;
-    padding: 12px 0;
+    color: #333;
 }
 
-.bonafide-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
-}
-
-.bonafide-card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 16px;
+.home-icon i {
+    font-size: 1.5rem;
+    color: #1976d2;
     transition: transform 0.2s ease;
 }
 
-.bonafide-card:hover {
-    transform: translateY(-2px);
+.home-icon:hover i {
+    transform: scale(1.2);
 }
 
-/* Card header */
-.bonafide-card-header {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+/* --- Table Styles --- */
+.bf-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.bf-id {
-    font-weight: 700;
-    color: #1976d2;
-}
-
-.bf-title {
-    font-weight: 600;
-    flex: 1;
-    margin-left: 10px;
-    color: #212121;
-}
-
-/* Status badges */
-.status-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.status-item {
-    flex: 1 1 45%;
-    display: flex;
-    justify-content: space-between;
+.bf-header,
+.bf-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px 100px 100px 220px;
     align-items: center;
-    font-size: 0.85rem;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
 }
+
+.bf-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+}
+
+.bf-row:nth-child(even) { background: #f9f9f9; }
+.bf-id { font-weight: 700; color: #1976d2; }
 
 .badge {
-    padding: 5px 12px;
-    border-radius: 16px;
+    padding: 5px 10px;
+    border-radius: 12px;
     font-weight: 600;
     color: #fff;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
+    text-align: center;
 }
+.badge-Approved { background: #4caf50; }
+.badge-Pending { background: #ff9800; }
+.badge-Rejected { background: #f44336; }
+.badge-secondary { background: #9e9e9e; }
 
-.badge-Approved {
-    background: #4caf50;
-}
+.bf-actions { display: flex; flex-direction: column; gap: 6px; }
 
-.badge-Pending {
-    background: #ff9800;
-}
-
-.badge-Rejected {
-    background: #f44336;
-}
-
-.badge-secondary {
-    background: #9e9e9e;
-}
-
-/* Mobile adjustments */
-@media (max-width: 480px) {
-    .bonafide-card-header {
-        flex-direction: column;
-        align-items: flex-start;
+/* Responsive stacking */
+@media (max-width: 768px) {
+    .bf-header, .bf-row {
+        grid-template-columns: 1fr;
+        text-align: left;
     }
-
-    .bf-title {
-        margin-left: 0;
-        margin-top: 4px;
+    .bf-header div { display: none; }
+    .bf-row {
+        border: 1px solid #e0e0e0;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
     }
-
-    .status-item {
-        flex: 1 1 100%;
+    .bf-row > div {
+        display: flex;
         justify-content: space-between;
+        padding: 4px 0;
+    }
+    .bf-row > div::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #555;
     }
 }
 </style>
 
-<div class="card-header">
-    Bonafide Status
+<!-- Header Bar -->
+<div class="bf-header-bar">
+    <h5 class="header-title mb-0">Bonafide Status</h5>
+    <a href="{% url 'dash' %}" class="home-icon">
+        <i class="fa fa-home"></i>
+    </a>
 </div>
 
-<div class="bonafide-container">
-    {% if bonafides %}
-    {% for i in bonafides %}
-    <div class="bonafide-card">
-        <div class="bonafide-card-header">
-            <span class="bf-id">#BF{{ i.id }}</span>
-            <h5 class="bf-title">{{ i.sub }}</h5>
-        </div>
+{% if bonafides %}
+<div class="bf-table">
+    <!-- Table Header -->
+    <div class="bf-header">
+        <div>ID</div>
+        <div>Subject</div>
+        <div>Mentor</div>
+        <div>Advisor</div>
+        <div>HOD</div>
+        <div>Actions</div>
+    </div>
 
-        <div class="status-row">
-            <div class="status-item">
-                <span>Mentor</span> <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+    {% for i in bonafides %}
+    <div class="bf-row">
+        <div class="bf-id" data-label="ID">#BF{{ i.id }}</div>
+        <div class="bf-title" data-label="Subject">{{ i.sub }}</div>
+        <div data-label="Mentor"><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
+        <div data-label="Advisor"><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
+        <div data-label="HOD"><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
+
+        <div class="bf-actions" data-label="Actions">
+            {% if i.certificate %}
+            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#certModal{{ i.id }}">
+                View Certificate
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="certModal{{ i.id }}" tabindex="-1" role="dialog" aria-labelledby="certModalLabel{{ i.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="certModalLabel{{ i.id }}">Bonafide Certificate</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body d-flex justify-content-center align-items-center" style="max-height:80vh; overflow-y:auto; padding:0;">
+                            <div style="width:100%; display:flex; justify-content:center; align-items:center; padding:1rem;">
+                                {% if ".pdf" in i.certificate.url|lower %}
+                                <iframe src="{{ i.certificate.url }}" style="width:100%; height:75vh; border:none;"></iframe>
+                                {% else %}
+                                <img src="{{ i.certificate.url }}" alt="Certificate" style="max-width:100%; max-height:75vh; object-fit:contain; display:block;" />
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="status-item">
-                <span>Advisor</span> <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
-            </div>
-            <div class="status-item">
-                <span>HOD</span> <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-            </div>
+            {% endif %}
         </div>
     </div>
     {% endfor %}
-    {% else %}
-    <p style="text-align:center;width:100%;padding:20px;">No Bonafide records found</p>
-    {% endif %}
 </div>
+{% else %}
+<p style="text-align:center;width:100%;padding:20px;">No Bonafide records found</p>
+{% endif %}
 {% endblock %}

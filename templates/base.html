@@ -495,9 +495,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <li class="dropdown {% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %}active{% endif %}">
                         <a href="#" class="dropdown-toggle sidebar-dropdown-link" data-toggle="collapse" data-target="#studentLeaveDropdown" aria-expanded="{% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %}true{% else %}false{% endif %}" aria-controls="studentLeaveDropdown">
-                            <i class="menu-icon fa fa-copy sidebar-dropdown-icon"></i>
-                            <span class="sidebar-label">Leave</span>
-                            <span class="fa fa-caret-down" style="margin-left:auto;"></span>
+                            <span class="sidebar-dropdown-link-inner" style="display:flex;align-items:center;width:100%;position:relative;">
+                                <i class="menu-icon fa fa-copy sidebar-dropdown-icon"></i>
+                                <span class="sidebar-label">Leave</span>
+                                <span class="fa fa-caret-down" style="margin-left:auto;"></span>
+                            </span>
                         </a>
                         <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'leave' or request.resolver_match.url_name == 'student_leave_history' %} show{% endif %}" id="studentLeaveDropdown" style="padding-left:1.5rem;">
                             <li class="{% if request.resolver_match.url_name == 'leave' %}active{% endif %}">
@@ -511,9 +513,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <li class="dropdown {% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %}active{% endif %}">
                         <a href="#" class="dropdown-toggle sidebar-dropdown-link" data-toggle="collapse" data-target="#studentBonafideDropdown" aria-expanded="{% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %}true{% else %}false{% endif %}" aria-controls="studentBonafideDropdown">
-                            <i class="menu-icon fa fa-certificate sidebar-dropdown-icon"></i>
-                            <span class="sidebar-label">Bonafide</span>
-                            <span class="fa fa-caret-down" style="margin-left:auto;"></span>
+                            <span class="sidebar-dropdown-link-inner" style="display:flex;align-items:center;width:100%;position:relative;">
+                                <i class="menu-icon fa fa-certificate sidebar-dropdown-icon"></i>
+                                <span class="sidebar-label">Bonafide</span>
+                                <span class="fa fa-caret-down" style="margin-left:auto;"></span>
+                            </span>
                         </a>
                         <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'bonafide' or request.resolver_match.url_name == 'student_bonafide_history' %} show{% endif %}" id="studentBonafideDropdown" style="padding-left:1.5rem;">
                             <li class="{% if request.resolver_match.url_name == 'bonafide' %}active{% endif %}">
@@ -526,9 +530,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     </li>
                     <li class="dropdown {% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %}active{% endif %}">
                         <a href="#" class="dropdown-toggle sidebar-dropdown-link" data-toggle="collapse" data-target="#studentGatepassDropdown" aria-expanded="{% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %}true{% else %}false{% endif %}" aria-controls="studentGatepassDropdown">
-                            <i class="menu-icon ti-shift-right-alt sidebar-dropdown-icon"></i>
-                            <span class="sidebar-label">Gatepass</span>
-                            <span class="fa fa-caret-down" style="margin-left:auto;"></span>
+                            <span class="sidebar-dropdown-link-inner" style="display:flex;align-items:center;width:100%;position:relative;">
+                                <i class="menu-icon ti-shift-right-alt sidebar-dropdown-icon"></i>
+                                <span class="sidebar-label">Gatepass</span>
+                                <span class="fa fa-caret-down" style="margin-left:auto;"></span>
+                            </span>
                         </a>
                         <ul class="collapse list-unstyled{% if request.resolver_match.url_name == 'gatepass' or request.resolver_match.url_name == 'student_gatepass_history' %} show{% endif %}" id="studentGatepassDropdown" style="padding-left:1.5rem;">
                             <li class="{% if request.resolver_match.url_name == 'gatepass' %}active{% endif %}">
@@ -543,9 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <a href="{% url 'certificate_upload' %}"><i class="menu-icon ti-upload"></i>Certificate
                             Upload</a>
                     </li>
-                    <li>
-                        <a href="/feed360/"><i class="menu-icon ti-comments"></i>Feed 360 </a>
-                    </li>
+                    <li class="{% if request.resolver_match.url_name == 'feed360_index' or request.resolver_match.url_name == 'feed360_create' or request.resolver_match.url_name == 'feed360_staff_results' or request.resolver_match.url_name == 'feed360_fill' or request.resolver_match.url_name == 'feed360_hod_list_forms' or request.resolver_match.url_name == 'feed360_hod_deactivate_form' or request.resolver_match.url_name == 'feed360_hod_results_form' or request.resolver_match.url_name == 'feed360_hod_staff_feedback_results' or request.resolver_match.url_name == 'feed360_hod_view_comments' or request.resolver_match.url_name == 'feed360_hod_view_comments_all' or request.resolver_match.url_name == 'feed360_staff_my_results' or request.resolver_match.url_name == 'feed360_hod_view_comments_all_custom' %}active{% endif %}"><a href="{% url 'feed360_index' %}"><i class="menu-icon ti-comments"></i>Feed 360 </a></li>
                     <li class="{% if request.resolver_match.url_name == 'notifications_view' %}active{% endif %}">
                         <a href="{% url 'notifications_view' %}"><i class="menu-icon fa fa-bell"></i> Notification
                             History</a>

@@ -354,16 +354,20 @@ def student_leave_history(request):
 # Student Bonafide history view
 @login_required
 def student_bonafide_history(request):
-    student = Student.objects.get(user=request.user)
+    context = set_config(request)
+    student = context.get('duser')  # This is the Student object for the logged-in user
     bonafides = BONAFIDE.objects.filter(user=student)
-    return render(request, 'student/bonafide_history.html', {'bonafides': bonafides})
+    context['bonafides'] = bonafides
+    return render(request, 'student/bonafide_history.html', context)
 
 # Student Gatepass history view
 @login_required
 def student_gatepass_history(request):
-    student = Student.objects.get(user=request.user)
+    context = set_config(request)
+    student = context.get('duser')  # This is the Student object for the logged-in user
     gatepasses = GATEPASS.objects.filter(user=student)
-    return render(request, 'student/gatepass_history.html', {'gatepasses': gatepasses})
+    context['gatepasses'] = gatepasses
+    return render(request, 'student/gatepass_history.html', context)
 from django.contrib.auth import get_user_model
 from feed360.models import FeedbackQuestion
 

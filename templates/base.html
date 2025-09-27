@@ -141,6 +141,20 @@
         }
     </style>
     <style>
+        /* Small upward nudge to remove leftover gap under header. Adjust value if necessary. */
+        #right-panel, .right-panel, .content {
+            margin-top: 10px !important;
+        }
+        /* Ensure footer and internal layout don't get overlapped by the nudge */
+        footer.site-footer {
+            margin-top: 6px !important;
+        }
+        @media (max-width: 768px) {
+            /* smaller nudge on mobile where spacing behaves differently */
+            #right-panel, .right-panel, .content { margin-top: 10px !important; }
+        }
+    </style>
+    <style>
         @media print {
             header.header {
                 left: 0;
@@ -668,33 +682,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a class="navbar-brand" href=""><img width="40%" src="{% static 'images/logo.png' %}" alt="Logo"></a>
             </div>
             <div class="header-menu" style="display:flex;align-items:center;gap:20px;">
-                <div class="dropdown for-notification">
-                    {% if request.user.is_authenticated %}
-                    {% if request.user.is_staff and duser.position == 0 %}
-                    <a href="{% url 'hod_notification_history' %}" class="btn btn-secondary" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% elif request.user.is_staff %}
-                    <a href="{% url 'staff_notifications' %}" class="btn btn-secondary" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% else %}
-                    <a href="{% url 'notifications_view' %}" class="btn btn-secondary" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% endif %}
-                    {% else %}
-                    <a href="#" class="btn btn-secondary disabled" id="notification">
-                        <i class="fa fa-bell"></i>
-                    </a>
-                    {% endif %}
-                </div>
+
                 <div class="user-area dropdown float-right">
                     <a href="#" class="dropdown-toggle active" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         {% if duser.profile %}
-                        <img class="user-avatar rounded-circle" height="40px" src="{{duser.profile.url}}" alt="Profile">
+                        <img class="user-avatar rounded-circle" src="{{duser.profile.url}}" alt="Profile">
                         {% else %}
-                        <img class="user-avatar rounded-circle" height="40px" src="/static/images/dp.jpg" alt="Default Profile">
+                        <img class="user-avatar rounded-circle" src="/static/images/dp.jpg" alt="Default Profile">
                         {% endif %}
                     </a>
                     <div class="user-menu dropdown-menu">
@@ -859,6 +853,18 @@ document.addEventListener('DOMContentLoaded', function() {
             background: #fff;
             border: 1px solid #e3e6f0;
         }
+        /* Ensure avatar images are perfectly circular and don't get squashed */
+        .user-area .user-avatar {
+            width: 40px !important;
+            height: 40px !important;
+            max-width: 40px !important;
+            max-height: 40px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important; /* crop to fill without distortion */
+            overflow: hidden !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
         .header, .header * {
             overflow: visible !important;
         }
@@ -867,6 +873,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         .user-area .dropdown-menu a {
             white-space: nowrap;
+        }
+    </style>
+
+    <style>
+        /* Responsive avatar sizing to match existing media rules */
+        @media (max-width: 768px) {
+            .user-area .user-avatar {
+                width: 32px !important;
+                height: 32px !important;
+                max-width: 32px !important;
+                max-height: 32px !important;
+            }
+        }
+        @media print {
+            .user-area .user-avatar {
+                width: 32px !important;
+                height: 32px !important;
+                max-width: 32px !important;
+                max-height: 32px !important;
+            }
         }
     </style>
     <style>
@@ -916,6 +942,65 @@ document.addEventListener('DOMContentLoaded', function() {
             .user-area .dropdown-menu, .user-area .user-menu {
                 top: 60px !important;
             }
+        }
+    </style>
+    <style>
+        /* Normalize header/content spacing to remove double gaps
+           Use a single source-of-truth --header-height so other rules can reference it.
+           This overrides other compiled CSS that adds extra top padding on body / right-panel. */
+        :root {
+            --header-height: 60px;
+        }
+        header.header, .header {
+            height: var(--header-height) !important;
+        }
+        /* Remove duplicate paddings that created an extra gap below the header */
+        body {
+            padding-top: calc(var(--header-height)) !important;
+        }
+        /* Some compiled styles set .right-panel padding-top; ensure consistency */
+        #right-panel, .right-panel, .content {
+            padding-top: 0 !important;
+        }
+        /* If any rule sets a top margin on the first content block, collapse it */
+        .content > *:first-child {
+            margin-top: 0 !important;
+        }
+        @media (max-width: 768px) {
+            :root { --header-height: 60px; }
+            body { padding-top: var(--header-height) !important; }
+        }
+        /* Ensure navbar-header shows the same bottom hairline as the header menu.
+           Some compiled styles place the hairline on the header or another element;
+           force a single consistent hairline here and remove duplicate bottom borders. */
+        header.header {
+            border-bottom: 1px solid #e8e9ed !important;
+        }
+        .navbar-header {
+            border-bottom: 1px solid #e8e9ed !important;
+            padding-bottom: 0px !important; /* small padding so the line is visible and content doesn't touch it */
+        }
+        /* If header-menu or other elements also have borders, prefer the single header.header line */
+        .header-menu, .header-menu * {
+            border-bottom: none !important;
+        }
+    </style>
+    <style>
+        /* Ensure the hamburger/menu toggle is vertically centered inside the fixed header */
+        #menuToggle, .menutoggle {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: var(--header-height) !important;
+            line-height: normal !important;
+            padding: 0 8px !important;
+            box-sizing: border-box !important;
+            vertical-align: middle !important;
+        }
+        /* Slightly reduce icon size if it overflows */
+        #menuToggle i, .menutoggle i {
+            font-size: 20px !important;
+            display: block !important;
         }
     </style>
     <script>

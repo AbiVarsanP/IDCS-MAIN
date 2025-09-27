@@ -7,6 +7,30 @@
 
 {% block root %}
 <style>
+    .gp-header-bar {
+    padding: 12px 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.home-icon i {
+    font-size: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.home-icon:hover i {
+    transform: scale(1.2);
+}
     /* Card style */
     .card {
         border-radius: 8px;
@@ -89,6 +113,13 @@
         }
     }
 </style>
+
+<div class="gp-header-bar">
+    <h5 class="header-title mb-0">Certificate</h5>
+    <a href="{% url 'dash' %}" class="home-icon">
+        <i class="fa fa-home"></i>
+    </a>
+</div>
 
 <div class="container mt-4">
     <div class="card mb-4">

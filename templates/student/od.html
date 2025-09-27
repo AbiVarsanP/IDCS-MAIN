@@ -3,30 +3,6 @@
 
 {% block root %}
 <style>
-    .gp-header-bar {
-    padding: 12px 20px;
-    border-radius: 10px 10px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #f8f9fa;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.header-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.home-icon i {
-    font-size: 1.5rem;
-    transition: transform 0.2s ease;
-}
-
-.home-icon:hover i {
-    transform: scale(1.2);
-}
     /* Card style */
     .card {
         border-radius: 8px;
@@ -38,10 +14,27 @@
         background: #1976d2;
         color: #fff;
         font-weight: 700;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         border-radius: 8px 8px 0 0;
-        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* title left, icon right */
+        padding: 14px 20px;
+    }
+
+    .card-header .header-title {
+        margin: 0;
+    }
+
+    .card-header .home-icon i {
+        font-size: 1.5rem;
+        color: #fff;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .card-header .home-icon:hover i {
+        transform: scale(1.2);
     }
 
     /* Input group style */
@@ -127,23 +120,26 @@
             width: 100%;
             margin-bottom: 8px;
         }
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
     }
 </style>
-
-<div class="gp-header-bar">
-    <h5 class="header-title mb-0">On Duty</h5>
-    <a href="{% url 'dash' %}" class="home-icon">
-        <i class="fa fa-home"></i>
-    </a>
-</div>
 
 <div class="animated fadeIn" style="margin-top: 16px;">
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
+                <!-- Card Header with title left, home icon right -->
                 <div class="card-header">
-                    On-Duty Application
+                    <span class="header-title">On-Duty Application</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a>
                 </div>
+
                 <div class="card-body">
                     <form enctype="multipart/form-data" method="post">
                         {% csrf_token %}

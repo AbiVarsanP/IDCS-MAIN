@@ -1,23 +1,7 @@
 {% extends 'base.html' %}
 {% block root %}
 <style>
-    /* --- same styles from previous version (table-like) --- */
-    
-
-/* Table header styled differently */
-
-
-    .od-header-bar{
-        padding: 12px 20px;
-    border-radius: 10px 10px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #f8f9fa;
-    border-bottom: 2px solid #e0e0e0;
-    }
-
-    
+    /* Table styles */
     .od-table {
         width: 100%;
         border-collapse: collapse;
@@ -27,6 +11,43 @@
         border-radius: 8px;
         overflow: hidden;
     }
+
+    /* OD Table Header Section (Title + Icon) */
+    .od-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.25rem;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .od-table-header .header-title {
+        margin: 0;
+    }
+
+    .od-table-header .home-icon i {
+        font-size: 1.5rem;
+        color: #fff;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .od-table-header .home-icon:hover i {
+        transform: scale(1.2);
+    }
+
+    hr.od-divider {
+        margin: 0;
+        border: 0;
+        border-top: 2px solid #e0e0e0;
+    }
+
+    /* Table rows */
     .od-header,
     .od-row {
         display: grid;
@@ -36,16 +57,18 @@
         padding: 12px;
         border-bottom: 1px solid #e0e0e0;
     }
-    
+
     .od-header {
-        background: #1976d2;
-        color: #fff;
+        background: #f1f1f1;
+        color: #333;
         font-weight: 600;
         text-align: center;
     }
+
     .od-row:nth-child(even) { background: #f9f9f9; }
     .od-id { font-weight: 700; color: #1976d2; }
 
+    /* Badges */
     .badge {
         padding: 5px 10px;
         border-radius: 12px;
@@ -101,54 +124,31 @@
             color: #555;
         }
     }
-
-    .od-header-bar {
-    padding: 12px 20px;
-    border-radius: 10px 10px 0 0;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.header-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    color: #333;
-}
-
-.home-icon i {
-    font-size: 1.5rem;
-}
-
-.home-icon:hover {
-    background: #e2e6ea;
-}
-
 </style>
 
-<div class="od-header-bar d-flex align-items-center">
-    <h5 class="header-title mb-0">OD's Status</h5>
-    <a href="{% url 'dash' %}" class="home-icon">
-        <i class="fa fa-home"></i>
-    </a>
-</div>
-
-
-{% if ods %}
 <div class="od-table">
-    <!-- Table Header -->
-     
+    <!-- OD Table Header Section (Title + Icon) -->
+    <div class="od-table-header">
+        <span class="header-title">OD's Status</span>
+        <a href="{% url 'dash' %}" class="home-icon">
+            <i class="fa fa-home"></i>
+        </a>
+    </div>
+    <hr class="od-divider">
+
+    {% if ods %}
+    <!-- Column Headers -->
     <div class="od-header">
-            <div>ID</div>
-            <div>Subject</div>
-            <div>Mentor</div>
-            <div>Advisor</div>
-            <div>AHOD</div>
-            <div>HOD</div>
-            <div>Actions</div>
+        <div>ID</div>
+        <div>Subject</div>
+        <div>Mentor</div>
+        <div>Advisor</div>
+        <div>AHOD</div>
+        <div>HOD</div>
+        <div>Actions</div>
     </div>
 
+    <!-- Table Rows -->
     {% for i in ods %}
     <div class="od-row">
         <div class="od-id" data-label="ID">#OD{{ i.id }}</div>
@@ -168,12 +168,10 @@
         <div class="od-actions" data-label="Actions">
             {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
                 {% if i.certificate %}
-                <!-- View Certificate Button -->
                 <button type="button" class="btn btn-outline-primary" data-toggle="modal"
                     data-target="#certModal{{ i.id }}">
                     View Certificate
                 </button>
-
                 <!-- Modal -->
                 <div class="modal fade" id="certModal{{ i.id }}" tabindex="-1" role="dialog"
                     aria-labelledby="certModalLabel{{ i.id }}" aria-hidden="true">
@@ -203,8 +201,6 @@
                     </div>
                 </div>
                 {% endif %}
-
-                <!-- Upload/Update Form -->
                 <form action="{% url 'proof_od' i.id %}" enctype="multipart/form-data" method="POST">
                     {% csrf_token %}
                     <label class="file-upload-label" for="fileInput{{ i.id }}">Choose File</label>
@@ -219,8 +215,8 @@
         </div>
     </div>
     {% endfor %}
+    {% else %}
+    <p style="text-align:center;width:100%;padding:20px;">No OD records found</p>
+    {% endif %}
 </div>
-{% else %}
-<p style="text-align:center;width:100%;padding:20px;">No OD records found</p>
-{% endif %}
 {% endblock %}

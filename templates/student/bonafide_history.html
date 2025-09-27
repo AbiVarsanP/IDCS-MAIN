@@ -1,33 +1,7 @@
 {% extends 'base.html' %}
 {% block root %}
 <style>
-/* --- Header Bar --- */
-.bf-header-bar {
-    padding: 12px 20px;
-    border-radius: 10px 10px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #f8f9fa;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.header-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.home-icon i {
-    font-size: 1.5rem;
-    transition: transform 0.2s ease;
-}
-
-.home-icon:hover i {
-    transform: scale(1.2);
-}
-
-/* --- Table Styles --- */
+/* --- Table/Card styles --- */
 .bf-table {
     width: 100%;
     border-collapse: collapse;
@@ -38,6 +12,42 @@
     overflow: hidden;
 }
 
+/* Table Header Section (Title + Icon) */
+.bf-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #1976d2;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.25rem;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.bf-table-header .header-title {
+    margin: 0;
+}
+
+.bf-table-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.bf-table-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
+hr.bf-divider {
+    margin: 0;
+    border: 0;
+    border-top: 2px solid #e0e0e0;
+}
+
+/* Table rows */
 .bf-header,
 .bf-row {
     display: grid;
@@ -49,8 +59,8 @@
 }
 
 .bf-header {
-    background: #1976d2;
-    color: #fff;
+    background: #f1f1f1;
+    color: #333;
     font-weight: 600;
     text-align: center;
 }
@@ -58,6 +68,7 @@
 .bf-row:nth-child(even) { background: #f9f9f9; }
 .bf-id { font-weight: 700; color: #1976d2; }
 
+/* Badges */
 .badge {
     padding: 5px 10px;
     border-radius: 12px;
@@ -72,6 +83,21 @@
 .badge-secondary { background: #9e9e9e; }
 
 .bf-actions { display: flex; flex-direction: column; gap: 6px; }
+.bf-actions input[type="file"] { display: none; }
+.file-upload-label,
+.btn-upload,
+.btn-outline-primary {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.85rem;
+}
+.file-upload-label { background: #1976d2; color: #fff; }
+.file-upload-label:hover { background: #1565c0; }
+.btn-upload { background: #4caf50; border: none; color: #fff; }
+.btn-upload:hover { background: #388e3c; }
 
 /* Responsive stacking */
 @media (max-width: 768px) {
@@ -100,26 +126,27 @@
 }
 </style>
 
-<!-- Header Bar -->
-<div class="bf-header-bar">
-    <h5 class="header-title mb-0">Bonafide Status</h5>
-    <a href="{% url 'dash' %}" class="home-icon">
-        <i class="fa fa-home"></i>
-    </a>
-</div>
-
-{% if bonafides %}
 <div class="bf-table">
-    <!-- Table Header -->
+    <!-- Table Header Section (Title + Icon) -->
+    <div class="bf-table-header">
+        <span class="header-title">Bonafide Status</span>
+        <a href="{% url 'dash' %}" class="home-icon">
+            <i class="fa fa-home"></i>
+        </a>
+    </div>
+    <hr class="bf-divider">
+
+    {% if bonafides %}
+    <!-- Column Headers -->
     <div class="bf-header">
         <div>ID</div>
         <div>Subject</div>
         <div>Mentor</div>
         <div>Advisor</div>
         <div>HOD</div>
-        <div>Actions</div>
     </div>
 
+    <!-- Table Rows -->
     {% for i in bonafides %}
     <div class="bf-row">
         <div class="bf-id" data-label="ID">#BF{{ i.id }}</div>
@@ -127,44 +154,10 @@
         <div data-label="Mentor"><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
         <div data-label="Advisor"><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
         <div data-label="HOD"><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
-
-        <div class="bf-actions" data-label="Actions">
-            {% if i.certificate %}
-            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#certModal{{ i.id }}">
-                View Certificate
-            </button>
-
-            <!-- Modal -->
-            <div class="modal fade" id="certModal{{ i.id }}" tabindex="-1" role="dialog" aria-labelledby="certModalLabel{{ i.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="certModalLabel{{ i.id }}">Bonafide Certificate</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body d-flex justify-content-center align-items-center" style="max-height:80vh; overflow-y:auto; padding:0;">
-                            <div style="width:100%; display:flex; justify-content:center; align-items:center; padding:1rem;">
-                                {% if ".pdf" in i.certificate.url|lower %}
-                                <iframe src="{{ i.certificate.url }}" style="width:100%; height:75vh; border:none;"></iframe>
-                                {% else %}
-                                <img src="{{ i.certificate.url }}" alt="Certificate" style="max-width:100%; max-height:75vh; object-fit:contain; display:block;" />
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-        </div>
     </div>
     {% endfor %}
+    {% else %}
+    <p style="text-align:center;width:100%;padding:20px;">No Bonafide records found</p>
+    {% endif %}
 </div>
-{% else %}
-<p style="text-align:center;width:100%;padding:20px;">No Bonafide records found</p>
-{% endif %}
 {% endblock %}

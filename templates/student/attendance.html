@@ -81,24 +81,14 @@
 		justify-content: center;
 	}
 	@media (max-width: 767px) {
-		.table thead {
-			display: none;
-		}
-		.table tbody td {
-			display: block;
-			text-align: right;
-			padding-left: 50%;
-			position: relative;
-		}
-		.table tbody td::before {
-			content: attr(data-label);
-			position: absolute;
-			left: 0;
-			width: 50%;
-			padding-left: 15px;
-			font-weight: 700;
-			text-align: left;
-		}
+		/* Keep each subject row on one horizontal line: subject left, percentage right */
+		.table thead { display: none; }
+		.table tbody tr { display: flex; flex-direction: row; justify-content: space-between; align-items: center; }
+		.table tbody td { display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e0e0e0; text-align: left; }
+		.table tbody td:first-child { flex: 1 1 auto; padding-left: 6px; }
+		.table tbody td:last-child { flex: 0 0 140px; min-width: 110px; }
+		.progress { width: 100%; }
+		.progress-bar { font-size: 14px; }
 	}
 </style>
 <div class="gp-header-bar">

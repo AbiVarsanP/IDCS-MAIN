@@ -331,6 +331,26 @@ def student_attendance_view(request):
         })
     context['subject_percentages'] = subject_percentages
     context['subjects'] = subjects
+    # Recent per-subject absences so students can see dates and subject names
+    recent_absences = Attendance.objects.filter(student=student, status='Absent').select_related('subject').order_by('-date')[:200]
+    # Group absences by subject (subject may be None)
+    grouped = {}
+    for a in recent_absences:
+        key = a.subject.id if a.subject else 'general'
+        if key not in grouped:
+            grouped[key] = {
+                'subject': a.subject,
+                'subject_name': a.subject.name if a.subject else 'General',
+                'absences': []
+            }
+        grouped[key]['absences'].append(a)
+    # Convert to a list preserving order (most recent subject groups first by first absence date)
+    grouped_absences = []
+    for grp in grouped.values():
+        grp['count'] = len(grp['absences'])
+        grouped_absences.append(grp)
+    context['recent_absences'] = recent_absences
+    context['grouped_absences'] = grouped_absences
     return render(request, 'student/attendance.html', context)
 
 # Student OD history view

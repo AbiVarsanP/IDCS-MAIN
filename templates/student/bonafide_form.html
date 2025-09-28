@@ -9,7 +9,7 @@
     color: #fff;
     font-weight: 700;
     font-size: 1.25rem;
-    border-radius: 8px 8px 0 0;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -105,7 +105,18 @@ input[type="file"] { display: none; }
 
 /* Responsive */
 @media (max-width: 767px) {
-    .btn-group .btn { width: 100%; margin-bottom: 8px; }
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Keep header row layout on mobile */
+    .card-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0;
+    }
 }
 </style>
 
@@ -114,7 +125,7 @@ input[type="file"] { display: none; }
         <div class="col-lg-12">
             <div class="card">
                 <!-- Card header with title and home icon -->
-                <div class="card-header">
+                <div class="card-header" style="border-radius: 8px 8px 0px 0px;">
                     <span class="header-title">Bonafide Application</span>
                     <a href="{% url 'dash' %}" class="home-icon">
                         <i class="fa fa-home"></i>

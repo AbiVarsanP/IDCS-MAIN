@@ -101,28 +101,32 @@
 
     /* Responsive stacking */
     @media (max-width: 768px) {
-        .od-header, .od-row {
-            grid-template-columns: 1fr;
-            text-align: left;
-        }
-        .od-header div { display: none; }
-        .od-row {
-            border: 1px solid #e0e0e0;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            padding: 10px;
-            background: #fff;
-        }
-        .od-row > div {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-        }
-        .od-row > div::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: #555;
-        }
+        .od-table {
+        padding: 10px; /* Adds space inside the table container */
+    }
+
+    .od-header, .od-row {
+        grid-template-columns: 1fr;
+        text-align: left;
+    }
+    .od-header div { display: none; }
+    .od-row {
+        border: 1px solid #e0e0e0;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+    }
+    .od-row > div {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+    }
+    .od-row > div::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #555;
+    }
     }
 </style>
 

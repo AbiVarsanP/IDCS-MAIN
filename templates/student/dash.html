@@ -376,8 +376,8 @@
         </div>
     </div>
 
-    <!-- Right side (25% on desktop, 100% on mobile) -->
-    <div class="col-12 col-lg-3">
+    <!-- Right side (25% on desktop, hidden on mobile) -->
+    <div class="d-none d-lg-block col-lg-3">
         <div class="card mb-3 h-100">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <span>Recent Notifications</span>
@@ -400,4 +400,243 @@
     </div>
 </div>
 
+<!-- Mobile floating action button (FAB) for notifications -->
+<button id="mobile-notification-fab" aria-label="Show notifications" title="Notifications" class="mobile-notification-fab d-lg-none"> 
+    <i class="fa fa-bell" aria-hidden="true"></i>
+    <span id="mobile-notification-count" class="mobile-notification-count" aria-hidden="true">0</span>
+</button>
+
+<!-- Mobile sliding notification panel -->
+<div id="mobile-notification-panel" class="mobile-notification-panel d-lg-none" role="dialog" aria-hidden="true">
+    <div class="mobile-notification-panel-header">
+        <strong>Notifications</strong>
+        <button id="close-mobile-notifications" class="notification-close-btn">&times;</button>
+    </div>
+    <div class="mobile-notification-panel-body">
+        <ul id="mobile-notifications-list" class="list-group list-group-flush"></ul>
+    </div>
+</div>
+
+<style>
+/* Floating Action Button with continuous wave */
+.mobile-notification-fab {
+    position: fixed;
+    right: 16px;
+    bottom: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #1976d2;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    border: none;
+    z-index: 2000;
+    font-size: 1.25rem;
+    position: fixed;
+}
+.mobile-notification-fab:active { transform: scale(.98); }
+.mobile-notification-fab { overflow: visible; }
+/* two staggered waves */
+.mobile-notification-fab::before,
+.mobile-notification-fab::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    z-index: 1998;
+    pointer-events: none;
+}
+.mobile-notification-fab::before {
+    background: rgba(25,118,210,0.22); /* stronger color */
+    animation: fab-wave-1 2200ms infinite;
+}
+.mobile-notification-fab::after {
+    background: rgba(25,118,210,0.14);
+    animation: fab-wave-2 2200ms infinite;
+    animation-delay: 900ms; /* stagger */
+}
+
+@keyframes fab-wave-1 {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    60% { transform: translate(-50%, -50%) scale(1.7); opacity: 0.22; }
+    100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
+}
+@keyframes fab-wave-2 {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.95; }
+    60% { transform: translate(-50%, -50%) scale(1.9); opacity: 0.14; }
+    100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+/* small numeric badge inside FAB */
+.mobile-notification-count {
+    position: absolute;
+    /* place badge at top-right of the bell */
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 50%;
+    background: #ff3b30;
+    color: #fff;
+    font-size: 0.7rem;
+    line-height: 20px;
+    text-align: center;
+    display: none; /* controlled by JS */
+    align-items: center;
+    justify-content: center;
+    z-index: 2001;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+/* show small dot when count is 0 hidden; JS will toggle display */
+
+/* Sliding panel (covers bottom half on small screens) */
+.mobile-notification-panel {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 58%;
+    max-height: 80vh;
+    background: #fff;
+    z-index: 1999;
+    transform: translateY(110%);
+    transition: transform 0.32s cubic-bezier(.2,.8,.2,1), opacity 0.2s ease-in-out;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none; /* not interactive when closed */
+    opacity: 0; /* invisible when closed */
+}
+.mobile-notification-panel.open {
+    transform: translateY(0%);
+    pointer-events: auto;
+    opacity: 1;
+}
+.mobile-notification-panel-header {
+    background: #1976d2;
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.mobile-notification-panel-body { padding: 8px 0; overflow-y: auto; }
+.mobile-notification-panel-body .list-group-item { padding: 12px 16px; }
+
+/* hide desktop FAB/panel on larger screens (redundant with d-lg-none, but safe) */
+@media (min-width: 992px) {
+    .mobile-notification-fab, .mobile-notification-panel { display: none !important; }
+}
+</style>
+
+<script>
+// Toggle mobile notification panel; copy items from the right-side recent-notifications-list
+document.addEventListener('DOMContentLoaded', function () {
+    const fab = document.getElementById('mobile-notification-fab');
+    const panel = document.getElementById('mobile-notification-panel');
+    const closeBtn = document.getElementById('close-mobile-notifications');
+    const sourceList = document.getElementById('recent-notifications-list');
+    const targetList = document.getElementById('mobile-notifications-list');
+
+    function populateMobileList() {
+        if (!sourceList || !targetList) return;
+        // Clone nodes for safe reuse
+        targetList.innerHTML = '';
+        const items = sourceList.querySelectorAll('li');
+        if (!items || items.length === 0) {
+            targetList.innerHTML = '<li class="list-group-item">No recent notifications.</li>';
+            return;
+        }
+        items.forEach(it => {
+            const clone = it.cloneNode(true);
+            targetList.appendChild(clone);
+        });
+    }
+
+    if (fab) {
+        fab.addEventListener('click', function () {
+            populateMobileList();
+            // ensure panel is in the DOM flow then animate
+            panel.style.display = 'flex';
+            // small timeout to let display apply before transition
+            setTimeout(function () {
+                panel.classList.add('open');
+                panel.setAttribute('aria-hidden', 'false');
+            }, 20);
+            // prevent body scroll behind panel
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    // Update the FAB unread-count badge
+    function setFabCount(count) {
+        const badge = document.getElementById('mobile-notification-count');
+        if (!badge) return;
+        if (!count || count <= 0) {
+            badge.style.display = 'none';
+            badge.textContent = '0';
+            return;
+        }
+        badge.style.display = 'block';
+        badge.textContent = (count > 9) ? '9+' : String(count);
+    }
+
+    // Hook into fetchRecentNotifications to update badge when API returns
+    const originalFetchFn = fetchRecentNotifications;
+    fetchRecentNotifications = function () {
+        fetch('{% url "recent_notifications_api" %}')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('recent-notifications-list');
+                if (!list) return;
+                let html = '';
+                if (data.notifications && data.notifications.length > 0) {
+                    data.notifications.forEach(note => {
+                        html += `<li class="list-group-item"><small class="text-muted">${note.created_at}</small><br>${note.message}</li>`;
+                    });
+                } else {
+                    html = '<li class="list-group-item">No recent notifications.</li>';
+                }
+                list.innerHTML = html;
+                // update badge using unread_count if provided, else compute from flags
+                if (typeof data.unread_count !== 'undefined') {
+                    setFabCount(data.unread_count);
+                } else {
+                    // fallback: count items with is_read === false
+                    const unread = (data.notifications || []).filter(n => n.is_read === false).length;
+                    setFabCount(unread);
+                }
+            });
+    };
+    // initial run (already done above by original code), ensure badge updated
+    document.addEventListener('DOMContentLoaded', function() { fetchRecentNotifications(); });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            panel.classList.remove('open');
+            panel.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            // after transition ends, remove from flow
+            panel.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'transform') {
+                    panel.style.display = 'none';
+                    panel.removeEventListener('transitionend', handler);
+                }
+            });
+        });
+    }
+
+    // Close panel when clicking outside on overlay area (if we add overlay later)
+});
+</script>
 {% endblock %}

@@ -2,21 +2,28 @@
 {% block root %}
 <div class="container mt-4">
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 style="margin:0; color:#fff; background:#1976d2; padding:10px 24px; border-radius:6px; display:inline-block; box-shadow:0 2px 8px rgba(25,118,210,0.08);">
-                Notification History
-            </h3>
-            <form method="post" action="{% url 'delete_all_student_notifications' %}">
-                {% csrf_token %}
-                <input type="hidden" name="delete_all" value="1">
-                <button type="submit" class="btn btn-danger btn-sm">Delete All</button>
-            </form>
-        </div>
+        <!-- Card header with title and home icon -->
+        <div class="card-header d-flex justify-content-between align-items-center" style="border-radius: 8px 8px 0px 0px;">
+    <span class="header-title">
+        Notification History
+    </span>
+    <a href="{% url 'dash' %}" class="home-icon">
+        <i class="fa fa-home"></i>
+    </a>
+</div>
+
         <div class="card-body">
-            <form method="post" class="mb-3">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary">Mark all as read</button>
-            </form>
+            <div class="d-flex justify-content-between mb-3 flex-wrap">
+                <form method="post" class="mr-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Mark all as read</button>
+                </form>
+                <form method="post" action="{% url 'delete_all_student_notifications' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_all" value="1">
+                    <button type="submit" class="btn btn-danger">Delete All</button>
+                </form>
+            </div>
 
             <div class="table-responsive">
                 <table class="table table-striped table-hover" style="border-radius:8px; overflow:hidden;">
@@ -55,6 +62,37 @@
 </div>
 
 <style>
+/* Card header */
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px 8px 0 0;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header .header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: left; /* ensures left alignment */
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
 /* Table inside card styling */
 .table th, .table td {
     padding: 12px 10px;
@@ -110,8 +148,21 @@
     background-color: #d32f2f;
 }
 
-/* Responsive: convert table rows to stacked cards on small screens */
+/* Responsive table */
 @media (max-width: 767px) {
+    .card-header {
+        flex-direction: row; /* keep horizontal layout */
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-header .header-title {
+        text-align: left;
+        font-size: 1.1rem;
+        flex: 1;
+    }
+    .card-header .home-icon {
+        flex: 0;
+    }
     .table thead {
         display: none;
     }
@@ -153,6 +204,14 @@
     }
     .table td .badge {
         margin-left: 8px;
+    }
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .d-flex.justify-content-between form {
+        width: 100%;
+        margin-bottom: 8px;
     }
 }
 </style>

@@ -101,6 +101,10 @@ hr.leave-divider {
 
 /* Responsive stacking */
 @media (max-width: 768px) {
+    .leave-table {
+        padding: 10px; /* add breathing space inside the table container */
+    }
+
     .leave-header, .leave-row {
         grid-template-columns: 1fr;
         text-align: left;
@@ -110,7 +114,7 @@ hr.leave-divider {
         border: 1px solid #e0e0e0;
         margin-bottom: 12px;
         border-radius: 8px;
-        padding: 10px;
+        padding: 12px; /* keep rows looking like cards */
         background: #fff;
     }
     .leave-row > div {
@@ -124,6 +128,7 @@ hr.leave-divider {
         color: #555;
     }
 }
+
 </style>
 
 <div class="leave-table">

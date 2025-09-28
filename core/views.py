@@ -206,15 +206,19 @@ def recent_notifications_api(request):
         student = Student.objects.get(user=request.user)
     except Student.DoesNotExist:
         return JsonResponse({'notifications': []})
-    notes = Notification.objects.filter(student=student).order_by('-created_at')[:5]
-    notifications = [
-        {
+    notes = Notification.objects.filter(student=student).order_by('-created_at')[:10]
+    notifications = []
+    unread_count = 0
+    for note in notes:
+        is_read = bool(getattr(note, 'is_read', False))
+        if not is_read:
+            unread_count += 1
+        notifications.append({
             'created_at': note.created_at.strftime('%d %b %Y %H:%M'),
-            'message': note.message
-        }
-        for note in notes
-    ]
-    return JsonResponse({'notifications': notifications})
+            'message': note.message,
+            'is_read': is_read
+        })
+    return JsonResponse({'notifications': notifications, 'unread_count': unread_count})
 @login_required
 def staff_attendance_view(request):
     context = set_config(request)

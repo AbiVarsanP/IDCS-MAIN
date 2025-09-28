@@ -4,18 +4,20 @@ from django.contrib import admin
 from django.http import HttpResponse
 import csv
 from .models import Semester, SemesterSubject, Student
-# Custom form for Student to filter elective fields
-from django import forms
 from django.contrib.auth import get_user_model
-# Add principal_status to User admin
 User = get_user_model()
-from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
-# Principal admin: show only users with principal_status=True
-from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 from .models import Principal
 from .models import Section
-# Custom form for SemesterSubject to filter section fields by department
+from django.urls import path
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester, SportsOD, SportsODPlayer
+from django import forms as djforms
+from django.utils.safestring import mark_safe
+import datetime
+from .models import Notice, Circular
+
 class SemesterSubjectAdminForm(forms.ModelForm):
 	class Meta:
 		model = SemesterSubject
@@ -106,26 +108,18 @@ class StudentAdminForm(forms.ModelForm):
 		self.fields['elective2'].queryset = qs
 		self.fields['elective3'].queryset = qs
 
-# Custom admin for Student
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
 	form = StudentAdminForm
 	list_display = ("user", "department", "semester", "elective1", "elective2", "elective3")
 	search_fields = ("user__username", "department__name")
-from django import forms
-from django.urls import path
-from django.shortcuts import render, redirect
-from django.contrib import messages
+
 try:
 	import openpyxl
 	from openpyxl.utils import get_column_letter
 	has_openpyxl = True
 except ImportError:
 	has_openpyxl = False
-
-
-from .models import Student, Staff, OD, LEAVE, GATEPASS, HOD, AHOD, StaffRating, RatingQuestions, IndividualStaffRating, SpotFeedback, BONAFIDE, Semester, SportsOD, SportsODPlayer
-
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
@@ -211,23 +205,9 @@ def export_students_excel(modeladmin, request, queryset):
 	return response
 export_students_excel.short_description = "Export Selected Students as Excel"
 
-
-from django import forms
-from django.urls import path
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
 class StudentImportForm(forms.Form):
 	csv_file = forms.FileField(label="Select CSV file")
 
-from django import forms as djforms
-from django.utils.safestring import mark_safe
-import datetime
-
-class StudentAdminForm(djforms.ModelForm):
-	class Meta:
-		model = Student
-		fields = '__all__'
 
 class StudentAdmin(admin.ModelAdmin):
 	form = StudentAdminForm
@@ -378,3 +358,84 @@ class SemesterAdmin(admin.ModelAdmin):
 	inlines = [SemesterSubjectInline]
 	list_display = ("department", "semester")
 	search_fields = ("department__name", "semester")
+
+
+@admin.register(Notice)
+class NoticeAdmin(admin.ModelAdmin):
+	# Only the poster image and published flag are relevant for homepage posters
+	list_display = ('has_image', 'published')
+	list_filter = ('published',)
+	fields = ('image', 'published')
+	actions = ['make_published', 'make_unpublished']
+
+	def has_image(self, obj):
+		return bool(obj.image)
+	has_image.boolean = True
+	has_image.short_description = 'Has Poster'
+
+	def make_published(self, request, queryset):
+		from django.utils import timezone
+		updated = queryset.update(published=True, publish_date=timezone.now())
+		self.message_user(request, f"Marked {updated} notices as published.")
+	make_published.short_description = 'Mark selected notices as published'
+
+	def make_unpublished(self, request, queryset):
+		updated = queryset.update(published=False, publish_date=None)
+		self.message_user(request, f"Marked {updated} notices as unpublished.")
+	make_unpublished.short_description = 'Mark selected notices as unpublished'
+
+
+@admin.register(Circular)
+class CircularAdmin(admin.ModelAdmin):
+	# Hide `title` and `subject` from admin list and form per request
+	list_display = ('reference_no', 'from_text', 'to_text', 'target', 'published', 'publish_date', 'created_by')
+	list_filter = ('target', 'published', 'publish_date')
+	exclude = ('title', 'subject')
+	actions = ['make_published', 'make_unpublished']
+
+	def make_published(self, request, queryset):
+		from django.utils import timezone
+		from .models import Notification, Student, Staff
+		updated = queryset.update(published=True, publish_date=timezone.now())
+		# For each circular, create notifications for the intended audience
+		created_count = 0
+		for c in queryset:
+			msg = f"Circular: [{c.id}] {c.title}"
+			if c.target == 'students' or c.target == 'all':
+				students = Student.objects.all()
+				notes = []
+				for s in students:
+					# avoid duplicate notifications
+					if not Notification.objects.filter(student=s, message__icontains=f"Circular: [{c.id}]").exists():
+						notes.append(Notification(student=s, message=msg, circular=c))
+				Notification.objects.bulk_create(notes)
+				created_count += len(notes)
+			if c.target == 'staff' or c.target == 'all':
+				staffs = Staff.objects.all()
+				notes = []
+				for st in staffs:
+					if not Notification.objects.filter(staff=st, message__icontains=f"Circular: [{c.id}]").exists():
+						notes.append(Notification(staff=st, message=msg, circular=c))
+				Notification.objects.bulk_create(notes)
+				created_count += len(notes)
+		self.message_user(request, f"Marked {updated} circulars as published. Created {created_count} notifications.")
+	make_published.short_description = 'Mark selected circulars as published'
+
+	def make_unpublished(self, request, queryset):
+		from .models import Notification
+		# Remove previously created notifications for these circulars
+		for c in queryset:
+			msg_snippet = f"Circular: [{c.id}]"
+			Notification.objects.filter(message__icontains=msg_snippet).delete()
+		updated = queryset.update(published=False, publish_date=None)
+		self.message_user(request, f"Marked {updated} circulars as unpublished and removed related notifications.")
+	make_unpublished.short_description = 'Mark selected circulars as unpublished'
+
+	def save_model(self, request, obj, form, change):
+		# When saving via admin form, ensure post-save logic runs and report counts
+		super().save_model(request, obj, form, change)
+		# If published, ensure notifications exist (post_save handles creation); inform admin
+		if obj.published:
+			from .models import Notification
+			cnt = Notification.objects.filter(circular=obj).count()
+			self.message_user(request, f"Circular saved. {cnt} notification(s) are associated with this circular.")

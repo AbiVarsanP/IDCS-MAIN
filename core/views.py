@@ -1,12 +1,40 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from collections import defaultdict
-
 from django.contrib import messages
-from django.shortcuts import redirect, render
-
+from django.shortcuts import redirect, render, HttpResponse
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import Student
+from .models import SportsOD, SportsODPlayer, Student, Staff, Notification, CertificateUpload
+from django.db import transaction
+from django.views.decorators.http import require_GET
+from .forms import CertificateUploadForm
+from .models import Attendance
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from feed360.models import FeedbackQuestion
+from django.contrib.auth.decorators import user_passes_test
+import random
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification
+from .models import SemesterSubject
+from django.db import models
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
+from .models import *
+from .helpers import *
+from .constants import *
+from django.contrib.messages import error, success, warning
+from io import BytesIO
+from django.core.files import File
+from django.utils.dateparse import parse_datetime   # ✅ must be here
+import qrcode
+
+def home(request):
+    # Provide recent published notices with images for the homepage hero carousel
+    from .models import Notice
+    notices = Notice.objects.filter(published=True).exclude(image__isnull=True).exclude(image__exact='').order_by('-publish_date', '-created')[:12]
+    return render(request, 'home.html', {'notices': notices})
+
 def is_hod(user):
     return user.is_staff and hasattr(user, 'staff') and user.staff.position == 0
 
@@ -54,9 +82,6 @@ def hod_sports_od_action(request, player_id):
             messages.error(request, "You are not authorized to perform this action.")
 
     return redirect('hod_sports_od_view')
-from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import SportsOD, SportsODPlayer, Student, Staff, Notification
-from django.db import transaction
 
 # Helper function to check if a user is a PET Staff
 def is_pet_staff(user):
@@ -139,10 +164,6 @@ def get_student_details(request, user_id): # Changed parameter name
     except Student.DoesNotExist:
         data = {'exists': False, 'error': 'Student not found.'}
     return JsonResponse(data)
-from django.views.decorators.http import require_GET
-from django.contrib.auth.decorators import login_required
-from .forms import CertificateUploadForm
-from .models import CertificateUpload, Student
 
 # Staff view: show certificates uploaded by their mentees/advisees
 @login_required
@@ -189,14 +210,6 @@ def certificate_upload_view(request):
     context['form'] = form
     context['uploads'] = uploads
     return render(request, 'student/certificate_upload.html', context)
-# Imports
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-# Subject-wise staff attendance view
-from .models import Attendance
-from django.utils import timezone
 
 # API endpoint for recent notifications (for live refresh)
 @login_required
@@ -392,11 +405,7 @@ def student_gatepass_history(request):
     gatepasses = GATEPASS.objects.filter(user=student)
     context['gatepasses'] = gatepasses
     return render(request, 'student/gatepass_history.html', context)
-from django.contrib.auth import get_user_model
-from feed360.models import FeedbackQuestion
 
-# View for HOD to see all staff in their department
-from django.contrib.auth.decorators import login_required
 @login_required
 def staff_list(request):
     context = set_config(request)
@@ -418,38 +427,12 @@ def staff_list(request):
     context['staff_members'] = staff_members
     return render(request, 'staff_list.html', context)
 
-from django.contrib.auth.decorators import user_passes_test
-
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-import random
-from django.core.mail import send_mail
-from django.conf import settings
-
-# View for HOD to see all staff in their department
-from django.contrib.auth.decorators import login_required
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification, Student
-from .models import SemesterSubject
-from django.db import models
-# Principal dashboard view
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
 def principal_dashboard(request):
     return render(request, 'principal/dashboard.html', {})
 
-
-
-# Period-wise attendance view
 from django.http import HttpResponse
-
-
-# Student attendance view for date-wise lookup
-
-
-# AHOD Bonafide (HOD) requests view
 
 @login_required
 def ahod_bonafide_hod(request):
@@ -590,10 +573,7 @@ def ahod_gatepass_hod(request):
             )
         return redirect('ahod_gatepass_hod')
     return render(request, 'ahod/gatepass_hod.html', context)
-# ...existing code...
-from django.shortcuts import render
-from .models import Notification, Staff
-from django.contrib.auth.decorators import login_required
+
 @login_required
 def ahod_notification_history(request):
     ahod = None
@@ -740,6 +720,16 @@ def notifications_view(request):
     }
     return render(request, "student/notification_history.html", context)
 
+# Circular detail view (accessible from notifications)
+@login_required
+def circular_detail(request, pk):
+    from .models import Circular
+    try:
+        c = Circular.objects.get(id=pk, published=True)
+    except Circular.DoesNotExist:
+        return render(request, '404.html', status=404)
+    return render(request, 'student/circular_detail.html', {'circular': c})
+
 # View to handle delete all notifications POST for students
 @login_required
 def delete_all_student_notifications(request):
@@ -801,24 +791,6 @@ def delete_all_staff_notifications(request):
         return redirect('login')
     Notification.objects.filter(staff=staff).delete()
     return redirect('staff_notifications')
-
-from django.shortcuts import render, redirect, HttpResponse
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from .models import *
-from .helpers import *
-from .constants import *
-from django.contrib.messages import error, success, warning
-from io import BytesIO
-from django.core.files import File
-from django.conf import settings
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils.dateparse import parse_datetime   # ✅ must be here
-from .models import GATEPASS, Student
-import qrcode
-
 
 @login_required
 def ahod_od_view(request):

@@ -127,3 +127,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'website2k5@gmail.com'
 EMAIL_HOST_PASSWORD = 'oqto rbin gdwz ydnw'
 DEFAULT_FROM_EMAIL = 'website2k5@gmail.com'
+
+LOGOUT_REDIRECT_URL = 'dash'
+LOGOUT_URL="logout"

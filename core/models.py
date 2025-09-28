@@ -2,6 +2,11 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 from django.utils import timezone
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from .constants import *
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Certificate Upload model for students to send certificates to mentors/advisors
 class CertificateUpload(models.Model):
@@ -23,11 +28,7 @@ class CertificateUpload(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.file.name}"
-from django.urls import reverse
-from django.contrib.auth import get_user_model
 
-
-from .constants import *
 # Department/Semester/Subject/Student-wise Attendance Model
 class Attendance(models.Model):
     STATUS_CHOICES = [
@@ -36,7 +37,7 @@ class Attendance(models.Model):
         ('On Leave', 'On Leave'),
         ('On Duty', 'On Duty'),
     ]
-    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='attendances')
+    department = models.ForeignKey('Department', on_delete=models.CASCADE, related_name='attendances', default=1)
     semester = models.PositiveIntegerField()
     subject = models.ForeignKey('SemesterSubject', on_delete=models.CASCADE, related_name='attendances')
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='attendances')
@@ -48,7 +49,7 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.subject} - {self.date} - {self.status}"
-
+    
 # Subject-wise Attendance Model
 class Attendance(models.Model):
     STATUS_CHOICES = [
@@ -66,7 +67,6 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.subject} - {self.date} - {self.status}"
-
 
 # Section model to represent department sections (A, B, C, etc.)
 class Section(models.Model):
@@ -202,10 +202,6 @@ class Attendance(models.Model):
     def __str__(self):
         return f"{self.student} - {self.subject} - {self.date} - {self.status}"
 
-
-
-
-
 User = get_user_model()
 
 # Add principal_status to User via monkey patch if not present
@@ -241,6 +237,7 @@ class Notification(models.Model):
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
     message = models.TextField()
+    circular = models.ForeignKey('Circular', on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
@@ -603,3 +600,72 @@ class Timetable(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.day} - {self.period}: {self.subject}"
+
+# Notices and Circulars for Home Page
+class Notice(models.Model):
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    # Poster image to display on home page
+    image = models.ImageField(upload_to='notices', blank=True, null=True)
+    published = models.BooleanField(default=False)
+    publish_date = models.DateTimeField(blank=True, null=True)
+    created_by = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-publish_date', '-created']
+
+    def __str__(self):
+        return self.title
+
+class Circular(models.Model):
+    TARGET_CHOICES = [
+        ('all', 'All'),
+        ('students', 'Students'),
+        ('staff', 'Staff'),
+    ]
+    # Reference number to appear on the circular
+    reference_no = models.CharField(max_length=100, blank=True, null=True)
+    # From and To text fields for flexible rendering
+    from_text = models.CharField(max_length=200, blank=True, null=True)
+    to_text = models.CharField(max_length=200, blank=True, null=True)
+    # Subject (optional) — falls back to title if empty
+    title = models.CharField(max_length=200)
+    subject = models.CharField(max_length=200, blank=True, null=True)
+    body = models.TextField()
+    target = models.CharField(max_length=20, choices=TARGET_CHOICES, default='all')
+    published = models.BooleanField(default=False)
+    publish_date = models.DateTimeField(blank=True, null=True)
+    created_by = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-publish_date', '-created']
+
+    def __str__(self):
+        return f"{self.title} ({self.target})"
+
+@receiver(post_save, sender=Circular)
+def circular_post_save(sender, instance, created, **kwargs):
+    # Ensure notifications are created/removed when circular is published/unpublished
+    # Avoid recursive signals when setting publish_date by using queryset.update()
+    if instance.published:
+        # set publish_date if not set (use update to avoid re-triggering signals)
+        if not instance.publish_date:
+            sender.objects.filter(pk=instance.pk).update(publish_date=timezone.now())
+            # refresh instance
+            instance.publish_date = sender.objects.get(pk=instance.pk).publish_date
+        # create notifications only if none exist already
+        if not Notification.objects.filter(circular=instance).exists():
+            msg = f"Circular: [{instance.id}] {instance.title}"
+            if instance.target in ('students', 'all'):
+                students = Student.objects.all()
+                notes = [Notification(student=s, message=msg, circular=instance) for s in students]
+                Notification.objects.bulk_create(notes)
+            if instance.target in ('staff', 'all'):
+                staffs = Staff.objects.all()
+                notes = [Notification(staff=st, message=msg, circular=instance) for st in staffs]
+                Notification.objects.bulk_create(notes)
+    else:
+        # If unpublished, remove notifications for this circular
+        Notification.objects.filter(circular=instance).delete()

@@ -2,32 +2,25 @@ from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
 from .views import *
-
-
+from .profile_views import staff_profile, hod_profile
+from .view_mentees import view_mentees, my_mentees
+from django.urls import path, include
 from .views import principal_dashboard
+from .ahod_actions import ahod_action_od
+from .ahod_actions_leave import ahod_action_leave
+from .timetable_views import hod_timetable
+from django.shortcuts import render
+from .models import Department
+from django.contrib.auth import views as auth_views
+from core.timetable_views import get_department_subjects
+
+
 def principal_department(request):
-    from django.shortcuts import render
-    from .models import Department
+    
     departments = Department.objects.all()
     return render(request, 'principal/department.html', {'departments': departments})
 
-from .profile_views import staff_profile, hod_profile
-from .view_mentees import view_mentees
-
-from .view_mentees import view_mentees, my_mentees
-
-from django.urls import path, include
-from .timetable_views import staff_timetable
-from .student_timetable_views import student_timetable
-from .views import *
-
-from .profile_views import staff_profile, hod_profile
-from .view_mentees import view_mentees, my_mentees
-
-
-
 urlpatterns = [
-
     # Add these new includes
     path('pet/', include('core.pet_urls')),
     path('hod/', include('core.hod_urls')),
@@ -39,7 +32,7 @@ urlpatterns = [
     path('student/bonafide/history/', student_bonafide_history, name='student_bonafide_history'),
     path('student/gatepass/history/', student_gatepass_history, name='student_gatepass_history'),
     path('staff/my_class/', my_class_students, name='staff_my_class'),
-    path("",dash,name='dash'),
+    path("", home, name='home'),    
     path("notifications/", notifications_view, name="notifications_view"),
     path("notifications/delete_all/", delete_all_student_notifications, name="delete_all_student_notifications"),
     path("profile/", student_profile, name='student_profile'),
@@ -55,6 +48,7 @@ urlpatterns = [
     path("gatepass/",gatepass,name='gatepass'),
     path("feedback",student_feedback,name='student_feedback'),
     path('bonafide/', bonafide_view, name='bonafide'),
+    path('dash/', dash, name='dash'),
     path("dash/", ahod_dash, name="ahod_dash"),
     path('student/timetable/', student_timetable, name='student_timetable'),
     path("ahod/", include("core.ahod_urls")),
@@ -62,26 +56,14 @@ urlpatterns = [
     path('hod/notifications/history/', hod_notification_history, name='hod_notification_history'),
     path('student/notifications/delete_all/', delete_all_student_notifications, name='delete_all_student_notifications'),
     path('staff/notifications/delete_all/', delete_all_staff_notifications, name='delete_all_staff_notifications'),
-
     path('hod/notifications/delete_all/', delete_all_notifications, name='delete_all_notifications'),
     path('hod/notifications/history/', ahod_notification_history, name='hod_notification_history'),
-
-
-    # Staff list for HOD
     path('hod/staff-list/', staff_list, name='staff_list'),
     path('hod/staff/<int:staff_id>/mentees/', view_mentees, name='view_mentees'),
-
-
-    # Staff list for HOD
-    path('hod/staff-list/', staff_list, name='staff_list'),
     path('hod/my-mentees/', my_mentees, name='my_mentees'),
-    path('hod/staff/<int:staff_id>/mentees/', view_mentees, name='view_mentees'),
 
 
 ]
-
-from .ahod_actions import ahod_action_od
-from .ahod_actions_leave import ahod_action_leave
 
 urlpatterns += [
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
@@ -155,19 +137,17 @@ urlpatterns += [
 
 # Placement
 
-from .timetable_views import hod_timetable
+
 
 urlpatterns += [
     path("hod/timetable/", hod_timetable, name="hod_timetable"),
 ]
 
-from django.contrib.auth import views as auth_views
 
 urlpatterns += [
     path('password_change/', otp_verification, name='password_change'),
 ]
 
-from core.timetable_views import get_department_subjects
 
 urlpatterns += [
     path('get-department-subjects/<int:department_id>/', get_department_subjects, name='get_department_subjects'),

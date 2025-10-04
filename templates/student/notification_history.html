@@ -40,7 +40,13 @@
                         <tr class="notification-row" style="background:#fff; transition:0.3s; border-bottom:1px solid #ddd;">
                             <td data-label="Date" style="vertical-align:middle; text-align:center; font-weight:500;">{{ n.created_at|date:'Y-m-d' }}</td>
                             <td data-label="Time" style="vertical-align:middle; text-align:center; font-weight:500;">{{ n.created_at|date:'H:i:s' }}</td>
-                            <td data-label="Message" style="vertical-align:middle; padding:8px 12px;">{{ n.message }}</td>
+                            <td data-label="Message" style="vertical-align:middle; padding:8px 12px;">
+                                {% if n.circular and n.circular.id %}
+                                    <a href="{% url 'circular_detail' n.circular.id %}">{{ n.message }}</a>
+                                {% else %}
+                                    {{ n.message }}
+                                {% endif %}
+                            </td>
                             <td data-label="Status" style="vertical-align:middle; text-align:center;">
                                 {% if n.is_read %}
                                     <span class="badge badge-success">Read</span>

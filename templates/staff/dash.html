@@ -71,21 +71,7 @@
             border-radius: 12px;
         }
     }
-    .notification-close-btn {
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 1.5rem;
-        line-height: 1;
-        cursor: pointer;
-        margin-left: 8px;
-        margin-right: -8px;
-        opacity: 0.8;
-        transition: opacity 0.2s;
-    }
-    .notification-close-btn:hover {
-        opacity: 1;
-    }
+    
 </style>
 {% extends 'base.html' %}
 {% load static %}
@@ -128,68 +114,68 @@
     </div>
 </div>
 
-<div class="row mb-3" id="main-content-with-sidebar">
-
-
-    <div class="col-12 col-md-3 mb-3 mb-md-0">
-        <div class="card">
-            <div class="card-body">
-                <div class="stat-widget-five">
-                    <div class="stat-icon dib flat-color-1">
-                        <i class="ti-file"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="text-file">
-                            <div class="stat-text">Profes Pro</div>
-                            <div class="stat-heading">
-                                <a href="{% url 'pathpilot' %}?role=Staff" class="btn btn-link btn-sm flat-color-1">Create</a>
-                                <a href="{% url 'map_history' %}" class="btn btn-link btn-sm flat-color-1">Map History</a>
+<div class="row">
+    <div class="col-12 col-lg-9">
+        <div class="row mb-3" id="main-content-with-sidebar">
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="stat-widget-five">
+                            <div class="stat-icon dib flat-color-1">
+                                <i class="ti-file"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="text-file">
+                                    <div class="stat-text">Profes Pro</div>
+                                    <div class="stat-heading">
+                                        <a href="{% url 'pathpilot' %}?role=Staff" class="btn btn-link btn-sm flat-color-1">Create</a>
+                                        <a href="{% url 'map_history' %}" class="btn btn-link btn-sm flat-color-1">Map History</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row">
-    <!-- Left: Today's Timetable -->
-    <div class="col-md-6 mb-3">
-        <div class="card mb-3" style="min-width: 220px;">
-            <div class="card-header bg-primary text-white">
-                <strong>Today's Timetable</strong>
+        <div class="row">
+            <!-- Left: Today's Timetable -->
+            <div class="col-md-6 mb-3">
+                <div class="card mb-3" style="min-width: 220px;">
+                    <div class="card-header bg-primary text-white">
+                        <strong>Today's Timetable</strong>
+                    </div>
+                    <div class="card-body p-2">
+                        {% if todays_timetable %}
+                        <table class="table table-sm table-bordered text-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%">Period</th>
+                                    <th style="width: 60%">My Subject</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in todays_timetable %}
+                                <tr>
+                                    <td>{{ row.period }}</td>
+                                    <td>{{ row.my_subject|default:'-' }}</td>
+                                </tr> 
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="text-muted">No timetable for today.</div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-2">
-                {% if todays_timetable %}
-                <table class="table table-sm table-bordered text-center mb-0">
-                    <thead>
-                        <tr>
-                            <th style="width: 40%">Period</th>
-                            <th style="width: 60%">My Subject</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in todays_timetable %}
-                        <tr>
-                            <td>{{ row.period }}</td>
-                            <td>{{ row.my_subject|default:'-' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="text-muted">No timetable for today.</div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 
-    <!-- Right: Feed360, Profes Pro, Application Cards and Attendance -->
-    
-            <!-- Feed360 Feedback and Profes Pro at the top -->
+            <!-- Right: Feed360, Profes Pro, Application Cards and Attendance -->
             
-            <!-- Row 1: OD & Leave -->
+                    <!-- Feed360 Feedback and Profes Pro at the top -->
+
+                    <!-- Row 1: OD & Leave -->
             <div class="col-md-6 mb-3">
                 <div class="card h-100">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -271,7 +257,7 @@
                     </div>
                 </div>
             </div>
-        <!-- Attendance Card below -->
+            <!-- Attendance Card below -->
             <div class="col-md-6 mb-3">
                 <div class="card h-100">
                     <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
@@ -283,17 +269,19 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-    <div id="notification-sidebar" class="col-12 col-lg-4">
-        <div class="card mb-3" style="height:100%;">
+    <div class="col-12 col-lg-3">
+        <div class="card mb-3 h-100">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <span>Recent Notifications</span>
                 <div class="d-flex align-items-center">
-                    <a href="{% url 'staff_notifications' %}" class="btn btn-light btn-sm mr-2">View All</a>
-                    <button class="notification-close-btn" id="close-notification-sidebar" title="Close">&times;</button>
+                    <a href="{% url 'notifications_view' %}" class="btn btn-light btn-sm mr-2">View All</a>
                 </div>
             </div>
-            <ul class="list-group list-group-flush" id="recent-notifications-list" style="max-height:calc(100vh - 220px);overflow-y:auto;">
+            <ul class="list-group list-group-flush" id="recent-notifications-list"
+                style="max-height:calc(100vh - 220px);overflow-y:auto;">
                 {% for note in recent_notifications %}
                 <li class="list-group-item">
                     <small class="text-muted">{{ note.created_at|date:"d M Y H:i" }}</small><br>
@@ -305,14 +293,9 @@
             </ul>
         </div>
     </div>
-    <button id="notification-fab" class="hidden" title="Show Notifications">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16zm6-2a1 1 0 0 1-1-1V7c0-3.07-1.64-5.64-5-5.96V0a1 1 0 0 0-2 0v1.04C3.64 1.36 2 3.92 2 7v6a1 1 0 0 1-1 1h12z"/>
-        </svg>
-    </button>
 </div>
 
-<script>
+<!-- {% comment %} <script>
 // Sidebar open/close logic
 const sidebar = document.getElementById('notification-sidebar');
 const fab = document.getElementById('notification-fab');
@@ -331,5 +314,5 @@ if (closeBtn && fab && sidebar) {
 }
 // Open by default on load
 openSidebar();
-</script>
-{% endblock %}
+</script> {% endcomment %} -->
+{% endblock %}  

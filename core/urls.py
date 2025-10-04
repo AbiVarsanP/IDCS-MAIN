@@ -2,6 +2,7 @@ from django.urls import path, include
 from .timetable_views import staff_timetable
 from .student_timetable_views import student_timetable
 from .views import *
+from .views import gatepass_scanner_view
 from .profile_views import staff_profile, hod_profile
 from .view_mentees import view_mentees, my_mentees
 from django.urls import path, include
@@ -32,7 +33,8 @@ urlpatterns = [
     path('student/bonafide/history/', student_bonafide_history, name='student_bonafide_history'),
     path('student/gatepass/history/', student_gatepass_history, name='student_gatepass_history'),
     path('staff/my_class/', my_class_students, name='staff_my_class'),
-    path("", home, name='home'),    
+    path("", home, name='home'),
+    path('student/gatepass/scan/', process_gatepass_qr_scan, name='process_gatepass_qr_scan'),
     path("notifications/", notifications_view, name="notifications_view"),
     path("notifications/delete_all/", delete_all_student_notifications, name="delete_all_student_notifications"),
     path("profile/", student_profile, name='student_profile'),
@@ -70,6 +72,8 @@ urlpatterns += [
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
     path("ahleaves/check", ahod_leave_view, name='ahod_leave_view'),
     path("ahods/action/<int:id>", ahod_action_od, name="ahod_action_od"),
+    path('gatepass/scan/', scan_gatepass_qr, name='scan_gatepass_qr'),
+    path('gatepass/scanner/', gatepass_scanner_view, name='gatepass_scanner'),
     path("ahleaves/action/<int:id>", ahod_action_leave, name="ahod_action_leave"),
 
 ]

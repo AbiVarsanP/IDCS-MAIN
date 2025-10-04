@@ -445,6 +445,7 @@ def list_active_forms(request):
 def fill_feedback_form(request, form_id):
 	# Student fills feedback per subject/staff
 	from core.models import Student
+	from core.helpers import set_config
 	try:
 		# If user.student is a RelatedManager, use .first(); else get the instance
 		if hasattr(request.user, 'student') and hasattr(request.user.student, 'all'):
@@ -461,6 +462,9 @@ def fill_feedback_form(request, form_id):
 	staff_display_name = feedback_form.staff_name_other if feedback_form.staff_name == '__other__' else feedback_form.staff_name
 	# For backward compatibility, if not set, fallback to subject logic
 	use_staff_name_linking = bool(staff_display_name)
+	# prepare template context including duser/profile
+	context = set_config(request)
+
 	if request.method == 'POST':
 		responses = []
 		affected_staff = set()
@@ -473,11 +477,12 @@ def fill_feedback_form(request, form_id):
 			comment = request.POST.get(comment_key)
 			if q.answer_type in ['stars', 'both'] and not rating:
 				messages.error(request, f"Rating required for question '{q.text}' and staff '{staff_name}'.")
-				return render(request, 'feed360/student_fill_form.html', {
+				context.update({
 					'form': feedback_form,
 					'questions': questions,
 					'staff_display_name': staff_display_name,
 				})
+				return render(request, 'feed360/student_fill_form.html', context)
 			# Analyze sentiment if comment exists
 			sentiment_result = None
 			if comment:
@@ -542,11 +547,13 @@ def fill_feedback_form(request, form_id):
 			)
 		messages.success(request, "Feedback submitted successfully.")
 		return redirect('feed360_index')
-	return render(request, 'feed360/student_fill_form.html', {
+	# final render with full context (includes duser)
+	context.update({
 		'form': feedback_form,
 		'questions': questions,
 		'staff_display_name': staff_display_name,
 	})
+	return render(request, 'feed360/student_fill_form.html', context)
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required

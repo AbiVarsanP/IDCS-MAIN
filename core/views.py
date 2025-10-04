@@ -39,6 +39,42 @@ def is_hod(user):
     return user.is_staff and hasattr(user, 'staff') and user.staff.position == 0
 
 @login_required
+def scan_gatepass_qr(request):
+    from django.utils import timezone
+    context = set_config(request)
+    student = context.get('duser')
+    message = ""
+    error = ""
+
+    # Find an approved gate pass for today that hasn't been fully used
+    today = timezone.now().date()
+    active_gatepass = GATEPASS.objects.filter(
+        user=student,
+        Hstatus='Approved',
+        start__date__lte=today,
+        end__date__gte=today
+    ).order_by('-created').first()
+
+    if not active_gatepass:
+        error = "You do not have an approved gate pass for today."
+    else:
+        # Check if this is an exit or an entry scan
+        if not active_gatepass.exit_time:
+            active_gatepass.exit_time = timezone.now()
+            message = f"Exit successful at {active_gatepass.exit_time.strftime('%I:%M %p')}. You are now out of campus."
+        elif not active_gatepass.entry_time:
+            scan_time = timezone.now()
+            active_gatepass.entry_time = scan_time
+            message = f"Entry successful at {scan_time.strftime('%I:%M %p')}. Welcome back to campus."
+        else:
+            error = "This gate pass has already been used for both exit and entry."
+        if not error:
+            active_gatepass.save()
+
+    context['message'] = message
+    context['error'] = error
+    # This new template will simply show the success/error message
+    return render(request, 'student/scan_result.html', context)
 @user_passes_test(is_hod)
 def hod_sports_od_view(request):
     context = set_config(request)
@@ -164,6 +200,17 @@ def get_student_details(request, user_id): # Changed parameter name
     except Student.DoesNotExist:
         data = {'exists': False, 'error': 'Student not found.'}
     return JsonResponse(data)
+
+
+@login_required
+def gatepass_scanner_view(request):
+    """Render the gatepass scanner page with the usual context (duser/profile).
+
+    This replaces the previous lambda-based URL that rendered the template without
+    adding the standard context, which caused the profile name/image to be empty.
+    """
+    context = set_config(request)
+    return render(request, 'student/gatepass_scanner.html', context)
 
 # Staff view: show certificates uploaded by their mentees/advisees
 @login_required
@@ -493,6 +540,55 @@ def staff_list(request):
     context['staff_members'] = staff_members
     return render(request, 'staff_list.html', context)
 
+
+from django.contrib.auth.decorators import user_passes_test
+
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+import random
+from django.core.mail import send_mail
+from django.conf import settings
+
+# View for HOD to see all staff in their department
+from django.contrib.auth.decorators import login_required
+
+# --- QR Scan Processing View ---
+from django.http import JsonResponse
+from core.models import GATEPASS, Student
+
+@login_required
+def process_gatepass_qr_scan(request):
+    """
+    Expects POST with: gatepass_id, scan_type ('exit' or 'entry')
+    Updates the corresponding timestamp in GATEPASS.
+    """
+    if request.method == 'POST':
+        gatepass_id = request.POST.get('gatepass_id')
+        scan_type = request.POST.get('scan_type')
+        try:
+            gatepass = GATEPASS.objects.get(id=gatepass_id, user__user=request.user)
+        except GATEPASS.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Gatepass not found.'}, status=404)
+        now = timezone.now()
+        if scan_type == 'exit':
+            gatepass.exit_time = now
+            gatepass.save()
+            return JsonResponse({'success': True, 'message': 'Exit time recorded.', 'exit_time': str(now)})
+        elif scan_type == 'entry':
+            gatepass.entry_time = now
+            gatepass.save()
+            return JsonResponse({'success': True, 'message': 'Entry time recorded.', 'entry_time': str(now)})
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid scan type.'}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import BONAFIDE, GATEPASS, Staff, AHOD, HOD, Notification, Student
+from .models import SemesterSubject
+from django.db import models
+# Principal dashboard view
+
 @login_required
 @user_passes_test(lambda u: hasattr(u, 'principal_status') and u.principal_status, login_url='/login/')
 def principal_dashboard(request):
@@ -794,7 +890,10 @@ def circular_detail(request, pk):
         c = Circular.objects.get(id=pk, published=True)
     except Circular.DoesNotExist:
         return render(request, '404.html', status=404)
-    return render(request, 'student/circular_detail.html', {'circular': c})
+    # Ensure we include the standard context (duser, GP, etc.)
+    context = set_config(request)
+    context['circular'] = c
+    return render(request, 'student/circular_detail.html', context)
 
 # View to handle delete all notifications POST for students
 @login_required

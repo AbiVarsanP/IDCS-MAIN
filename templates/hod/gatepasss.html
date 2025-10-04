@@ -41,6 +41,8 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>Status</th>
+                            <th>Exit Time</th>
+                            <th>Entry Time</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -59,6 +61,8 @@
                                         Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
                                         HOD    : <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                                     </td>
+                                    <td>{{ i.exit_time|date:"d M, H:i"|default:"--/--" }}</td>
+                                    <td>{{ i.entry_time|date:"d M, H:i"|default:"--/--" }}</td>
                                     <td>
                                         {% if i.Mstatus == "Approved" %}
                                             <button class="btn btn-success">{{i.Mstatus}}</button>
@@ -105,6 +109,8 @@
                             <th>FROM-TO</th>
                             <th>SUBMITTED AT</th>
                             <th>Status</th>
+                            <th>Exit Time</th>
+                            <th>Entry Time</th>
                             <th>OPTION</th>
                         </tr>
                     </thead>
@@ -123,6 +129,8 @@
                                         Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
                                         HOD    : <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                                     </td>
+                                    <td>{{ i.exit_time|date:"d M, H:i"|default:"--/--" }}</td>
+                                    <td>{{ i.entry_time|date:"d M, H:i"|default:"--/--" }}</td>
                                     <td>
                                         {% if i.Hstatus == "Approved" %}
                                             <button class="btn btn-success">{{i.Hstatus}}</button>

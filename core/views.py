@@ -22,6 +22,34 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from .models import *
 from .helpers import *
+
+# Helper function for advisor check
+def is_advisor(user):
+    return hasattr(user, 'staff') and (getattr(user.staff, 'position', None) == 4 or getattr(user.staff, 'position2', None) == 4)
+
+# Advisor views from ahod branch
+@login_required
+@user_passes_test(is_advisor, login_url='/login/')
+def advisor_student_od_status(request, student_id):
+    context = set_config(request)
+    from .models import OD, Student
+    student = Student.objects.get(id=student_id)
+    od_records = OD.objects.filter(user=student)
+    context['od_records'] = od_records
+    context['student'] = student
+    return render(request, 'staff/od_status.html', context)
+
+@login_required
+@user_passes_test(is_advisor, login_url='/login/')
+def advisor_student_leave_status(request, student_id):
+    context = set_config(request)
+    from .models import LEAVE, Student
+    student = Student.objects.get(id=student_id)
+    leave_records = LEAVE.objects.filter(user=student)
+    context['leave_records'] = leave_records
+    context['student'] = student
+    return render(request, 'staff/leave_status.html', context)
+
 from .constants import *
 from django.contrib.messages import error, success, warning
 from io import BytesIO
@@ -1948,7 +1976,7 @@ def staff_action_bonafide(request, id):
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
                 student=bonafide.user,
-                message=f"Your Bonafide request was {bonafide.Hstatus} by HOD"
+                message=f"Your Bonafide request was {action_status} by HOD"
             )
             bonafide.save()
             return redirect("hod_bonafide_view")
@@ -2140,6 +2168,7 @@ def hod_action_bonafide(request, id):
                 bonafide.Mstatus = STATUS[2][0]
                 bonafide.Astatus = STATUS[2][0]
                 bonafide.Hstatus = STATUS[2][0]
+
         from .models import Notification
         Notification.objects.create(
             student=bonafide.user,
@@ -2177,5 +2206,111 @@ def ahod_timetable(request):
     context['my_table'] = my_table
 
     return render(request, 'ahod/timetable.html', context)
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import HttpResponseForbidden
+from django.shortcuts import render
+from .models import Student, OD, LEAVE
+@login_required
+def student_details(request):
+    staff = Staff.objects.get(user=request.user)
+    is_advisor = (getattr(staff, 'position', None) == 4 or getattr(staff, 'position2', None) == 4)
+    students = Student.objects.filter(advisor=staff).order_by('roll') if is_advisor else []
+    student_data = []
+    for student in students:
+        od_qs = OD.objects.filter(user=student)
+        leave_qs = LEAVE.objects.filter(user=student)
+        od_details = [f"{od.sub} ({od.start.strftime('%Y-%m-%d')} - {od.end.strftime('%Y-%m-%d')}) [{od.status}]" for od in od_qs]
+        def get_final_leave_status(leave):
+            if 'Rejected' in [leave.Astatus, leave.Mstatus, leave.Hstatus, leave.AHstatus]:
+                return 'Rejected'
+            elif 'Pending' in [leave.Astatus, leave.Mstatus, leave.Hstatus, leave.AHstatus]:
+                return 'Pending'
+            elif leave.Astatus == 'Approved' and leave.Mstatus == 'Approved' and leave.Hstatus == 'Approved' and leave.AHstatus == 'Approved':
+                return 'Approved'
+            else:
+                return 'Pending'
+
+        leave_details = [f"{leave.sub} ({leave.start.strftime('%Y-%m-%d')} - {leave.end.strftime('%Y-%m-%d')}) [{get_final_leave_status(leave)}]" for leave in leave_qs]
+        student_data.append({
+            'id': student.id,
+            'roll_no': student.roll,
+            'name': student.user.get_full_name(),
+            'email': student.user.email,
+            'department': student.department.name if student.department else 'N/A',
+            'mobile': student.mobile,
+            'od_details': od_details,  # Pass as list for correct count
+            'leave_details': leave_details,  # Pass as list for correct count
+            'address': student.address,
+            'dob': student.dob.strftime('%Y-%m-%d') if student.dob else '',
+            'gender': getattr(student, 'gender', ''),
+            'father_name': getattr(student, 'father_name', ''),
+            'mother_name': getattr(student, 'mother_name', ''),
+            'community': getattr(student, 'community', ''),
+            'religion': getattr(student, 'religion', ''),
+            'nationality': getattr(student, 'nationality', ''),
+        })
+    duser = getattr(request.user, 'staff', None)
+    return render(request, 'staff/student_details.html', {
+        'students': student_data,
+        'duser': duser,
+    })
+
+from django.shortcuts import render, get_object_or_404
+from .models import Student
+
+def view_student_details(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    # Add roll_no, email, gender, and mentor_name aliases for template compatibility
+    student.roll_no = student.roll
+    student.email = student.user.email if hasattr(student, 'user') and hasattr(student.user, 'email') else ''
+    student.gender = student.user.gender if hasattr(student, 'user') and hasattr(student.user, 'gender') else student.gender if hasattr(student, 'gender') else ''
+    student.mentor_name = student.mentor.name if student.mentor and hasattr(student.mentor, 'name') else ''
+
+    is_advisor = False
+    if request.user.is_authenticated and hasattr(request.user, 'staff') and (getattr(request.user.staff, 'position2', None) == 4 or getattr(request.user.staff, 'position', None) == 4):
+        is_advisor = True
+
+    # Handle POST for editing
+    if request.method == 'POST' and is_advisor:
+        gender = request.POST.get('gender')
+        father_name = request.POST.get('father_name', '')
+        mother_name = request.POST.get('mother_name', '')
+        community = request.POST.get('community', '')
+        religion = request.POST.get('religion', '')
+        nationality = request.POST.get('nationality', '')
+        other_nationality = request.POST.get('other_nationality', '')
+        # If nationality is 'Other', use the text field value
+        if nationality == 'Other' and other_nationality:
+            nationality = other_nationality
+        # Always update all fields, even if blank
+        student.gender = gender
+        student.father_name = father_name
+        student.mother_name = mother_name
+        student.community = community
+        student.religion = religion
+        student.nationality = nationality
+        student.save()
+        # If gender is on user, update user too
+        if hasattr(student.user, 'gender'):
+            student.user.gender = gender
+            student.user.save()
+        # Redirect to self to avoid resubmission and always show updated data
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        return HttpResponseRedirect(reverse('view_student_details', args=[student_id]))
+    # Pass duser for sidebar logic
+    duser = getattr(request.user, 'staff', None)
+    return render(request, 'staff/view_student_details.html', {
+        'student': student,
+        'is_advisor': is_advisor,
+        'duser': duser,
+    })
+
+def view_student_leave_details(request, student_id):
+    # TODO: Implement logic to show leave details for a student
+    from django.shortcuts import render
+    # leave_details = ... # fetch leave details for student_id
+    return render(request, 'staff/student_leave_details.html', {'student_id': student_id})
 
 

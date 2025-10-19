@@ -69,6 +69,8 @@ urlpatterns = [
 ]
 
 urlpatterns += [
+    path('advisor/student/<int:student_id>/od_status/', advisor_student_od_status, name='advisor_student_od_status'),
+    path('advisor/student/<int:student_id>/leave_status/', advisor_student_leave_status, name='advisor_student_leave_status'),
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
     path("ahleaves/check", ahod_leave_view, name='ahod_leave_view'),
     path("ahods/action/<int:id>", ahod_action_od, name="ahod_action_od"),
@@ -90,6 +92,7 @@ urlpatterns += [
     path("bonafides/", staff_bonafides, name="staff_bonafides"),
     path("staff/notifications/", staff_notifications_view, name="staff_notifications"),
     path("timetable/", staff_timetable, name="staff_timetable"),
+# ...existing code...
     path("my_class_students/", my_class_students, name="my_class_students"),
     path("staff/attendance/", staff_attendance_view, name="staff_attendance"),
     path("student/attendance/", student_attendance_view, name="student_attendance"),
@@ -97,11 +100,14 @@ urlpatterns += [
     # Principal URLs
     path('principal/dashboard/', principal_dashboard, name='principal_dashboard'),
     path('principal/department/', principal_department, name='principal_department'),
+    
+    path('principal/department/<int:dept_id>/students/', principal_department_students, name='principal_department_students'),
+    path('principal/department/<int:dept_id>/staff/', principal_department_staff, name='principal_department_staff'),
 
-        path('principal/department/<int:dept_id>/students/', principal_department_students, name='principal_department_students'),
-
-            path('principal/department/<int:dept_id>/staff/', principal_department_staff, name='principal_department_staff'),
-
+    # Staff student details from ahod branch
+    path('staff/student_details/', student_details, name='student_details'),
+    path('staff/student/<int:student_id>/', view_student_details, name='view_student_details'),
+    path('staff/student/<int:student_id>/leave_details/', view_student_leave_details, name='view_student_leave_details'),
 ]
 # hod
 
@@ -129,10 +135,9 @@ urlpatterns += [
 ]
 
 # auth
-urlpatterns+=[
-    
-    path("login",login_user,name='login'),
-    path("logout",logout_user,name='logout')
+urlpatterns += [
+    path("login/", login_user, name='login'),
+    path("logout/", logout_user, name='logout')
 ]
 
 urlpatterns += [

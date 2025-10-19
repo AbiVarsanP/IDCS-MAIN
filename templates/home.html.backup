@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | College Portal</title>
+    <link rel="stylesheet" href="{% static 'assets/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        body { background: #f4f6f8; margin: 0; }
+        .container { max-width: 1100px; margin: 24px auto; background: #fff; border-radius: 8px;  padding: 28px; }
+        h1 { text-align: center; color: #2c3e50;  }
+
+        /* Poster Grid (thumbnails) */
+        .hero-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+        .poster-card { background:#fff;  overflow:hidden;  transition: transform 0.2s; }
+        .poster-card:hover { transform: translateY(-4px); }
+        .poster-card img { width:100%; height:200px; object-fit:cover; display:block; }
+        .poster-content { padding:12px; }
+        .poster-content strong { color:#08364f; font-size:1.05rem; display:block; margin-bottom:6px; }
+        .poster-date { font-size:0.9rem; color:#555; }
+
+        /* Top Header */
+        .logo-card-right { display:flex; justify-content: space-between; align-items:center; padding:18px; background:linear-gradient(180deg,#fff,#f7fbff); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.04); gap:12px; }
+        /* header logo layout */
+        .logo-card-right { display:flex; justify-content: space-between; align-items:center; padding:18px; background:linear-gradient(180deg,#fff,#f7fbff); border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.04); gap:12px; }
+        .logo-card-right .header-left { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+        .logo-card-right .header-logos { display:flex; align-items:center; gap:12px; }
+        .logo-card-right .header-logos img { height:64px; width:auto; display:block; }
+        .logo-card-right .center-college { flex:1 1 auto; text-align:center; }
+        /* college title styles: main name in blue, 'Autonomous' in red */
+        .logo-card-right .center-college .line1 { font-weight:800; font-size:1.5rem; color:#02448f; }
+        .logo-card-right .center-college .line2 { font-weight:700; font-size:1.15rem; color:#ff0000; margin-top:4px; }
+        .logo-card-right .center-college .line3 { font-weight:600; font-size:1rem; color:#02448f; margin-top:3px; }
+        .logo-card-right .actions { display:flex; gap:8px; align-items:center; flex:0 0 auto; }
+        .logo-card-right .actions a { background:#0b57a4; color:#fff; padding:8px 14px; border-radius:6px; text-decoration:none; }
+        .logo-card-right .actions a:hover { background:#094a86; }
+
+        /* Header fixed while scrolling */
+        .logo-card-right { position:fixed; top:0; left:50%; transform:translateX(-50%); width:calc(100% - 48px);  z-index:1200; }
+        main { padding-top:120px; }
+
+        /* Hero / Marquee */
+        .hero-section { margin-top:18px; }
+        /* marquee adapts to image size (height will be set after images load) */
+        .marquee { position:relative; height:auto; overflow:hidden; display:block; padding:6px 0; }
+        .marquee-track { display:flex; align-items:center; gap:14px; will-change: transform; }
+        .marquee-item { flex: 0 0 auto; display:flex; align-items:center; justify-content:center; }
+        .marquee-item img { height:auto; width:auto; max-width:100%; object-fit:contain; display:block; border-radius:6px; background:#fff; }
+
+        /* Nav buttons overlay */
+        .marquee-btn { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.45); color:#fff; border:0; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10; }
+        .marquee-prev { left:8px; }
+        .marquee-next { right:8px; }
+        .marquee-btn:hover { background:rgba(0,0,0,0.6); }
+
+        /* Empty notice message */
+        .alert { background:#eef6ff; padding:18px; border-radius:8px; color:#08364f; text-align:center; }
+
+        /* About section styling (larger, more spacious) */
+        .about-section { margin:36px auto; }
+        .about-container { max-width:1200px; background:#fff; padding:28px 36px; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.06); }
+        .about-container h2 { margin-top:0; color:#08364f; font-size:1.6rem; }
+        .about-container p { color:#333; line-height:1.75; font-size:1.05rem; }
+        .about-container ul { color:#333; margin-left:1.2rem; font-size:1.02rem; }
+
+        /* Slightly tighter layout on very wide screens */
+        @media (min-width:1400px) {
+            .about-container { max-width:1300px; padding:100px 300px; }
+        }
+
+        /* Mobile adjustments for about */
+        @media (max-width:600px) {
+            .about-container { padding:16px 18px; border-radius:8px; }
+            .about-container h2 { font-size:1.25rem; }
+            .about-container p, .about-container ul { font-size:0.98rem; line-height:1.45; }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) { 
+            .logo-card-right { flex-direction: column; align-items: center; text-align:center; gap:8px; }
+            .logo-card-right .header-left { order:0; }
+            .logo-card-right .center-college { order:1; }
+            .logo-card-right .actions { order:2; width:100%; justify-content:flex-end; margin-top:6px; }
+            .logo-card-right .header-logos img { height:48px; }
+            .logo-card-right .center-college .line1 { font-size:1.40rem; }
+            .logo-card-right .center-college .line2 { font-size:1.5rem; }
+            .logo-card-right .center-college .line3 { font-size:0.95rem; }
+            .hero { height:300px; }
+            .logo-card-right { top:8px; width:calc(100% - 20px); }
+            main { padding-top:110px; }
+        }
+
+        /* --- NEW FOOTER STYLES START HERE --- */
+        .site-footer {
+            background-color: #08364f; /* Dark blue background */
+            color: #f4f6f8; /* Light text color */
+            padding: 40px 0 20px 0;
+        }
+        .footer-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-col {
+            flex: 1;
+            min-width: 250px; /* Ensures columns don't get too squished */
+        }
+        .footer-col h3 {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            background-color: #0b57a4; /* A brighter blue accent */
+            height: 3px;
+            width: 50px;
+        }
+        .footer-col p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-col ul li {
+            margin-bottom: 10px;
+        }
+        .footer-col ul li a {
+            color: #f4f6f8;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        .footer-col ul li a:hover {
+            color: #5dade2; /* Lighter blue on hover */
+        }
+        .social-links .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 50%;
+            margin-right: 10px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+        }
+        .social-links .social-icon:hover {
+            background-color: #0b57a4;
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @media (max-width: 768px) {
+            .footer-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .footer-col h3::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .social-links {
+                text-align: center;
+            }
+        }
+        /* --- NEW FOOTER STYLES END HERE --- */
+    </style>
+</head>
+<body>
+    <main>
+        <aside>
+            <div class="logo-card-right">
+                <div class="header-left">
+                    <div class="header-logos">
+                        <img src="{% static 'images/download.png' %}" alt="logo1">
+                        <img src="{% static 'images/e-logon.png' %}" alt="logo2">
+                        <img src="{% static 'images/nba_logo.jpg' %}" alt="logo3">
+                        <img src="{% static 'images/tnea_code.gif' %}" alt="logo4">
+                    </div>
+                </div>
+                <div class="center-college">
+                    <div class="line1 font-size:1.9rem ">K.Ramakrishnan College of Technology</div>
+                    <div class="line2">Autonomous</div>
+                </div>
+                <div class="actions">
+                    <a href="/login">Login</a>
+                </div>
+            </div>
+        </aside>
+
+        <section aria-labelledby="hero-posters">
+            {% if notices %}
+                <div class="hero-section">
+                    <div class="marquee" id="marquee">
+                        <button class="marquee-btn marquee-prev" id="marquee-prev" aria-label="Previous">‹</button>
+                        <button class="marquee-btn marquee-next" id="marquee-next" aria-label="Next">›</button>
+                        <div class="marquee-track" id="marquee-track">
+                            {% for notice in notices %}
+                                {% if notice.image %}
+                                    <div class="marquee-item">
+                                        <img src="{{ notice.image.url }}" alt="{{ notice.title|default:'Poster' }}">
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="about-container" style="margin-top:18px; background: rgba(255,255,255,0.95);">
+                        <h2>About this website</h2>
+                        
+                        <h4>Overview</h4>
+                        <ul>
+                            <li>IDCS appears to be an academic/student services portal with role-based interfaces (students, staff, HOD, AHOD) plus public pages and admin functions.</li>
+                            <li>Templates are organized by role and feature; each template corresponds to views that render pages for that role or feature.</li>
+                        </ul>
+
+                        <h4>Public / site-wide pages</h4>
+                        <ul>
+                            <li><strong>home.html</strong> — Landing page / homepage (hero, notices, posters).</li>
+                            <li><strong>about.html</strong> — About the college / site.</li>
+                            <li><strong>academics.html</strong> — General academics info page.</li>
+                            <li><strong>transport.html</strong> — Transport information.</li>
+                            <li><strong>feedbackform.html</strong> — Public feedback submission form.</li>
+                        </ul>
+
+                        <h4>Authentication</h4>
+                        <ul>
+                            <li><strong>auth/login.html</strong> — Login page for all users.</li>
+                        </ul>
+
+                        <h4>Common / shared pages</h4>
+                        <ul>
+                            <li><strong>common/profile.html</strong> — Profile page used by multiple roles (view/edit profile).</li>
+                        </ul>
+
+                        <h4>Admin / management</h4>
+                        <ul>
+                            <li><strong>admin/core/import_students.html</strong> — Admin UI for bulk student import.</li>
+                            <li><strong>admin/core/student_changelist.html</strong> — Django admin list view customization for students.</li>
+                            <li><strong>admin/core/academicrecord/change_form.html</strong> — Admin change form for academic records.</li>
+                        </ul>
+
+                        <h4>Role-based applications</h4>
+                        <ul>
+                            <li><strong>student/</strong> — Templates for student users (dashboard, attendance, timetable, forms like bonafide, gatepass, leave, od).</li>
+                            <li><strong>staff/</strong> — Templates for staff users (dashboard, requests handling, class management, notifications).</li>
+                            <li><strong>hod/</strong> — Head of Department templates (approvals, mentee lists, HOD dashboard).</li>
+                            <li><strong>ahod/</strong> — Assistant HOD templates (similar to HOD with narrower scope).</li>
+                        </ul>
+
+                        <h4>Feature-specific pages</h4>
+                        <ul>
+                            <li>Feedback pages, gatepass and bonafide apply/approve templates, on-duty forms (od/ods), and notification history pages.</li>
+                        </ul>
+
+                        <h4>How these pieces map to the codebase</h4>
+                        <ul>
+                            <li>Each template folder likely corresponds to a Django app or view namespace (student, staff, hod, ahod, common, admin).</li>
+                            <li>Views render these templates and enforce role-based access (login_required + permission checks).</li>
+                            <li>Static assets live under <code>core/static/</code> and are referenced via <code>{% templatetag openblock %} static 'path/to/file' {% templatetag closeblock %}</code>.</li>
+                            <li><code>admin/</code> contains customized admin templates or overrides for Django admin.</li>
+                        </ul>
+
+                        <h4>Next useful actions</h4>
+                        <p>Possible next steps include creating a README describing routes/templates to views, mapping templates to view names by scanning the project, editing any template content, or generating a role-permissions matrix.</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert">No posters published yet.</div>
+            {% endif %}
+            </section>
+        <script>
+            (function(){
+                var marquee = document.getElementById('marquee');
+                if (!marquee) return;
+                var track = document.getElementById('marquee-track');
+                if (!track) return;
+
+                // Basic styles applied via existing CSS; ensure items are present
+                var items = Array.prototype.slice.call(track.children);
+                if (!items.length) return;
+
+                // Wait for all original images to load so we can size the marquee to the tallest image
+                var origItems = items.slice(0, items.length);
+                var imgPromises = origItems.map(function(it){
+                    var img = it.querySelector('img');
+                    if (!img) return Promise.resolve();
+                    if (img.complete && img.naturalHeight) return Promise.resolve();
+                    return new Promise(function(resolve){ img.addEventListener('load', resolve); img.addEventListener('error', resolve); });
+                });
+
+                    Promise.all(imgPromises).then(function(){
+                    // compute tallest image height
+                    var maxH = 0;
+                    origItems.forEach(function(it){
+                        var img = it.querySelector('img');
+                        if (img && img.naturalHeight) {
+                            var h = img.naturalHeight * (Math.min(img.naturalWidth, marquee.clientWidth) / img.naturalWidth);
+                            // prefer using rendered height if available
+                            var rendered = img.clientHeight;
+                            if (rendered) h = Math.max(h, rendered);
+                            if (h > maxH) maxH = h;
+                        }
+                    });
+                    // fallbacks
+                    if (!maxH || maxH < 80) maxH = Math.min(420, window.innerHeight * 0.5);
+                    marquee.style.height = Math.round(maxH) + 'px';
+
+                    // Now duplicate items until track width >= marquee width * 2 for seamless loop
+                    var startWidth = track.scrollWidth;
+                    var i = 0;
+                    while (track.scrollWidth < marquee.clientWidth * 2) {
+                        var clone = origItems[i % origItems.length].cloneNode(true);
+                        track.appendChild(clone);
+                        i++;
+                        if (i > origItems.length * 6) break; // safety
+                    }
+
+                    // Compute loop width as the width of one original set (approx)
+                    var singleLoopWidth = track.scrollWidth / 2;
+
+                    var pos = 0; // current translateX in px
+                    var baseSpeed = 40; // px per second
+                    var lastTs = null;
+                    var isPaused = false;
+
+                    function step(ts){
+                        if (!lastTs) lastTs = ts;
+                        var dt = (ts - lastTs) / 1000;
+                        lastTs = ts;
+                        if (!isPaused) {
+                            pos += baseSpeed * dt;
+                            if (pos >= singleLoopWidth) pos = pos - singleLoopWidth;
+                            track.style.transform = 'translateX(' + (-pos) + 'px)';
+                        }
+                        requestAnimationFrame(step);
+                    }
+
+                    // Helper to advance by one item's width (approx)
+                    function advanceOne(forward){
+                        // find width of first original item (approx avg)
+                        var first = track.querySelector('.marquee-item');
+                        var stepWidth = first ? first.offsetWidth + 14 : 200; // include gap fallback
+                        if (!forward) stepWidth = -stepWidth;
+                        pos += stepWidth;
+                        if (pos >= singleLoopWidth) pos = pos - singleLoopWidth;
+                        if (pos < 0) pos = singleLoopWidth + pos;
+                        track.style.transform = 'translateX(' + (-pos) + 'px)';
+                    }
+
+                    // Prev/Next buttons
+                    var btnPrev = document.getElementById('marquee-prev');
+                    var btnNext = document.getElementById('marquee-next');
+                    if (btnPrev) btnPrev.addEventListener('click', function(e){ e.stopPropagation(); isPaused = true; advanceOne(false); });
+                    if (btnNext) btnNext.addEventListener('click', function(e){ e.stopPropagation(); isPaused = true; advanceOne(true); });
+
+                    // Clicking any image toggles pause/resume
+                    track.addEventListener('click', function(e){
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
+                            isPaused = !isPaused;
+                        }
+                    });
+
+                    requestAnimationFrame(step);
+                });
+            })();
+        </script>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Contact Us</h3>
+                <p>
+                    K.Ramakrishnan College of Technology,<br>
+                    Samayapuram, Trichy - 621 112,<br>
+                    Tamil Nadu, India.
+                </p>
+                <p><strong>Phone:</strong> +91 98765 43210</p>
+                <p><strong>Email:</strong> idcs@krct.ac.in</p>
+            </div>
+
+            
+
+            <div class="footer-col">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/krctofficial" class="social-icon facebook" aria-label="Facebook"><i class="fa fa-facebook"></i></a>
+                    <a href="https://x.com/krcttrichy1" class="social-icon twitter" aria-label="Twitter"><i class="fa fa-twitter"></i></a>
+                    <a href="https://www.instagram.com/krctofficial/" class="social-icon instagram" aria-label="Instagram"><i class="fa fa-instagram"></i></a>
+                    <a href="https://www.linkedin.com/school/krctofficial/" class="social-icon linkedin" aria-label="LinkedIn"><i class="fa fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 K.Ramakrishnan College of Technology. All Rights Reserved.</p>
+        </div>
+    </footer>
+    </body>
+</html>

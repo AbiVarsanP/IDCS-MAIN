@@ -1,5 +1,5 @@
 <style>
-    /* Fix card overflow and sidebar layout */
+    /* Sidebar styles */
     @media (min-width: 992px) {
         #notification-sidebar {
             position: fixed;
@@ -9,23 +9,19 @@
             height: calc(100vh - 190px);
             z-index: 1040;
             box-shadow: -2px 0 8px rgba(0,0,0,0.07);
-            background: #fff;
-            border-radius: 12px 0 0 12px;
-            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-            overflow-y: auto;
+            background: transparent;
+            transition: transform 0.3s cubic-bezier(.4, 0, .2, 1);
         }
+
         #notification-sidebar.closed {
             transform: translateX(110%);
             pointer-events: none;
         }
+
         #main-content-with-sidebar {
             margin-right: 360px;
         }
-        .card {
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
+
         #notification-fab {
             display: block;
             position: fixed;
@@ -38,7 +34,7 @@
             border-radius: 50% 0 0 50%;
             width: 60px;
             height: 60px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
             font-size: 2rem;
             align-items: center;
             justify-content: center;
@@ -46,10 +42,23 @@
             cursor: pointer;
             transition: right 0.3s;
         }
+
         #notification-fab.hidden {
             display: none;
         }
+
+        .card.mb-3 {
+            min-width: 0;
+            max-width: 100%;
+            font-size: 0.95rem;
+        }
+
+        .card-body,
+        .card-header {
+            padding: 0.75rem 1rem;
+        }
     }
+
     @media (max-width: 991.98px) {
         #notification-sidebar {
             position: static;
@@ -58,20 +67,196 @@
             margin-bottom: 1rem;
             box-shadow: none;
             top: unset;
-            border-radius: 12px;
         }
+
         #main-content-with-sidebar {
             margin-right: 0;
         }
+
         #notification-fab {
             display: none;
         }
-        .card {
-            overflow: hidden;
-            border-radius: 12px;
+    }
+
+    .notification-close-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        margin-left: 8px;
+        margin-right: -8px;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .notification-close-btn:hover {
+        opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            flex-direction: column;
+        }
+        .dashboard-main,
+        .dashboard-sidebar {
+            flex: 0 0 100% !important;
+            max-width: 100%;
         }
     }
+
+    /* Mobile Notification FAB */
+    .mobile-notification-fab {
+        position: fixed;
+        right: 16px;
+        bottom: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #1976d2;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+        border: none;
+        z-index: 2000;
+        font-size: 1.25rem;
+        overflow: visible;
+    }
     
+    .mobile-notification-fab:active { 
+        transform: scale(.98); 
+    }
+    
+    /* Two staggered waves */
+    .mobile-notification-fab::before,
+    .mobile-notification-fab::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        z-index: 1998;
+        pointer-events: none;
+    }
+    
+    .mobile-notification-fab::before {
+        background: rgba(25,118,210,0.22);
+        animation: fab-wave-1 2200ms infinite;
+    }
+    
+    .mobile-notification-fab::after {
+        background: rgba(25,118,210,0.14);
+        animation: fab-wave-2 2200ms infinite;
+        animation-delay: 900ms;
+    }
+
+    @keyframes fab-wave-1 {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        60% { transform: translate(-50%, -50%) scale(1.7); opacity: 0.22; }
+        100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
+    }
+    
+    @keyframes fab-wave-2 {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 0.95; }
+        60% { transform: translate(-50%, -50%) scale(1.9); opacity: 0.14; }
+        100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+    }
+
+    /* Small numeric badge inside FAB */
+    .mobile-notification-count {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border-radius: 50%;
+        background: #ff3b30;
+        color: #fff;
+        font-size: 0.7rem;
+        line-height: 20px;
+        text-align: center;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2001;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    /* Sliding panel */
+    .mobile-notification-panel {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 58%;
+        max-height: 80vh;
+        background: #fff;
+        z-index: 1999;
+        transform: translateY(110%);
+        transition: transform 0.32s cubic-bezier(.2,.8,.2,1), opacity 0.2s ease-in-out;
+        box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        pointer-events: none;
+        opacity: 0;
+    }
+    
+    .mobile-notification-panel.open {
+        transform: translateY(0%);
+        pointer-events: auto;
+        opacity: 1;
+    }
+    
+    .mobile-notification-panel-header {
+        background: #1976d2;
+        color: #fff;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .mobile-notification-panel-body { 
+        padding: 8px 0; 
+        overflow-y: auto; 
+    }
+    
+    .mobile-notification-panel-body .list-group-item { 
+        padding: 12px 16px; 
+    }
+
+    .notification-close-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+        opacity: 0.9;
+        transition: opacity 0.2s;
+    }
+
+    .notification-close-btn:hover {
+        opacity: 1;
+    }
+
+    /* Hide mobile FAB/panel on larger screens */
+    @media (min-width: 992px) {
+        .mobile-notification-fab, .mobile-notification-panel { 
+            display: none !important; 
+        }
+    }
 </style>
 {% extends 'base.html' %}
 {% load static %}
@@ -272,7 +457,7 @@
         </div>
     </div>
 
-    <div class="col-12 col-lg-3">
+    <div class="col-12 col-lg-3 d-none d-lg-block">
         <div class="card mb-3 h-100">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <span>Recent Notifications</span>
@@ -295,24 +480,71 @@
     </div>
 </div>
 
-<!-- {% comment %} <script>
-// Sidebar open/close logic
-const sidebar = document.getElementById('notification-sidebar');
-const fab = document.getElementById('notification-fab');
-const closeBtn = document.getElementById('close-notification-sidebar');
-function openSidebar() {
-    sidebar.classList.remove('closed');
-    fab.classList.add('hidden');
-}
-function closeSidebar() {
-    sidebar.classList.add('closed');
-    fab.classList.remove('hidden');
-}
-if (closeBtn && fab && sidebar) {
-    closeBtn.onclick = closeSidebar;
-    fab.onclick = openSidebar;
-}
-// Open by default on load
-openSidebar();
-</script> {% endcomment %} -->
+<!-- Mobile Notification FAB -->
+<button id="mobile-notification-fab" aria-label="Show notifications" title="Notifications" class="mobile-notification-fab d-lg-none">
+    <i class="fa fa-bell" aria-hidden="true"></i>
+    <span id="mobile-notification-count" class="mobile-notification-count" aria-hidden="true">0</span>
+</button>
+
+<!-- Mobile Notification Panel -->
+<div id="mobile-notification-panel" class="mobile-notification-panel d-lg-none" role="dialog" aria-hidden="true">
+    <div class="mobile-notification-panel-header">
+        <strong>Notifications</strong>
+        <button id="close-mobile-notifications" class="notification-close-btn">&times;</button>
+    </div>
+    <div class="mobile-notification-panel-body">
+        <ul id="mobile-notifications-list" class="list-group list-group-flush"></ul>
+    </div>
+</div>
+
+<script>
+// Toggle mobile notification panel; copy items from the desktop recent-notifications-list
+document.addEventListener('DOMContentLoaded', function () {
+    const fab = document.getElementById('mobile-notification-fab');
+    const panel = document.getElementById('mobile-notification-panel');
+    const closeBtn = document.getElementById('close-mobile-notifications');
+    const sourceList = document.getElementById('recent-notifications-list');
+    const targetList = document.getElementById('mobile-notifications-list');
+    const countBadge = document.getElementById('mobile-notification-count');
+
+    if (!fab || !panel || !closeBtn || !sourceList || !targetList) return;
+
+    // Copy notifications from desktop sidebar to mobile panel
+    function populateMobileNotifications() {
+        targetList.innerHTML = sourceList.innerHTML;
+        const count = sourceList.querySelectorAll('li.list-group-item').length;
+        const hasNotes = count > 0 && !sourceList.textContent.includes('No recent notifications');
+        
+        if (countBadge) {
+            if (hasNotes && count > 0) {
+                countBadge.textContent = count;
+                countBadge.style.display = 'flex';
+            } else {
+                countBadge.style.display = 'none';
+            }
+        }
+    }
+
+    // Open panel
+    fab.addEventListener('click', function () {
+        populateMobileNotifications();
+        panel.classList.add('open');
+        panel.setAttribute('aria-hidden', 'false');
+    });
+
+    // Close panel
+    closeBtn.addEventListener('click', function () {
+        panel.classList.remove('open');
+        panel.setAttribute('aria-hidden', 'true');
+    });
+
+    // Initial population
+    populateMobileNotifications();
+    
+    // Re-populate when sourceList changes (if using live updates)
+    const observer = new MutationObserver(populateMobileNotifications);
+    observer.observe(sourceList, { childList: true, subtree: true });
+});
+</script>
+
 {% endblock %}  

@@ -426,19 +426,19 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #1976d2;
+    background: linear-gradient(135deg, #1756a9 0%, #0d3d73 100%);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    box-shadow: 0 6px 18px rgba(23, 86, 169, 0.4);
     border: none;
     z-index: 2000;
     font-size: 1.25rem;
-    position: fixed;
+    overflow: visible;
 }
 .mobile-notification-fab:active { transform: scale(.98); }
-.mobile-notification-fab { overflow: visible; }
+
 /* two staggered waves */
 .mobile-notification-fab::before,
 .mobile-notification-fab::after {
@@ -454,13 +454,13 @@
     pointer-events: none;
 }
 .mobile-notification-fab::before {
-    background: rgba(25,118,210,0.22); /* stronger color */
+    background: rgba(23, 86, 169, 0.22);
     animation: fab-wave-1 2200ms infinite;
 }
 .mobile-notification-fab::after {
-    background: rgba(25,118,210,0.14);
+    background: rgba(23, 86, 169, 0.14);
     animation: fab-wave-2 2200ms infinite;
-    animation-delay: 900ms; /* stagger */
+    animation-delay: 900ms;
 }
 
 @keyframes fab-wave-1 {
@@ -477,7 +477,6 @@
 /* small numeric badge inside FAB */
 .mobile-notification-count {
     position: absolute;
-    /* place badge at top-right of the bell */
     top: 6px;
     right: 6px;
     width: 20px;
@@ -489,15 +488,14 @@
     font-size: 0.7rem;
     line-height: 20px;
     text-align: center;
-    display: none; /* controlled by JS */
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 2001;
     box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
-/* show small dot when count is 0 hidden; JS will toggle display */
 
-/* Sliding panel (covers bottom half on small screens) */
+/* Sliding panel */
 .mobile-notification-panel {
     position: fixed;
     right: 0;
@@ -515,8 +513,8 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    pointer-events: none; /* not interactive when closed */
-    opacity: 0; /* invisible when closed */
+    pointer-events: none;
+    opacity: 0;
 }
 .mobile-notification-panel.open {
     transform: translateY(0%);
@@ -524,7 +522,7 @@
     opacity: 1;
 }
 .mobile-notification-panel-header {
-    background: #1976d2;
+    background: linear-gradient(135deg, #1756a9 0%, #0d3d73 100%);
     color: #fff;
     padding: 12px 16px;
     display: flex;
@@ -534,7 +532,7 @@
 .mobile-notification-panel-body { padding: 8px 0; overflow-y: auto; }
 .mobile-notification-panel-body .list-group-item { padding: 12px 16px; }
 
-/* hide desktop FAB/panel on larger screens (redundant with d-lg-none, but safe) */
+/* hide desktop FAB/panel on larger screens */
 @media (min-width: 992px) {
     .mobile-notification-fab, .mobile-notification-panel { display: none !important; }
 }

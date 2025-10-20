@@ -11,7 +11,8 @@ SDEPT = (
 POS = (
     (0,"Head of the Department"),
     (1,"Assistant Head of the Department"),
-    (3,"Lecturer")
+    (3,"Lecturer"),
+    (4,"Advisor")
 )
 SEM = (
     (1,"SEM - 1"),

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
+
 from collections import defaultdict
 from django.contrib import messages
 from django.shortcuts import redirect, render, HttpResponse
@@ -9,6 +10,119 @@ from django.views.decorators.http import require_GET
 from .forms import CertificateUploadForm
 from .models import Attendance
 from django.utils import timezone
+
+def is_advisor(user):
+    return hasattr(user, 'staff') and (getattr(user.staff, 'position', None) == 4 or getattr(user.staff, 'position2', None) == 4)
+
+def is_staff_member(user):
+    """Check if user is a staff member (any position)"""
+    return hasattr(user, 'staff')
+
+@login_required
+def advisor_student_od_status(request, student_id):
+    # Check if staff has relationship with this student
+    if not hasattr(request.user, 'staff'):
+        return redirect('/login/')
+    
+    staff = request.user.staff
+    student = Student.objects.get(id=student_id)
+    
+    # Check if staff is related to this student (advisor, mentor, or teaching staff)
+    from django.db.models import Q
+    is_related = Student.objects.filter(
+        Q(id=student_id) & (Q(advisor=staff) | Q(a_advisor=staff) | Q(mentor=staff) | Q(teaching_staffs=staff))
+    ).exists()
+    
+    if not is_related:
+        messages.error(request, "You don't have permission to view this student's records.")
+        return redirect('student_details')
+    
+    context = set_config(request)
+    from .models import OD
+    od_records = OD.objects.filter(user=student)
+    context['od_records'] = od_records
+    context['student'] = student
+    return render(request, 'staff/od_status.html', context)
+
+@login_required
+def advisor_student_leave_status(request, student_id):
+    # Check if staff has relationship with this student
+    if not hasattr(request.user, 'staff'):
+        return redirect('/login/')
+    
+    staff = request.user.staff
+    student = Student.objects.get(id=student_id)
+    
+    # Check if staff is related to this student (advisor, mentor, or teaching staff)
+    from django.db.models import Q
+    is_related = Student.objects.filter(
+        Q(id=student_id) & (Q(advisor=staff) | Q(a_advisor=staff) | Q(mentor=staff) | Q(teaching_staffs=staff))
+    ).exists()
+    
+    if not is_related:
+        messages.error(request, "You don't have permission to view this student's records.")
+        return redirect('student_details')
+    
+    context = set_config(request)
+    from .models import LEAVE
+    leave_records = LEAVE.objects.filter(user=student)
+    context['leave_records'] = leave_records
+    context['student'] = student
+    return render(request, 'staff/leave_status.html', context)
+
+@login_required
+def advisor_student_gatepass_status(request, student_id):
+    # Check if staff has relationship with this student
+    if not hasattr(request.user, 'staff'):
+        return redirect('/login/')
+    
+    staff = request.user.staff
+    student = Student.objects.get(id=student_id)
+    
+    # Check if staff is related to this student (advisor, mentor, or teaching staff)
+    from django.db.models import Q
+    is_related = Student.objects.filter(
+        Q(id=student_id) & (Q(advisor=staff) | Q(a_advisor=staff) | Q(mentor=staff) | Q(teaching_staffs=staff))
+    ).exists()
+    
+    if not is_related:
+        messages.error(request, "You don't have permission to view this student's records.")
+        return redirect('student_details')
+    
+    context = set_config(request)
+    from .models import GATEPASS
+    gatepass_records = GATEPASS.objects.filter(user=student)
+    context['gatepass_records'] = gatepass_records
+    context['student'] = student
+    return render(request, 'staff/gatepass_status.html', context)
+
+@login_required
+@login_required
+def advisor_student_bonafide_status(request, student_id):
+    # Check if staff has relationship with this student
+    if not hasattr(request.user, 'staff'):
+        return redirect('/login/')
+    
+    staff = request.user.staff
+    student = Student.objects.get(id=student_id)
+    
+    # Check if staff is related to this student (advisor, mentor, or teaching staff)
+    from django.db.models import Q
+    is_related = Student.objects.filter(
+        Q(id=student_id) & (Q(advisor=staff) | Q(a_advisor=staff) | Q(mentor=staff) | Q(teaching_staffs=staff))
+    ).exists()
+    
+    if not is_related:
+        messages.error(request, "You don't have permission to view this student's records.")
+        return redirect('student_details')
+    
+    context = set_config(request)
+    from .models import BONAFIDE
+    bonafide_records = BONAFIDE.objects.filter(user=student)
+    context['bonafide_records'] = bonafide_records
+    context['student'] = student
+    return render(request, 'staff/bonafide_status.html', context)
+
 from django.contrib.auth import get_user_model
 from feed360.models import FeedbackQuestion
 from django.contrib.auth.decorators import user_passes_test
@@ -22,34 +136,6 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from .models import *
 from .helpers import *
-
-# Helper function for advisor check
-def is_advisor(user):
-    return hasattr(user, 'staff') and (getattr(user.staff, 'position', None) == 4 or getattr(user.staff, 'position2', None) == 4)
-
-# Advisor views from ahod branch
-@login_required
-@user_passes_test(is_advisor, login_url='/login/')
-def advisor_student_od_status(request, student_id):
-    context = set_config(request)
-    from .models import OD, Student
-    student = Student.objects.get(id=student_id)
-    od_records = OD.objects.filter(user=student)
-    context['od_records'] = od_records
-    context['student'] = student
-    return render(request, 'staff/od_status.html', context)
-
-@login_required
-@user_passes_test(is_advisor, login_url='/login/')
-def advisor_student_leave_status(request, student_id):
-    context = set_config(request)
-    from .models import LEAVE, Student
-    student = Student.objects.get(id=student_id)
-    leave_records = LEAVE.objects.filter(user=student)
-    context['leave_records'] = leave_records
-    context['student'] = student
-    return render(request, 'staff/leave_status.html', context)
-
 from .constants import *
 from django.contrib.messages import error, success, warning
 from io import BytesIO
@@ -2211,11 +2297,17 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from .models import Student, OD, LEAVE
+from django.db.models import Q
 @login_required
 def student_details(request):
     staff = Staff.objects.get(user=request.user)
     is_advisor = (getattr(staff, 'position', None) == 4 or getattr(staff, 'position2', None) == 4)
-    students = Student.objects.filter(advisor=staff).order_by('roll') if is_advisor else []
+    
+    # Get all students related to this staff member (as advisor, a_advisor, mentor, or teaching staff)
+    students = Student.objects.filter(
+        Q(advisor=staff) | Q(a_advisor=staff) | Q(mentor=staff) | Q(teaching_staffs=staff)
+    ).distinct().order_by('roll')
+    
     student_data = []
     for student in students:
         od_qs = OD.objects.filter(user=student)
@@ -2257,7 +2349,7 @@ def student_details(request):
     })
 
 from django.shortcuts import render, get_object_or_404
-from .models import Student
+from .models import Student, OD, LEAVE, GATEPASS, BONAFIDE
 
 def view_student_details(request, student_id):
     student = get_object_or_404(Student, id=student_id)
@@ -2266,13 +2358,35 @@ def view_student_details(request, student_id):
     student.email = student.user.email if hasattr(student, 'user') and hasattr(student.user, 'email') else ''
     student.gender = student.user.gender if hasattr(student, 'user') and hasattr(student.user, 'gender') else student.gender if hasattr(student, 'gender') else ''
     student.mentor_name = student.mentor.name if student.mentor and hasattr(student.mentor, 'name') else ''
+    
+    # Add od_details, leave_details, gatepass_details, bonafide_details for template
+    student.od_details = list(OD.objects.filter(user=student))
+    student.leave_details = list(LEAVE.objects.filter(user=student))
+    student.gatepass_details = list(GATEPASS.objects.filter(user=student))
+    student.bonafide_details = list(BONAFIDE.objects.filter(user=student))
+    
+    # Add advisor_name for template
+    student.advisor_name = student.advisor.name if student.advisor and hasattr(student.advisor, 'name') else ''
 
+    # Check if the logged-in staff member has a relationship with this student
     is_advisor = False
-    if request.user.is_authenticated and hasattr(request.user, 'staff') and (getattr(request.user.staff, 'position2', None) == 4 or getattr(request.user.staff, 'position', None) == 4):
-        is_advisor = True
+    can_edit = False
+    if request.user.is_authenticated and hasattr(request.user, 'staff'):
+        staff = request.user.staff
+        # Check if staff is related to this student (advisor, a_advisor, mentor, or teaching staff)
+        from django.db.models import Q
+        is_related = Student.objects.filter(
+            Q(id=student_id) & (Q(advisor=staff) | Q(a_advisor=staff) | Q(mentor=staff) | Q(teaching_staffs=staff))
+        ).exists()
+        
+        # Allow editing if staff is related to the student
+        can_edit = is_related
+        
+        # Keep is_advisor for backward compatibility (specifically for position 4)
+        is_advisor = (getattr(staff, 'position2', None) == 4 or getattr(staff, 'position', None) == 4) and is_related
 
     # Handle POST for editing
-    if request.method == 'POST' and is_advisor:
+    if request.method == 'POST' and can_edit:
         gender = request.POST.get('gender')
         father_name = request.POST.get('father_name', '')
         mother_name = request.POST.get('mother_name', '')
@@ -2303,7 +2417,7 @@ def view_student_details(request, student_id):
     duser = getattr(request.user, 'staff', None)
     return render(request, 'staff/view_student_details.html', {
         'student': student,
-        'is_advisor': is_advisor,
+        'is_advisor': can_edit,  # Use can_edit flag to show/hide edit button
         'duser': duser,
     })
 

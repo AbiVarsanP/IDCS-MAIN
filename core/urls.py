@@ -71,6 +71,8 @@ urlpatterns = [
 urlpatterns += [
     path('advisor/student/<int:student_id>/od_status/', advisor_student_od_status, name='advisor_student_od_status'),
     path('advisor/student/<int:student_id>/leave_status/', advisor_student_leave_status, name='advisor_student_leave_status'),
+    path('advisor/student/<int:student_id>/gatepass_status/', advisor_student_gatepass_status, name='advisor_student_gatepass_status'),
+    path('advisor/student/<int:student_id>/bonafide_status/', advisor_student_bonafide_status, name='advisor_student_bonafide_status'),
     path("ahods/check", ahod_od_view, name='ahod_od_view'),
     path("ahleaves/check", ahod_leave_view, name='ahod_leave_view'),
     path("ahods/action/<int:id>", ahod_action_od, name="ahod_action_od"),
@@ -104,9 +106,11 @@ urlpatterns += [
     path('principal/department/<int:dept_id>/students/', principal_department_students, name='principal_department_students'),
     path('principal/department/<int:dept_id>/staff/', principal_department_staff, name='principal_department_staff'),
 
+
     # Staff student details from ahod branch
     path('staff/student_details/', student_details, name='student_details'),
     path('staff/student/<int:student_id>/', view_student_details, name='view_student_details'),
+
     path('staff/student/<int:student_id>/leave_details/', view_student_leave_details, name='view_student_leave_details'),
 ]
 # hod

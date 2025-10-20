@@ -246,6 +246,12 @@ class Notification(models.Model):
 
 
 class Student(models.Model):
+    gender = models.CharField(max_length=10, blank=True, null=True)
+    father_name = models.CharField(max_length=100, blank=True, null=True)
+    mother_name = models.CharField(max_length=100, blank=True, null=True)
+    community = models.CharField(max_length=20, blank=True, null=True)
+    religion = models.CharField(max_length=20, blank=True, null=True)
+    nationality = models.CharField(max_length=30, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student')
     roll = models.CharField(max_length=8, unique=True, blank=True, null=True)
     profile = models.ImageField(upload_to='profiles', blank=True)

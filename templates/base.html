@@ -381,6 +381,7 @@
                         <a href="{% url 'hod_notification_history' %}"><i class="menu-icon fa fa-bell"></i>Notification
                             History</a></li>
 
+
                     {% elif duser and duser.position2 == 1 %}
                     <li class="{% if request.resolver_match.url_name == 'ahod_dash' %}active{% endif %}"><a
                             href="{% url 'ahod_dash' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a></li>
@@ -443,6 +444,7 @@
                     <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a
                             href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student
                             Certificates</a></li>
+                    <li class="{% if request.resolver_match.url_name == 'student_details' %}active{% endif %}"><a href="{% url 'student_details' %}"><i class="menu-icon fa fa-info-circle"></i>Student Details</a></li>
                     {% elif request.user.is_authenticated and not request.user.is_staff %}
                     {# Student sidebar #}
                     <li class="{% if request.resolver_match.url_name == 'dash' %}active{% endif %}">

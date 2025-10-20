@@ -10,7 +10,15 @@ class UploadedResume(models.Model):
 
 	def __str__(self):
 		return f"{self.student} - {self.file.name}"
+class LEAVE(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='leaves')
+    reason = models.TextField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(max_length=20, default='Pending')  # Add status field
 
+    def __str__(self):
+        return f"{self.student} - {self.status}"
 
 # Stores the analysis results for a resume
 class ResumeAnalysis(models.Model):

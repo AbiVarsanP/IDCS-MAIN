@@ -235,7 +235,13 @@ def hod_sports_od_action(request, player_id):
 
 # Helper function to check if a user is a PET Staff
 def is_pet_staff(user):
-    return user.is_staff and hasattr(user, 'staff') and user.staff.position == 5
+    return (
+        user.is_staff and hasattr(user, 'staff') and (
+            getattr(user.staff, 'position', None) == 5 or
+            getattr(user.staff, 'position2', None) == 5 or
+            getattr(user.staff, 'position3', None) == 5
+        )
+    )
 
 @login_required
 @user_passes_test(is_pet_staff, login_url='/dash/')
@@ -1159,14 +1165,19 @@ def dash(request):
 
     # --- Add today's timetable for staff dashboard ---
     if request.user.is_staff:
-        # Check if the user is a PET Staff and redirect
+        # Check if the user is a PET Staff and redirect (check all position fields)
         if hasattr(request.user, 'staff'):
-            if request.user.staff.position == 5:
+            staff_obj = request.user.staff
+            if (
+                getattr(staff_obj, 'position', None) == 5 or
+                getattr(staff_obj, 'position2', None) == 5 or
+                getattr(staff_obj, 'position3', None) == 5
+            ):
                 return redirect('pet_dashboard')
             else:
                 # Debug: Not PET Staff, show message
                 from django.contrib import messages
-                messages.warning(request, f"Staff detected but position={request.user.staff.position}, not PET Staff (5).")
+                messages.warning(request, f"Staff detected but position(s)={staff_obj.position},{staff_obj.position2},{staff_obj.position3}, not PET Staff (5).")
         else:
             # Debug: No Staff object linked
             from django.contrib import messages
@@ -1295,6 +1306,15 @@ def login_user(request):
             user = authenticate(request, username=reg, password=pwd)
             if user is not None:
                 login(request, user)
+                # Redirect PET staff directly to PET dashboard (check all positions)
+                if (
+                    user.is_staff and hasattr(user, 'staff') and (
+                        getattr(user.staff, 'position', None) == 5 or
+                        getattr(user.staff, 'position2', None) == 5 or
+                        getattr(user.staff, 'position3', None) == 5
+                    )
+                ):
+                    return redirect('pet_dashboard')
                 return redirect(settings.LOGIN_REDIRECT_URL)
             else:
                 error_msg = "Wrong Password"

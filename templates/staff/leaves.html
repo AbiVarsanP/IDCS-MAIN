@@ -6,8 +6,76 @@
 {% block root %}
 
 <style>
-    th {
-        text-align: center !important;
+    /* OD-style table CSS (adapted) */
+    .od-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        overflow: visible;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+    .od-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.125rem;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    .od-header, .od-row {
+        display: grid;
+        grid-template-columns: 8% 22% 16% 20% 14% 20%;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e0e0;
+        line-height: 1.4;
+    }
+    .od-header { 
+        background: #f5f7fa;
+        color: #2c3e50;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .od-header > div { padding: 4px 8px; text-align: left; }
+    .od-row { transition: background-color 0.15s ease; }
+    .od-row:nth-child(even) { background: #f8fafc; }
+    .od-row:hover { background: #f1f5f9; }
+    .od-id { font-weight: 600; color: #1976d2; font-family: monospace; font-size: 0.9rem; }
+    .od-row > div[data-label="FROM-TO"] { font-size: 0.9rem; white-space: normal; line-height: 1.6; text-align: center; display:flex; flex-direction:column; align-items:center; }
+    .od-row > div, .od-header > div { padding: 6px 8px; box-sizing: border-box; min-width: 0; }
+    .od-header > div { white-space: nowrap; }
+    .od-row > div:nth-child(2), .od-header > div:nth-child(2) { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-weight:500; font-size:0.75rem; min-width:80px; }
+    .badge-Approved { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+    .badge-Pending { background:#fffbeb; color:#b45309; border:1px solid #fcd34d; }
+    .badge-Rejected { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+    .od-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .od-title { font-weight:500; color:#334155; }
+    .status-grid { display:grid; grid-template-columns:auto 1fr; gap:4px 8px; align-items:center; }
+    .status-label { color:#4b5563; font-size:0.85rem; font-weight:500; text-align:right; padding-right:4px; }
+    @media (max-width:768px) {
+        .od-table { padding:8px; }
+        .od-header, .od-row { grid-template-columns: 1fr; text-align:left; }
+        .od-header div { display:none; }
+        .od-row { border:1px solid #e0e0e0; margin-bottom:12px; border-radius:8px; padding:10px; background:#fff; }
+        .od-row > div { display:block; padding:6px 0; }
+        .od-row > div::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:6px; }
+        .od-row > div[data-label="NAME"], .od-row > div[data-label="FROM-TO"], .od-row > div[data-label="STATUS"] { white-space:normal; }
+        .od-row > div[data-label="VIEW"], .od-row > div[data-label="ACTION"] { display:flex; gap:8px; flex-wrap:wrap; }
+        .status-grid { display:flex; flex-direction:column; gap:6px; }
     }
 </style>
 
@@ -32,115 +100,77 @@
             <div class="card-header">
                 <strong class="card-title">Mentees Leave's</strong>
             </div>
-            <div class="table-stats order-table ov-h">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th class="serial">ID</th>
-                            <th>NAME</th>
-                            <th>SUB</th>
-                            <th>FROM-TO</th>
-                            <th>Submitted At</th>
-                            <th>Status</th>
-                            <th>VIEW</th>
-                            <th>OPTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                            {% with filtered_mods=mods|dictsort:"id" %}
-                            {% for i in filtered_mods %}
-                                {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
-                                    <tr>
-                                        <td class="serial">
-                                            {% if i.proof %}
-                                                <a href="{{ i.proof.url }}">#LE{{ i.id }}</a>
+            <div class="od-table">
+                <div class="od-table-header"><span class="header-title">Mentees Leaves</span></div>
+                <hr class="od-divider">
+                <div class="od-header">
+                    <div>ID</div>
+                    <div>NAME</div>
+                    <div>FROM - TO</div>
+                    <div>Submitted At</div>
+                    <div>STATUS</div>
+                    <div>ACTION</div>
+                </div>
+                {% with filtered_mods=mods|dictsort:"id" %}
+                {% for i in filtered_mods %}
+                    {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+                        <div class="od-row">
+                            <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
+                            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
+                            <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
+                            <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
+                            <div data-label="STATUS">
+                                <div class="status-grid">
+                                    <div class="status-label">Mentor:</div>
+                                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+                                    <div class="status-label">Advisor:</div>
+                                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+                                    <div class="status-label">AHOD:</div>
+                                    <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
+                                    <div class="status-label">HOD:</div>
+                                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                                </div>
+                            </div>
+                            <div class="od-actions" data-label="ACTION">
+                                <div data-label="VIEW">
+                                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
+                                    {% if i.proof %}
+                                        <a href="{{i.proof.url}}" class="btn btn-outline-success btn-sm">View File</a>
+                                    {% endif %}
+                                </div>
+                                <div data-label="ACTION">
+                                    {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
+                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                        </form>
+                                    {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
+                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                        </form>
+                                    {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
+                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                        </form>
+                                    {% else %}
+                                        <div class="od-actions">
+                                            {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                                <span class="text-success">Approved</span>
+                                            {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                                <span class="text-danger">Rejected</span>
                                             {% else %}
-                                                #LE{{ i.id }}
+                                                <span class="text-muted">No action</span>
                                             {% endif %}
-                                        </td>
-                                        <td>{{ i.user.name }}</td>
-                                        <td>{{ i.sub }}</td>
-                                        <td>{{ i.start }}<br>{{ i.end }}</td>
-                                        <td>{{ i.created|date:"d M Y H:i" }}</td>
-                                        <td>
-                                            Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
-                                            Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
-                                            AHOD: <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span><br>
-                                            HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}">
-                                                <small>#{{i.id}}</small>
-                                            </button>
-                                            <!-- Detail Modal for this OD -->
-                                            <div class="modal fade" id="detail{{i.id}}" tabindex="-1" role="dialog" aria-labelledby="detailLabel{{i.id}}" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="detailLabel{{i.id}}">Leave Details for {{i.user.name}}</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <b>Subject:</b> {{i.sub}}<br>
-                                                            <b>Reason:</b> {{i.body}}<br>
-                                                            {% if i.proof %}
-                                                                <hr>
-                                                                <a href="{{i.proof.url}}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
-                                                            {% endif %}
-                                                        </div>
-                                                        <div class="file-field"></div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
-                                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="mentor">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                            {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
-                                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="advisor">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                            {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
-                                                <form method="post" action="{% url 'staff_action_leave' i.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="hod">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                            {% else %}
-                                                {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
-                                                    <span class="text-success">Approved</span>
-                                                {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
-                                                    <span class="text-danger">Rejected</span>
-                                                {% else %}
-                                                    <span class="text-muted">No action available</span>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                            {% if filtered_mods|length == 0 %}
-                                <tr>
-                                    <td colspan="7" class="text-center">No records found</td>
-                                </tr>
-                            {% endif %}
-                            {% endwith %}
-                    </tbody>
-                </table>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% if filtered_mods|length == 0 %}
+                    <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+                {% endif %}
+                {% endwith %}
             </div>
         </div>
     </div>
@@ -151,117 +181,83 @@
             <div class="card-header">
                 <strong class="card-title">Class Leave's</strong>
             </div>
-            <div class="table-stats order-table ov-h">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th class="serial">ID</th>
-                            <th>NAME</th>
-                            <th>SUB</th>
-                            <th>FROM-TO</th>
-                            <th>Submitted At</th>
-                            <th>Status</th>
-                            <th>VIEW</th>
-                            <th>OPTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                            {% with filtered_aods=aods|dictsort:"id" %}
-                            {% for i in filtered_aods %}
-                                {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
-                                    <tr>
-                                        <td class="serial">
-                                            {% if i.proof %}
-                                                <a href="{{ i.proof.url }}">#LE{{ i.id }}</a>
-                                            {% else %}
-                                                #LE{{ i.id }}
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ i.user.name }}</td>
-                                        <td>{{ i.sub }}</td>
-                                        <td>{{ i.start }}<br>{{ i.end }}</td>
-                                        <td>{{ i.created|date:"d M Y H:i" }}</td>
-                                        <td>
-                                            Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
-                                            Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
-                                            AHOD: <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span><br>
-                                            HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}">
-                                                <small>#{{i.id}}</small>
-                                            </button>
-                                            <!-- Detail Modal for this OD -->
-                                            <div class="modal fade" id="detail{{i.id}}" tabindex="-1" role="dialog" aria-labelledby="detailLabel{{i.id}}" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="detailLabel{{i.id}}">Leave Details for {{i.user.name}}</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <b>Subject:</b> {{i.sub}}<br>
-                                                            <b>Reason:</b> {{i.body}}<br>
-                                                            {% if i.proof %}
-                                                                <hr>
-                                                                <a href="{{i.proof.url}}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
-                                                            {% endif %}
-                                                        </div>
-                                                        <div class="file-field"></div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                                        </div>
-                                                    </div>
+            <div class="od-table">
+                <div class="od-table-header"><span class="header-title">Class Leaves</span></div>
+                <hr class="od-divider">
+                <div class="od-header">
+                    <div>ID</div>
+                    <div>NAME</div>
+                    <div>FROM - TO</div>
+                    <div>Submitted At</div>
+                    <div>STATUS</div>
+                    <div>ACTION</div>
+                </div>
+                {% with filtered_aods=aods|dictsort:"id" %}
+                {% for i in filtered_aods %}
+                    {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+                        <div class="od-row">
+                            <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
+                            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
+                            <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
+                            <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
+                            <div data-label="STATUS">
+                                <div class="status-grid">
+                                    <div class="status-label">Mentor:</div>
+                                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+                                    <div class="status-label">Advisor:</div>
+                                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+                                    <div class="status-label">AHOD:</div>
+                                    <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
+                                    <div class="status-label">HOD:</div>
+                                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                                </div>
+                            </div>
+                            <div class="od-actions" data-label="ACTION">
+                                <div data-label="VIEW">
+                                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
+                                    {% if i.proof %}
+                                        <a href="{{i.proof.url}}" class="btn btn-outline-success btn-sm">View File</a>
+                                    {% endif %}
+                                </div>
+                                <div data-label="ACTION">
+                                    {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
+                                        <button class="btn btn-danger" disabled>Rejected</button>
+                                    {% elif i.Mstatus == "Approved" %}
+                                        {% if i.Astatus == "Approved" %}
+                                            <button class="btn btn-success ">{{i.Astatus}}</button>
+                                        {% else %}
+                                            <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
+                                                <div class="od-actions">
+                                                    <select name="sts" class="form-control">
+                                                        <option value="Approved">Approve</option>
+                                                        <option value="Rejected">Reject</option>
+                                                        <option value="Meet Me">Meet Me</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-success">submit</button>
                                                 </div>
+                                            </form>
+                                        {% endif %}
+                                    {% else %}
+                                        <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
+                                            <div class="od-actions">
+                                                <select name="sts" class="form-control">
+                                                    <option value="Approved">Approve</option>
+                                                    <option value="Rejected">Reject</option>
+                                                    <option value="Meet Me">Meet Me</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-success">submit</button>
                                             </div>
-                                        </td>
-                                        <td>
-                                            {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
-                                                <button class="btn btn-danger" disabled>Rejected</button>
-                                            {% elif i.Mstatus == "Approved" %}
-                                                {% if i.Astatus == "Approved" %}
-                                                    <button class="btn btn-success ">{{i.Astatus}}</button>
-                                                {% else %}
-                                                    <form action="{% url 'staff_action_leave' i.id %}" method="POST">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="role" value="advisor">
-                                                        <div class="input-group">
-                                                            <select name="sts" id="" class="form-control">
-                                                                <option value="Approved" default>Approve</option>
-                                                                <option value="Rejected">Reject</option>
-                                                                <option value="Meet Me">Meet Me</option>
-                                                            </select>
-                                                            <button type="submit" class="btn btn-success">submit</button>
-                                                        </div>
-                                                    </form>
-                                                {% endif %}
-                                            {% else %}
-                                                <form action="{% url 'staff_action_leave' i.id %}" method="POST">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="mentor">
-                                                    <div class="input-group">
-                                                        <select name="sts" id="" class="form-control">
-                                                            <option value="Approved" default>Approve</option>
-                                                            <option value="Rejected">Reject</option>
-                                                            <option value="Meet Me">Meet Me</option>
-                                                        </select>
-                                                        <button type="submit" class="btn btn-success">submit</button>
-                                                    </div>
-                                                </form>
-                                            {% endif %}
-                                        </td>
-                                {% endif %}
-                            {% endfor %}
-                            {% if filtered_aods|length == 0 %}
-                                <tr>
-                                    <td colspan="7" class="text-center">No records found</td>
-                                </tr>
-                            {% endif %}
-                            {% endwith %}
-                    </tbody>
-                </table>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% if filtered_aods|length == 0 %}
+                    <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+                {% endif %}
+                {% endwith %}
             </div>
         </div>
     </div>

@@ -27,7 +27,9 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         border-radius: 8px;
         overflow: visible;
-        overflow-x: hidden;
+        /* allow horizontal scrolling if the grid is wider than the container */
+        overflow-x: auto;
+        box-sizing: border-box;
     }
     .od-table-header {
         display: flex;
@@ -56,9 +58,14 @@
 
     .od-header, .od-row {
         display: grid;
-        grid-template-columns: 80px 1.2fr 150px 140px 100px 200px;
+        /* Use percentage-based columns so the entire table width is justified and
+           both header and rows use identical column widths. This keeps columns
+           aligned across the full table width. */
+          /* Adjusted column distribution: smaller NAME (22%), stable FROM-TO and Submitted columns,
+              larger VIEW and ACTION columns so buttons don't overflow/hide to the right. */
+          grid-template-columns: 8% 22% 16% 20% 14% 20%;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
         padding: 12px 16px;
         border-bottom: 1px solid #e0e0e0;
         line-height: 1.4;
@@ -92,8 +99,14 @@
     /* Date formatting */
     .od-row > div[data-label="FROM-TO"] {
         font-size: 0.9rem;
+        /* keep the FROM-TO block at its column width and allow the two dates to stack */
         white-space: normal;
         line-height: 1.6;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
     .od-row > div[data-label="Submitted At"] {
         font-size: 0.9rem;
@@ -111,11 +124,20 @@
     .od-row > div:nth-child(2),  /* Name */
     .od-header > div:nth-child(2) {
         text-align: left;
+        /* truncate long names and prevent them from expanding the grid */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
+
+    /* Slightly reduce padding inside cells so columns appear tighter */
+    .od-row > div, .od-header > div { padding: 6px 8px; box-sizing: border-box; min-width: 0; }
+    /* Prevent header cells from wrapping which can misalign columns */
+    .od-header > div { white-space: nowrap; }
     .od-row > div:nth-child(3),  /* From-To */
     .od-header > div:nth-child(3) {
         text-align: center;
-        white-space: nowrap;
+        white-space: normal;
     }
     .od-row > div:nth-child(4),  /* Submitted At */
     .od-header > div:nth-child(4) {
@@ -125,6 +147,14 @@
     .od-header > div:nth-child(5) {
         text-align: left;
     }
+    /* Ensure VIEW and ACTION columns align and don't clip their contents */
+    .od-row > div:nth-child(5), .od-header > div:nth-child(5),
+    .od-row > div:nth-child(6), .od-header > div:nth-child(6) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .od-row > div:nth-child(6), .od-header > div:nth-child(6) { justify-content: flex-start; }
     .od-title {
         font-weight: 500;
         color: #334155;
@@ -162,8 +192,18 @@
         border: 1px solid #d1d5db;
     }
 
-    .od-actions { display: flex; flex-direction: column; gap: 6px; }
+     /* Make action buttons render inline and wrap if needed so they remain visible
+         without pushing content out of the grid. Align to start so buttons appear
+         next to the VIEW column rather than being clipped to the far right. */
+     .od-actions { display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-start; }
     .file-upload-label, .btn-upload, .btn-outline-primary { padding: 6px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; text-align: center; font-size: 0.85rem; }
+
+    /* Prevent action buttons from wrapping their text and ensure input-groups
+       inside the action column lay out horizontally */
+    .od-actions .btn, .od-actions .input-group .btn, .od-actions .input-group select {
+        white-space: nowrap;
+    }
+    .od-actions .input-group { display: flex; gap: 6px; align-items: center; }
 
     /* Modal styles */
     .modal-dialog {
@@ -252,18 +292,31 @@
     }
 
     @media (max-width: 768px) {
-        .od-table { padding: 10px; }
+        .od-table { padding: 8px; }
         .od-header, .od-row { grid-template-columns: 1fr; text-align: left; }
         .od-header div { display: none; }
         .od-row { border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; padding: 10px; background: #fff; }
-        .od-row > div { display: flex; justify-content: space-between; padding: 4px 0; }
-        .od-row > div::before { content: attr(data-label); font-weight: 600; color: #555; }
-        /* Adjust status grid for mobile */
-        .status-grid {
-            margin-top: 8px;
-            grid-template-columns: auto 1fr;
-            gap: 6px;
+        /* Stacked card: label above value for each field to ensure no horizontal gaps */
+        .od-row > div { display: block; padding: 6px 0; }
+        .od-row > div::before { content: attr(data-label); display: block; font-weight: 600; color: #555; margin-bottom: 6px; }
+        .od-row > div > * { display: block; min-width: 0; }
+        /* Allow long names and values to wrap on mobile */
+        .od-row > div[data-label="NAME"],
+        .od-row > div[data-label="FROM-TO"],
+        .od-row > div[data-label="STATUS"] { white-space: normal; overflow: visible; }
+        /* Keep VIEW and ACTION grouped horizontally but allow wrapping */
+        .od-row > div[data-label="VIEW"], .od-row > div[data-label="ACTION"] {
+            display: flex; flex-direction: row; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-start;
         }
+        .od-row > div[data-label="VIEW"] > *, .od-row > div[data-label="ACTION"] > * { margin: 0; }
+        /* On very small screens, make view/action controls full-width stacked to avoid clipping */
+        .od-row > div[data-label="VIEW"] button, .od-row > div[data-label="VIEW"] .btn { width: 100%; }
+        .od-row > div[data-label="ACTION"] .od-actions { flex-direction: column; gap: 6px; }
+        .od-row > div[data-label="ACTION"] .od-actions .btn, .od-row > div[data-label="ACTION"] .od-actions .input-group { width: 100%; }
+        .od-row > div[data-label="ACTION"] .od-actions .input-group select { width: 100%; }
+        /* Status grid: make it vertical but compact */
+        .status-grid { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        .status-grid .status-label { text-align: left; padding-right: 0; }
     }
 </style>
 
@@ -287,8 +340,8 @@
     {% for i in filtered_mods %}
         {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
         <div class="od-row">
-            <div class="od-id" data-label="ID">#OD{{ i.id }}</div>
-            <div class="od-title" data-label="NAME">{{ i.user.name }}</div>
+                <div class="od-id" data-label="ID">#OD{{ i.id }}</div>
+                <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
             <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
             <div data-label="STATUS">
                 <div class="status-grid">
@@ -371,7 +424,7 @@
         {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
         <div class="od-row">
             <div class="od-id" data-label="ID">#OD{{ i.id }}</div>
-            <div class="od-title" data-label="NAME">{{ i.user.name }}</div>
+            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
             <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
             <div data-label="STATUS">
                 <div class="status-grid">

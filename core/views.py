@@ -434,7 +434,7 @@ def staff_attendance_view(request):
                     department=subject.semester.department,
                     semester=subject.semester.semester,
                     section=section
-                )
+                ).order_by('name')
                 absent_last3_list = [s.strip() for s in absent_last3.replace(",", " ").split() if s.strip()]
                 for student in students:
                     last3 = str(student.roll)[-3:] if student.roll else None
@@ -466,7 +466,7 @@ def staff_attendance_view(request):
                     department=semester_obj.department,
                     semester=semester_obj.semester,
                     section=section_val
-                )
+                ).order_by('name')
                 students_with_attendance = []
                 for student in students:
                     total = Attendance.objects.filter(student=student, subject=subject).count()

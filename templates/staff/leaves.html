@@ -97,9 +97,6 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">
-                <strong class="card-title">Mentees Leave's</strong>
-            </div>
             <div class="od-table">
                 <div class="od-table-header"><span class="header-title">Mentees Leaves</span></div>
                 <hr class="od-divider">
@@ -107,8 +104,8 @@
                     <div>ID</div>
                     <div>NAME</div>
                     <div>FROM - TO</div>
-                    <div>Submitted At</div>
                     <div>STATUS</div>
+                    <div>VIEW</div>
                     <div>ACTION</div>
                 </div>
                 {% with filtered_mods=mods|dictsort:"id" %}
@@ -118,7 +115,6 @@
                             <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
                             <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
                             <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
-                            <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
                             <div data-label="STATUS">
                                 <div class="status-grid">
                                     <div class="status-label">Mentor:</div>
@@ -131,13 +127,13 @@
                                     <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                                 </div>
                             </div>
+                            <div data-label="VIEW">
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
+                                {% if i.proof %}
+                                    <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#certModal{{i.id}}">View File</button>
+                                {% endif %}
+                            </div>
                             <div class="od-actions" data-label="ACTION">
-                                <div data-label="VIEW">
-                                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
-                                    {% if i.proof %}
-                                        <a href="{{i.proof.url}}" class="btn btn-outline-success btn-sm">View File</a>
-                                    {% endif %}
-                                </div>
                                 <div data-label="ACTION">
                                     {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
                                         <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
@@ -178,9 +174,6 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">
-                <strong class="card-title">Class Leave's</strong>
-            </div>
             <div class="od-table">
                 <div class="od-table-header"><span class="header-title">Class Leaves</span></div>
                 <hr class="od-divider">
@@ -188,8 +181,8 @@
                     <div>ID</div>
                     <div>NAME</div>
                     <div>FROM - TO</div>
-                    <div>Submitted At</div>
                     <div>STATUS</div>
+                    <div>VIEW</div>
                     <div>ACTION</div>
                 </div>
                 {% with filtered_aods=aods|dictsort:"id" %}
@@ -199,7 +192,6 @@
                             <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
                             <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
                             <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
-                            <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
                             <div data-label="STATUS">
                                 <div class="status-grid">
                                     <div class="status-label">Mentor:</div>
@@ -212,13 +204,13 @@
                                     <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
                                 </div>
                             </div>
+                            <div data-label="VIEW">
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
+                                {% if i.proof %}
+                                    <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#certModal{{i.id}}">View File</button>
+                                {% endif %}
+                            </div>
                             <div class="od-actions" data-label="ACTION">
-                                <div data-label="VIEW">
-                                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
-                                    {% if i.proof %}
-                                        <a href="{{i.proof.url}}" class="btn btn-outline-success btn-sm">View File</a>
-                                    {% endif %}
-                                </div>
                                 <div data-label="ACTION">
                                     {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
                                         <button class="btn btn-danger" disabled>Rejected</button>
@@ -262,49 +254,77 @@
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="detailLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+{# Per-row modals for Leaves: Submitted time, Subject, Reason, Proof - similar to ODs #}
+{% with all_items=mods|default_if_none:""|add:aods %}
+    {% for od in all_items %}
+        <div class="modal fade" id="certModal{{od.id}}" tabindex="-1" role="dialog" aria-labelledby="certModalLabel{{od.id}}" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="certModalLabel{{od.id}}">Leave Proof Preview</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center">
+                        {% if od.proof %}
+                            {% if ".pdf" in od.proof.url|lower %}
+                                <embed src="{{od.proof.url}}" type="application/pdf" width="100%" height="500px" />
+                            {% else %}
+                                <img src="{{od.proof.url}}" alt="Proof" style="max-width:100%; max-height:500px;" />
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted">No proof uploaded</p>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body"></div>
-            <div class="modal-footer"></div>
         </div>
-    </div>
-</div>
 
-<script>
-    $('#detail').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget)
-        var recipient = button.data('sub')
-        var name = button.data('name')
-        var content = button.data('body')
-        var url = button.data('url') || ''
-        var modal = $(this)
-        modal.find('.modal-title').html(`<b>${recipient}</b>  <small>-by ${name}</small>`)
-        modal.find('.modal-body').text(content)
-
-        if (url) {
-            modal.find('.modal-footer').html(`
-                <div class="btn-group">
-                    <a href="${url}" download class="btn btn-outline-success">Download File</a>
-                    <a href="${url}" target="_blank" class="btn btn-outline-warning">View File</a>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <div class="modal fade" id="detail{{od.id}}" tabindex="-1" role="dialog" aria-labelledby="detailLabel{{od.id}}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailLabel{{od.id}}">Leave Details for {{od.user.name}}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="submitted-time">
+                            <div class="od-detail-item" style="border: none; padding: 0;">
+                                <span class="od-detail-label">
+                                    <i class="fa fa-clock-o"></i> Submitted At:
+                                </span>
+                                <span class="od-detail-value">{{od.created|date:"d M Y, h:i A"}}</span>
+                            </div>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Subject:</span>
+                            <span class="od-detail-value">{{od.sub}}</span>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Reason:</span>
+                            <span class="od-detail-value">{{od.body}}</span>
+                        </div>
+                        {% if od.proof %}
+                        <div class="od-detail-item" style="border: none;">
+                            <span class="od-detail-label">Proof:</span>
+                            <span class="od-detail-value">
+                                <a href="{{od.proof.url}}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
                 </div>
-            `)
-        } else {
-            modal.find('.modal-footer').html(`
-                <div class="btn-group">
-                    <button type="button" class="btn btn-secondary" disabled>No file uploaded</button>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
-            `)
-        }
-    })
-</script>
+            </div>
+        </div>
+    {% endfor %}
+{% endwith %}
 {% endblock %}

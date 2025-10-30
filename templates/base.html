@@ -437,9 +437,9 @@
                     <li class="{% if request.resolver_match.url_name == 'staff_timetable' %}active{% endif %}"><a
                             href="{% url 'staff_timetable' %}"><i class="menu-icon fa fa-calendar"></i>Timetable</a>
                     </li>
-                    <li class="menu-title">Class</li>
-                    <li class="{% if request.resolver_match.url_name == 'staff_my_class' %}active{% endif %}"><a
-                            href="{% url 'staff_my_class' %}"><i class="menu-icon fa fa-users"></i>My Class Students</a>
+            <li class="menu-title">Class</li>
+            <li class="{% if request.resolver_match.url_name == 'staff_attendance' %}active{% endif %}"><a
+                href="{% url 'staff_attendance' %}"><i class="menu-icon fa fa-check-square"></i>Attendance</a>
                     </li>
                     <li class="{% if request.resolver_match.url_name == 'staff_certificates' %}active{% endif %}"><a
                             href="{% url 'staff_certificates' %}"><i class="menu-icon ti-upload"></i>Student

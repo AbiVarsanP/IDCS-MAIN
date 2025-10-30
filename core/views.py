@@ -1226,20 +1226,9 @@ def dash(request):
 
     elif context['duser'].position == 0 or AHOD.objects.filter(user=context['duser']).exists() or context['duser'].position2 == 1:
         # HOD or AHOD or Assistant Head of Department
-        context['allratings'] = IndividualStaffRating.objects.all()
-        # If HOD, use HOD logic
+        # If HOD, use HOD logic (removed staff ratings and recent logs display)
         if context['duser'].position == 0:
             hod = HOD.objects.get(user=context['duser'])
-            staff_list = [i for i in hod.staffs.all()]
-            ratings = map_feedback(staff_list)
-            context['ratings'] = ratings
-            temp = IndividualStaffRating.objects.all()
-            rating_logs = []
-            for i in temp:
-                if i.staff.department == context['duser'].department:
-                    rating_logs.append(i)
-            context['my_rating'] = ratings.get(context['duser'].name, None)
-            context['rating_log'] = rating_logs[:len(ratings)]
             try:
                 hod_staff = Staff.objects.get(user=context['duser'].user)
                 context['bonafides'] = BONAFIDE.objects.filter(

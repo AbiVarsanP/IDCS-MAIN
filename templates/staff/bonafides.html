@@ -19,234 +19,310 @@
 
     
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <b>Mentee Bonafide Forms</b>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Student</th>
-                                <th>Subject</th>
-                                <th>Submitted At</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                                {% with filtered_mentee_bonafides=mentee_bonafides|dictsort:"id" %}
-                                {% for b in filtered_mentee_bonafides %}
-                                    {% if not request.GET.year or b.user.year|stringformat:'s' == request.GET.year %}
-                                        <tr>
-                                            <td>{{ forloop.counter }}</td>
-                                            <td>{{ b.user.name }}</td>
-                                            <td>{{ b.sub }}</td>
-                                            <td>{{ b.created|date:"d M Y H:i" }}</td>
-                                            <td>
-                                                Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
-                                                Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
-                                                HOD: <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
-                                            </td>
-                                            <td>
-                                                {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
-                                                <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="mentor">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                                {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
-                                                <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="advisor">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                                {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
-                                                <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="role" value="hod">
-                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                </form>
-                                                {% else %}
-                                                    {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
-                                                        <span class="text-success">Approved</span>
-                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
-                                                        <span class="text-danger">Rejected</span>
-                                                    {% endif %}
-                                                {% endif %}
-                                                {% if b.body %}
-                                                    <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModalMentee{{ b.id }}">View Reason</button>
-                                                    <!-- Reason Modal -->
-                                                    <div class="modal fade" id="reasonModalMentee{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabelMentee{{ b.id }}" aria-hidden="true">
-                                                        <div class="modal-dialog" role="document">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title" id="reasonModalLabelMentee{{ b.id }}">Reason for Bonafide</h5>
-                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <table class="table table-bordered table-striped mb-0">
-                                                                        <tbody>
-                                                                            {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
-                                                                            {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
-                                                                            {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
-                                                                            {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
-                                                                            {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
-                                                                            {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
-                                                                            {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
-                                                                            {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
-                                                                            {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
-                                                                            {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
-                                                                            {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
-                                                                            {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
-                                                                            {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
-                                                                            {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
-                                                                            {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
-                                                                            {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
-                                                                            {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if filtered_mentee_bonafides|length == 0 %}
-                                    <tr><td colspan="8">No mentee bonafide forms.</td></tr>
-                                {% endif %}
-                                {% endwith %}
+    <style>
+        /* Reuse OD/Leave responsive table styles */
+        .od-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: visible;
+            overflow-x: auto;
+            box-sizing: border-box;
+        }
+        .od-table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #1976d2;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.125rem;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .od-header, .od-row {
+            display: grid;
+            /* seven columns: ID, NAME, SUBJECT, SUBMITTED AT, STATUS, VIEW, ACTION */
+            grid-template-columns: 8% 28% 16% 12% 14% 10% 12%;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e0e0;
+            line-height: 1.4;
+        }
+        .od-header { 
+            background: #f5f7fa;
+            color: #2c3e50;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .od-header > div { padding: 4px 8px; text-align: left; }
+        .od-row { transition: background-color 0.15s ease; }
+        .od-row:nth-child(even) { background: #f8fafc; }
+        .od-row:hover { background: #f1f5f9; }
+        .od-id { font-weight: 600; color: #1976d2; font-family: monospace; font-size: 0.9rem; }
+        .od-row > div[data-label="FROM-TO"] { font-size: 0.9rem; white-space: normal; line-height: 1.6; text-align: center; display:flex; flex-direction:column; align-items:center; }
+        .od-row > div, .od-header > div { padding: 6px 8px; box-sizing: border-box; min-width: 0; }
+        .od-header > div { white-space: nowrap; }
+        .od-row > div:nth-child(2), .od-header > div:nth-child(2) { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-weight:500; font-size:0.75rem; min-width:80px; }
+        .badge-Approved { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+        .badge-Pending { background:#fffbeb; color:#b45309; border:1px solid #fcd34d; }
+        .badge-Rejected { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+        .od-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .od-title { font-weight:500; color:#334155; }
+        .status-grid { display:grid; grid-template-columns:auto 1fr; gap:4px 8px; align-items:center; }
+        .status-label { color:#4b5563; font-size:0.85rem; font-weight:500; text-align:right; padding-right:4px; }
+        @media (max-width:768px) {
+            .od-table { padding:8px; }
+            .od-header, .od-row { grid-template-columns: 1fr; text-align:left; }
+            .od-header div { display:none; }
+            .od-row { border:1px solid #e0e0e0; margin-bottom:12px; border-radius:8px; padding:10px; background:#fff; }
+            .od-row > div { display:block; padding:6px 0; }
+            .od-row > div::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:6px; }
+            .od-row > div[data-label="NAME"], .od-row > div[data-label="FROM-TO"], .od-row > div[data-label="STATUS"] { white-space:normal; }
+            .od-row > div[data-label="VIEW"], .od-row > div[data-label="ACTION"] { display:flex; gap:8px; flex-wrap:wrap; }
+            .status-grid { display:flex; flex-direction:column; gap:6px; }
+        }
+    </style>
 
-                        </tbody>
-                    </table>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="od-table">
+                    <div class="od-table-header"><span class="header-title">Mentee Bonafide Forms</span></div>
+                    <hr class="od-divider">
+                    <div class="od-header">
+                        <div>ID</div>
+                        <div>NAME</div>
+                        <div>SUBJECT</div>
+                        <div>SUBMITTED AT</div>
+                        <div>STATUS</div>
+                        <div>VIEW</div>
+                        <div>ACTION</div>
+                    </div>
+                    {% with filtered_mentee_bonafides=mentee_bonafides|dictsort:"id" %}
+                    {% for b in filtered_mentee_bonafides %}
+                        {% if not request.GET.year or b.user.year|stringformat:'s' == request.GET.year %}
+                            <div class="od-row">
+                                <div class="od-id" data-label="ID">#BF{{ b.id }}</div>
+                                <div class="od-title" data-label="NAME" title="{{ b.user.name }}">{{ b.user.name }}</div>
+                                <div data-label="SUBJECT">{{ b.sub }}</div>
+                                <div data-label="SUBMITTED AT">{{ b.created|date:"d M Y H:i" }}</div>
+                                <div data-label="STATUS">
+                                    <div class="status-grid">
+                                        <div class="status-label">Mentor:</div>
+                                        <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span>
+                                        <div class="status-label">Advisor:</div>
+                                        <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span>
+                                        <div class="status-label">HOD:</div>
+                                        <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
+                                    </div>
+                                </div>
+                                <div data-label="VIEW">
+                                    {% if b.body %}
+                                        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModalMentee{{ b.id }}">View Details</button>
+                                    {% endif %}
+                                    {% if b.proof %}
+                                        <a href="{{ b.proof.url }}" class="btn btn-outline-success btn-sm">View File</a>
+                                    {% endif %}
+                                </div>
+                                <div class="od-actions" data-label="ACTION">
+                                    <div>
+                                        {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
+                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                            </form>
+                                        {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
+                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                            </form>
+                                        {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
+                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                            </form>
+                                        {% else %}
+                                            <div class="od-actions">
+                                                {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
+                                                    <span class="text-success">Approved</span>
+                                                {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
+                                                    <span class="text-danger">Rejected</span>
+                                                {% else %}
+                                                    <span class="text-muted">No action</span>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if b.body %}
+                                <!-- Reason Modal -->
+                                <div class="modal fade" id="reasonModalMentee{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabelMentee{{ b.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="reasonModalLabelMentee{{ b.id }}">Details for Bonafide #{{ b.id }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <table class="table table-bordered table-striped mb-0">
+                                                    <tbody>
+                                                        {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
+                                                        {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
+                                                        {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
+                                                        {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
+                                                        {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
+                                                        {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
+                                                        {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
+                                                        {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
+                                                        {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
+                                                        {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
+                                                        {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
+                                                        {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
+                                                        {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
+                                                        {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
+                                                        {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
+                                                        {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
+                                                        {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if filtered_mentee_bonafides|length == 0 %}
+                        <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No mentee bonafide forms.</div></div>
+                    {% endif %}
+                    {% endwith %}
                 </div>
             </div>
         </div>
     </div>
-<div class="row">
-        <div class="col-md-12">
-            <div class="card mb-4">
-                <div class="card-header bg-warning text-white">
-                    <b>Class Bonafide Forms</b>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Student</th>
-                                <th>Subject</th>
-
-                                <th>Submitted At</th>
-
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                                                            {% with filtered_class_bonafides=class_bonafides|dictsort:"id" %}
-                                                            {% for b in filtered_class_bonafides %}
-                                                                    {% if not request.GET.year or b.user.year|stringformat:'s' == request.GET.year %}
-                                                                            <tr>
-                                                                                    <td>{{ forloop.counter }}</td>
-                                                                                    <td>{{ b.user.name }}</td>
-                                                                                    <td>{{ b.sub }}</td>
-                                                                                    <td>{{ b.created|date:"d M Y H:i" }}</td>
-                                                                                    <td>
-                                                                                            Mentor: <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span><br>
-                                                                                            Advisor: <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span><br>
-                                                                                            HOD: <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
-                                                                                    </td>
-                                                                                    <td>
-                                                                                            {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
-                                                                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                                                                                    {% csrf_token %}
-                                                                                                    <input type="hidden" name="role" value="mentor">
-                                                                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                                                            </form>
-                                                                                            {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
-                                                                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                                                                                    {% csrf_token %}
-                                                                                                    <input type="hidden" name="role" value="advisor">
-                                                                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                                                            </form>
-                                                                                            {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
-                                                                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">
-                                                                                                    {% csrf_token %}
-                                                                                                    <input type="hidden" name="role" value="hod">
-                                                                                                    <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
-                                                                                                    <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                                                                            </form>
-                                                                                            {% else %}
-                                                    {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
-                                                        <span class="text-success">Approved</span>
-                                                    {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
-                                                        <span class="text-danger">Rejected</span>
-                                                    {% endif %}
-                                                                                            {% endif %}
-                                                                                            {% if b.body %}
-                                                                                                    <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Reason</button>
-                                                                                                    <!-- Reason Modal -->
-                                                                                                    <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
-                                                                                                        <div class="modal-dialog" role="document">
-                                                                                                            <div class="modal-content">
-                                                                                                                <div class="modal-header">
-                                                                                                                    <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Reason for Bonafide</h5>
-                                                                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                                                                        <span aria-hidden="true">&times;</span>
-                                                                                                                    </button>
-                                                                                                                </div>
-                                                                                                                <div class="modal-body">
-                                                                                                                    <table class="table table-bordered table-striped mb-0">
-                                                                                                                        <tbody>
-                                                                                                                            {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
-                                                                                                                            {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
-                                                                                                                            {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
-                                                                                                                            {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
-                                                                                                                            {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
-                                                                                                                            {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
-                                                                                                                            {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
-                                                                                                                            {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
-                                                                                                                            {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
-                                                                                                                            {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
-                                                                                                                            {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
-                                                                                                                            {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
-                                                                                                                            {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
-                                                                                                                            {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
-                                                                                                                            {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
-                                                                                                                            {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
-                                                                                                                            {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
-                                                                                                                        </tbody>
-                                                                                                                    </table>
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                            {% endif %}
-                                                                                    </td>
-                                                                            </tr>
-                                                                    {% endif %}
-                                                            {% endfor %}
-                                                            {% if filtered_class_bonafides|length == 0 %}
-                                                                    <tr><td colspan="7">No class bonafide forms.</td></tr>
-                                                            {% endif %}
-                                                            {% endwith %}
-                        </tbody>
-                    </table>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="od-table">
+                    <div class="od-table-header"><span class="header-title">Class Bonafide Forms</span></div>
+                    <hr class="od-divider">
+                    <div class="od-header">
+                        <div>ID</div>
+                        <div>NAME</div>
+                        <div>SUBJECT</div>
+                        <div>SUBMITTED AT</div>
+                        <div>STATUS</div>
+                        <div>VIEW</div>
+                        <div>ACTION</div>
+                    </div>
+                    {% with filtered_class_bonafides=class_bonafides|dictsort:"id" %}
+                    {% for b in filtered_class_bonafides %}
+                        {% if not request.GET.year or b.user.year|stringformat:'s' == request.GET.year %}
+                            <div class="od-row">
+                                <div class="od-id" data-label="ID">#BF{{ b.id }}</div>
+                                <div class="od-title" data-label="NAME" title="{{ b.user.name }}">{{ b.user.name }}</div>
+                                <div data-label="SUBJECT">{{ b.sub }}</div>
+                                <div data-label="SUBMITTED AT">{{ b.created|date:"d M Y H:i" }}</div>
+                                <div data-label="STATUS">
+                                    <div class="status-grid">
+                                        <div class="status-label">Mentor:</div>
+                                        <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span>
+                                        <div class="status-label">Advisor:</div>
+                                        <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span>
+                                        <div class="status-label">HOD:</div>
+                                        <span class="badge badge-{{ b.Hstatus }}">{{ b.Hstatus }}</span>
+                                    </div>
+                                </div>
+                                <div data-label="VIEW">
+                                    {% if b.body %}
+                                        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Details</button>
+                                    {% endif %}
+                                    {% if b.proof %}
+                                        <a href="{{ b.proof.url }}" class="btn btn-outline-success btn-sm">View File</a>
+                                    {% endif %}
+                                </div>
+                                <div class="od-actions" data-label="ACTION">
+                                        {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
+                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                            </form>
+                                        {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
+                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                            </form>
+                                        {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
+                                            <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
+                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                            </form>
+                                        {% else %}
+                                            <div class="od-actions">
+                                                {% if b.Mstatus == 'Approved' or b.Astatus == 'Approved' or b.Hstatus == 'Approved' %}
+                                                    <span class="text-success">Approved</span>
+                                                {% elif b.Mstatus == 'Rejected' or b.Astatus == 'Rejected' or b.Hstatus == 'Rejected' or b.AHstatus == 'Rejected' %}
+                                                    <span class="text-danger">Rejected</span>
+                                                {% else %}
+                                                    <span class="text-muted">No action</span>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if b.body %}
+                                <!-- Reason Modal -->
+                                <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Details for Bonafide #{{ b.id }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <table class="table table-bordered table-striped mb-0">
+                                                    <tbody>
+                                                        {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
+                                                        {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
+                                                        {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
+                                                        {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
+                                                        {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
+                                                        {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
+                                                        {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
+                                                        {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
+                                                        {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
+                                                        {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
+                                                        {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
+                                                        {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
+                                                        {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
+                                                        {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
+                                                        {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
+                                                        {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
+                                                        {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if filtered_class_bonafides|length == 0 %}
+                        <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No class bonafide forms.</div></div>
+                    {% endif %}
+                    {% endwith %}
                 </div>
             </div>
         </div>

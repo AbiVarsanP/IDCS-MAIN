@@ -6,7 +6,7 @@
 {% block root %}
 
 <style>
-    /* OD-style table CSS (adapted) */
+    /* Copy/paste of OD page styles for exact visual parity */
     .od-table {
         width: 100%;
         border-collapse: collapse;
@@ -14,68 +14,85 @@
         background: #fff;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         border-radius: 8px;
-        overflow: visible;
-        overflow-x: auto;
-        box-sizing: border-box;
+        overflow: hidden;
     }
+
     .od-table-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 16px;
+        padding: 14px 16px;
         background: #1976d2;
         color: #fff;
         font-weight: 600;
-        font-size: 1.125rem;
+        font-size: 1.25rem;
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
     }
-    .od-header, .od-row {
+
+    .od-table-header .header-title { margin: 0; }
+    hr.od-divider { margin: 0; border: 0; border-top: 2px solid #e0e0e0; }
+
+    .od-header,
+    .od-row {
         display: grid;
-        grid-template-columns: 8% 22% 16% 20% 14% 20%;
+        /* six columns to match the table headers below: ID, NAME, FROM-TO, Submitted At, STATUS, ACTION */
+        grid-template-columns: 100px 1fr 160px 160px 220px 220px;
         align-items: center;
-        gap: 8px;
-        padding: 12px 16px;
+        gap: 10px;
+        padding: 12px;
         border-bottom: 1px solid #e0e0e0;
-        line-height: 1.4;
     }
-    .od-header { 
-        background: #f5f7fa;
-        color: #2c3e50;
+
+    .od-header { background: #f1f1f1; color: #333; font-weight: 600; text-align: center; }
+    .od-row:nth-child(even) { background: #f9f9f9; }
+    .od-id { font-weight: 700; color: #1976d2; }
+
+    /* Badges */
+    .badge { padding: 5px 10px; border-radius: 12px; font-weight: 600; color: #fff; font-size: 0.8rem; }
+    .badge-Approved { background: #4caf50; }
+    .badge-Pending { background: #ff9800; }
+    .badge-Rejected { background: #f44336; }
+    .badge-secondary { background: #9e9e9e; }
+
+    .od-actions { display: flex; flex-direction: column; gap: 6px; }
+    .od-actions input[type="file"] { display: none; }
+    .file-upload-label,
+    .btn-upload,
+    .btn-outline-primary {
+        padding: 6px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; text-align: center; font-size: 0.85rem;
+    }
+    .file-upload-label { background: #1976d2; color: #fff; }
+    .file-upload-label:hover { background: #1565c0; }
+    .btn-upload { background: #4caf50; border: none; color: #fff; }
+    .btn-upload:hover { background: #388e3c; }
+
+    /* Table-specific styles to match OD page visuals */
+    .od-table table thead th {
+        background: #f1f1f1;
+        color: #333;
         font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        position: sticky;
-        top: 0;
-        z-index: 10;
+        text-align: center;
+        vertical-align: middle;
     }
-    .od-header > div { padding: 4px 8px; text-align: left; }
-    .od-row { transition: background-color 0.15s ease; }
-    .od-row:nth-child(even) { background: #f8fafc; }
-    .od-row:hover { background: #f1f5f9; }
-    .od-id { font-weight: 600; color: #1976d2; font-family: monospace; font-size: 0.9rem; }
-    .od-row > div[data-label="FROM-TO"] { font-size: 0.9rem; white-space: normal; line-height: 1.6; text-align: center; display:flex; flex-direction:column; align-items:center; }
-    .od-row > div, .od-header > div { padding: 6px 8px; box-sizing: border-box; min-width: 0; }
-    .od-header > div { white-space: nowrap; }
-    .od-row > div:nth-child(2), .od-header > div:nth-child(2) { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-weight:500; font-size:0.75rem; min-width:80px; }
-    .badge-Approved { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
-    .badge-Pending { background:#fffbeb; color:#b45309; border:1px solid #fcd34d; }
-    .badge-Rejected { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
-    .od-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .od-title { font-weight:500; color:#334155; }
-    .status-grid { display:grid; grid-template-columns:auto 1fr; gap:4px 8px; align-items:center; }
-    .status-label { color:#4b5563; font-size:0.85rem; font-weight:500; text-align:right; padding-right:4px; }
-    @media (max-width:768px) {
-        .od-table { padding:8px; }
-        .od-header, .od-row { grid-template-columns: 1fr; text-align:left; }
-        .od-header div { display:none; }
-        .od-row { border:1px solid #e0e0e0; margin-bottom:12px; border-radius:8px; padding:10px; background:#fff; }
-        .od-row > div { display:block; padding:6px 0; }
-        .od-row > div::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:6px; }
-        .od-row > div[data-label="NAME"], .od-row > div[data-label="FROM-TO"], .od-row > div[data-label="STATUS"] { white-space:normal; }
-        .od-row > div[data-label="VIEW"], .od-row > div[data-label="ACTION"] { display:flex; gap:8px; flex-wrap:wrap; }
-        .status-grid { display:flex; flex-direction:column; gap:6px; }
+
+    .od-table table tbody td { vertical-align: middle; }
+
+    /* Responsive: convert table rows into stacked cards on small screens */
+    @media (max-width: 768px) {
+        .od-table { padding: 10px; }
+
+        /* hide native table header and show rows as cards */
+        .od-table table thead { display: none; }
+        .od-table table tbody tr { display: block; border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; padding: 8px; }
+        .od-table table tbody td { display: flex; justify-content: space-between; padding: 8px; }
+        .od-table table tbody td::before { content: attr(data-label); font-weight: 600; color: #555; margin-right: 8px; }
+
+        .od-header, .od-row { grid-template-columns: 1fr; text-align: left; }
+        .od-header div { display: none; }
+        .od-row { border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; padding: 10px; background: #fff; }
+        .od-row > div { display: flex; justify-content: space-between; padding: 4px 0; }
+        .od-row > div::before { content: attr(data-label); font-weight: 600; color: #555; }
     }
 </style>
 
@@ -97,80 +114,91 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">
-                <strong class="card-title">Mentees Leave's</strong>
-            </div>
             <div class="od-table">
                 <div class="od-table-header"><span class="header-title">Mentees Leaves</span></div>
                 <hr class="od-divider">
-                <div class="od-header">
-                    <div>ID</div>
-                    <div>NAME</div>
-                    <div>FROM - TO</div>
-                    <div>Submitted At</div>
-                    <div>STATUS</div>
-                    <div>ACTION</div>
-                </div>
-                {% with filtered_mods=mods|dictsort:"id" %}
-                {% for i in filtered_mods %}
-                    {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
-                        <div class="od-row">
-                            <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
-                            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
-                            <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
-                            <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
-                            <div data-label="STATUS">
-                                <div class="status-grid">
-                                    <div class="status-label">Mentor:</div>
-                                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
-                                    <div class="status-label">Advisor:</div>
-                                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
-                                    <div class="status-label">AHOD:</div>
-                                    <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
-                                    <div class="status-label">HOD:</div>
-                                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-                                </div>
-                            </div>
-                            <div class="od-actions" data-label="ACTION">
-                                <div data-label="VIEW">
-                                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
-                                    {% if i.proof %}
-                                        <a href="{{i.proof.url}}" class="btn btn-outline-success btn-sm">View File</a>
-                                    {% endif %}
-                                </div>
-                                <div data-label="ACTION">
-                                    {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
-                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
-                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
-                                        </form>
-                                    {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
-                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
-                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
-                                        </form>
-                                    {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
-                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
-                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
-                                        </form>
-                                    {% else %}
-                                        <div class="od-actions">
-                                            {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
-                                                <span class="text-success">Approved</span>
-                                            {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
-                                                <span class="text-danger">Rejected</span>
-                                            {% else %}
-                                                <span class="text-muted">No action</span>
-                                            {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>NAME</th>
+                                <th>FROM - TO</th>
+                                <th>Submitted At</th>
+                                <th>STATUS</th>
+                                <th>VIEW</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% with filtered_mods=mods|dictsort:"id" %}
+                        {% for i in filtered_mods %}
+                            {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+                    <tr>
+                        <td data-label="ID">#LE{{ i.id }}</td>
+                        <td data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</td>
+                        <td data-label="FROM - TO">{{ i.start }}<br>{{ i.end }}</td>
+                        <td data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</td>
+                        <td data-label="STATUS">
+                                        <div>
+                                            <div style="display:flex;flex-direction:column;gap:6px;">
+                                                <div><strong>Mentor:</strong> <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
+                                                <div><strong>Advisor:</strong> <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
+                                                <div><strong>AHOD:</strong> {% if i.user.ahod %}<span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>{% else %}<span class="badge badge-secondary">N/A</span>{% endif %}</div>
+                                                <div><strong>HOD:</strong> <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
+                                            </div>
                                         </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                {% if filtered_mods|length == 0 %}
-                    <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
-                {% endif %}
-                {% endwith %}
+                                    </td>
+                                    <td data-label="VIEW">
+                                        <button type="button" class="file-upload-label btn-sm" data-toggle="modal" data-target="#detail" data-sub="#{{i.id}}" data-name="{{ i.user.name }}" data-body="{{ i.body|escapejs }}" data-url="{% if i.proof %}{{ i.proof.url }}{% endif %}">View</button>
+                                        {% if i.proof %}
+                                            <a href="{{i.proof.url}}" class="btn btn-sm btn-outline-primary ml-1">Open File</a>
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="ACTION">
+                                        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
+                                            <div>
+                                                {# view controls moved to the VIEW column above #}
+                                            </div>
+                                            <div>
+                                                {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                                    <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
+                                                        <button name="sts" value="Approved" class="btn-upload btn-sm">Approve</button>
+                                                        <button name="sts" value="Rejected" class="btn btn-sm btn-danger">Reject</button>
+                                                    </form>
+                                                {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                                    <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
+                                                        <button name="sts" value="Approved" class="btn-upload btn-sm">Approve</button>
+                                                        <button name="sts" value="Rejected" class="btn btn-sm btn-danger">Reject</button>
+                                                    </form>
+                                                {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                                    <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
+                                                        <button name="sts" value="Approved" class="btn-upload btn-sm">Approve</button>
+                                                        <button name="sts" value="Rejected" class="btn btn-sm btn-danger">Reject</button>
+                                                    </form>
+                                                {% else %}
+                                                    {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                                        <span class="text-success">Approved</span>
+                                                    {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                                        <span class="text-danger">Rejected</span>
+                                                    {% else %}
+                                                        <span class="text-muted">No action</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        {% if filtered_mods|length == 0 %}
+                            <tr><td colspan="6" class="text-center">No records found</td></tr>
+                        {% endif %}
+                        {% endwith %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -178,93 +206,97 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">
-                <strong class="card-title">Class Leave's</strong>
-            </div>
             <div class="od-table">
                 <div class="od-table-header"><span class="header-title">Class Leaves</span></div>
                 <hr class="od-divider">
-                <div class="od-header">
-                    <div>ID</div>
-                    <div>NAME</div>
-                    <div>FROM - TO</div>
-                    <div>Submitted At</div>
-                    <div>STATUS</div>
-                    <div>ACTION</div>
-                </div>
-                {% with filtered_aods=aods|dictsort:"id" %}
-                {% for i in filtered_aods %}
-                    {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
-                        <div class="od-row">
-                            <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
-                            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
-                            <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
-                            <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
-                            <div data-label="STATUS">
-                                <div class="status-grid">
-                                    <div class="status-label">Mentor:</div>
-                                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
-                                    <div class="status-label">Advisor:</div>
-                                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
-                                    <div class="status-label">AHOD:</div>
-                                    <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
-                                    <div class="status-label">HOD:</div>
-                                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
-                                </div>
-                            </div>
-                            <div class="od-actions" data-label="ACTION">
-                                <div data-label="VIEW">
-                                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#{{i.id}}</small></button>
-                                    {% if i.proof %}
-                                        <a href="{{i.proof.url}}" class="btn btn-outline-success btn-sm">View File</a>
-                                    {% endif %}
-                                </div>
-                                <div data-label="ACTION">
-                                    {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
-                                        <button class="btn btn-danger" disabled>Rejected</button>
-                                    {% elif i.Mstatus == "Approved" %}
-                                        {% if i.Astatus == "Approved" %}
-                                            <button class="btn btn-success ">{{i.Astatus}}</button>
-                                        {% else %}
-                                            <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
-                                                <div class="od-actions">
-                                                    <select name="sts" class="form-control">
-                                                        <option value="Approved">Approve</option>
-                                                        <option value="Rejected">Reject</option>
-                                                        <option value="Meet Me">Meet Me</option>
-                                                    </select>
-                                                    <button type="submit" class="btn btn-success">submit</button>
-                                                </div>
-                                            </form>
-                                        {% endif %}
-                                    {% else %}
-                                        <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
-                                            <div class="od-actions">
-                                                <select name="sts" class="form-control">
-                                                    <option value="Approved">Approve</option>
-                                                    <option value="Rejected">Reject</option>
-                                                    <option value="Meet Me">Meet Me</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-success">submit</button>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>NAME</th>
+                                <th>FROM - TO</th>
+                                <th>Submitted At</th>
+                                <th>STATUS</th>
+                                <th>VIEW</th>
+                                <th>ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% with filtered_aods=aods|dictsort:"id" %}
+                        {% for i in filtered_aods %}
+                            {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+                                <tr>
+                                    <td data-label="ID">#LE{{ i.id }}</td>
+                                    <td data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</td>
+                                    <td data-label="FROM - TO">{{ i.start }}<br>{{ i.end }}</td>
+                                    <td data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</td>
+                                    <td data-label="STATUS">
+                                        <div style="display:flex;flex-direction:column;gap:6px;">
+                                            <div><strong>Mentor:</strong> <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
+                                            <div><strong>Advisor:</strong> <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
+                                            <div><strong>AHOD:</strong> <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span></div>
+                                            <div><strong>HOD:</strong> <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
+                                        </div>
+                                    </td>
+                                    <td data-label="ACTION">
+                                        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#detail" data-sub="#{{i.id}}" data-name="{{ i.user.name }}" data-body="{{ i.body|escapejs }}" data-url="{% if i.proof %}{{ i.proof.url }}{% endif %}">View</button>
+                                                {% if i.proof %}
+                                                    <a href="{{i.proof.url}}" class="btn btn-sm btn-success ml-1">View File</a>
+                                                {% endif %}
                                             </div>
-                                        </form>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                {% if filtered_aods|length == 0 %}
-                    <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
-                {% endif %}
-                {% endwith %}
-            </div>
+                                            <div>
+                                                {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
+                                                    <button class="btn btn-sm btn-outline-secondary" disabled>Rejected</button>
+                                                {% elif i.Mstatus == "Approved" %}
+                                                    {% if i.Astatus == "Approved" %}
+                                                        <button class="btn btn-sm btn-success" disabled>{{i.Astatus}}</button>
+                                                    {% else %}
+                                                        <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
+                                                            <div style="display:flex;gap:8px;align-items:center;">
+                                                                <select name="sts" class="form-control form-control-sm">
+                                                                    <option value="Approved">Approve</option>
+                                                                    <option value="Rejected">Reject</option>
+                                                                    <option value="Meet Me">Meet Me</option>
+                                                                </select>
+                                                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                                                            </div>
+                                                        </form>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
+                                                        <div style="display:flex;gap:8px;align-items:center;">
+                                                            <select name="sts" class="form-control form-control-sm">
+                                                                <option value="Approved">Approve</option>
+                                                                <option value="Rejected">Reject</option>
+                                                                <option value="Meet Me">Meet Me</option>
+                                                            </select>
+                                                            <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                                                        </div>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        {% if filtered_aods|length == 0 %}
+                            <tr><td colspan="6" class="text-center">No records found</td></tr>
+                        {% endif %}
+                        {% endwith %}
+                        </tbody>
+                    </table>
+                </div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="detailLabel"></h5>
@@ -272,7 +304,9 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body"></div>
+            <div class="modal-body" style="max-height:80vh; overflow-y:auto;">
+                <!-- Filled dynamically: shows application body and inline file preview (image/pdf) like OD page -->
+            </div>
             <div class="modal-footer"></div>
         </div>
     </div>
@@ -287,24 +321,43 @@
         var url = button.data('url') || ''
         var modal = $(this)
         modal.find('.modal-title').html(`<b>${recipient}</b>  <small>-by ${name}</small>`)
-        modal.find('.modal-body').text(content)
 
-        if (url) {
-            modal.find('.modal-footer').html(`
-                <div class="btn-group">
-                    <a href="${url}" download class="btn btn-outline-success">Download File</a>
-                    <a href="${url}" target="_blank" class="btn btn-outline-warning">View File</a>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
-            `)
-        } else {
-            modal.find('.modal-footer').html(`
-                <div class="btn-group">
-                    <button type="button" class="btn btn-secondary" disabled>No file uploaded</button>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                </div>
-            `)
-        }
+            // Build body HTML: application text + optional inline preview for images/pdfs (like OD page)
+            var bodyHtml = '';
+            if (content) {
+                bodyHtml += `<div style="margin-bottom:1rem; white-space:pre-wrap;">${$('<div/>').text(content).html()}</div>`;
+            }
+
+            if (url) {
+                // if PDF show iframe, else show image
+                var lower = url.toLowerCase();
+                var previewHtml = '<div style="width:100%; display:flex; justify-content:center; align-items:center;">';
+                if (lower.endsWith('.pdf')) {
+                    previewHtml += `<iframe src="${url}" style="width:100%; height:65vh; border:none;"></iframe>`;
+                } else {
+                    previewHtml += `<img src="${url}" alt="Uploaded File" style="max-width:100%; max-height:65vh; object-fit:contain;" />`;
+                }
+                previewHtml += '</div>';
+
+                bodyHtml += previewHtml;
+
+                modal.find('.modal-footer').html(`
+                    <div class="btn-group">
+                        <a href="${url}" download class="btn btn-outline-success">Download File</a>
+                        <a href="${url}" target="_blank" class="btn btn-outline-warning">Open in New Tab</a>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                `);
+            } else {
+                modal.find('.modal-footer').html(`
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" disabled>No file uploaded</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                `);
+            }
+
+            modal.find('.modal-body').html(bodyHtml);
     })
 </script>
 {% endblock %}

@@ -25,22 +25,36 @@
 .home-icon:hover i {
     transform: scale(1.2);
 }
-	.card {
-		border-radius: 8px;
-		box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
-		border: none;
-		margin-bottom: 20px;
-	}
-	.card-header {
-		background: #1976d2;
-		color: #fff;
-		font-weight: 700;
-		font-size: 1.2rem;
-		border-radius: 8px 8px 0 0;
-		box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
-		text-align: center;
-		padding: 12px 20px;
-	}
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px 8px 0 0;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header .header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: left; /* ensures left alignment */
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
 	.table {
 		width: 100%;
 		border-collapse: collapse;
@@ -95,9 +109,12 @@
 <div class="row" style="margin-top: 16px;">
 	<div class="col-lg-12">
 		<div class="card">
-			<div class="card-header">
-				Attendance
-			</div>
+			<div class="card-header" style="border-radius: 8px 8px 0px 0px;">
+                    <span class="header-title">Attendance</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a>
+                </div>
 			<div class="card-body">
 				{% if error %}
 					<div class="alert alert-danger">{{ error }}</div>

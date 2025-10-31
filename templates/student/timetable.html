@@ -34,24 +34,34 @@
 }
 
 /* ===== Card ===== */
-.card {
-    border-radius: 10px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    border: none;
-    overflow: hidden;
-}
-
 .card-header {
-    background: #2196f3;
+    background: #1976d2;
     color: #fff;
     font-weight: 700;
-    font-size: 1.2rem;
-    text-align: center;
-    padding: 14px;
+    font-size: 1.25rem;
+    border-radius: 8px 8px 0 0;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.card-body {
-    padding: 20px;
+.card-header .header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: left; /* ensures left alignment */
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
 }
 
 /* ===== Table ===== */
@@ -100,6 +110,7 @@
 }
 
 /* ===== Mobile Responsive ===== */
+/* ===== Mobile Responsive (Keep table layout same as desktop) ===== */
 @media (max-width: 767px) {
     .gp-header-bar {
         flex-direction: row;
@@ -117,44 +128,30 @@
         flex: 0;
     }
 
-    .table thead {
-        display: none;
-    }
-
-    .table, .table tbody, .table tr, .table td {
-        display: block;
+    /* Keep table intact */
+    .table {
         width: 100%;
+        overflow-x: auto;
+        display: block;
     }
 
-    .table tr {
-        margin-bottom: 18px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        background: #fff;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        overflow: hidden;
+    .table thead th {
+        font-size: 14px;
+        padding: 10px;
     }
 
     .table tbody td {
-        text-align: left !important;
-        padding: 12px 16px;
-        border-bottom: 1px solid #eee;
-        position: relative;
-        font-size: 14px;
+        font-size: 13px;
+        padding: 10px;
     }
 
-    .table tbody td:last-child {
-        border-bottom: none;
-    }
-
-    .table tbody td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #555;
-        display: block;
-        margin-bottom: 4px;
+    /* Optional: smooth horizontal scroll for narrow screens */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
+
 </style>
 
 <!-- Header -->
@@ -164,7 +161,12 @@
 <div class="row" style="margin-top: 20px;">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">Class Timetable</div>
+            <div class="card-header" style="border-radius: 8px 8px 0px 0px;">
+                    <span class="header-title">Time Table</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a>
+                </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table">

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block mobile_title %}On-Duty Application{% endblock %}
+{% block mobile_header %}{% endblock %}
 
 {% block root %}
 
@@ -336,8 +336,11 @@
 
 <!-- Mentees ODs -->
 <div class="od-table">
-    <div class="od-table-header">
+                <div class="od-table-header" style="position:relative;display:flex;justify-content:space-between;align-items:center;">
         <span class="header-title">Mentees OD's</span>
+        <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:white;">
+            <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+        </a>
     </div>
     <hr class="od-divider">
 

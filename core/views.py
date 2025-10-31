@@ -382,19 +382,40 @@ def certificate_upload_view(request):
 @login_required
 @require_GET
 def recent_notifications_api(request):
+    """
+    Return recent notifications for the logged-in user.
+    - If the user is a Student, return student notifications.
+    - If the user is a Staff (including HOD/AHOD), return staff notifications. For HODs we prefer role='hod'.
+
+    The client-side UI further limits display to the most recent 5, so here we return up to 10
+    to give some headroom for badge calculation while keeping payload small.
+    """
+    notes_qs = None
+    # Try student notifications first
     try:
         student = Student.objects.get(user=request.user)
+        notes_qs = Notification.objects.filter(student=student).order_by('-created_at')[:10]
     except Student.DoesNotExist:
-        return JsonResponse({'notifications': []})
-    notes = Notification.objects.filter(student=student).order_by('-created_at')[:10]
+        # Not a student — try staff
+        try:
+            staff = Staff.objects.get(user=request.user)
+            # If HOD, prefer hod-role notifications
+            if getattr(staff, 'position', None) == 0:
+                notes_qs = Notification.objects.filter(staff=staff, role__iexact='hod').order_by('-created_at')[:10]
+            else:
+                notes_qs = Notification.objects.filter(staff=staff).order_by('-created_at')[:10]
+        except Staff.DoesNotExist:
+            # Unknown user type — return empty
+            return JsonResponse({'notifications': [], 'unread_count': 0})
+
     notifications = []
     unread_count = 0
-    for note in notes:
+    for note in notes_qs:
         is_read = bool(getattr(note, 'is_read', False))
         if not is_read:
             unread_count += 1
         notifications.append({
-            'created_at': note.created_at.strftime('%d %b %Y %H:%M'),
+            'created_at': note.created_at.strftime('%d %b %Y %H:%M') if getattr(note, 'created_at', None) else '',
             'message': note.message,
             'is_read': is_read
         })
@@ -1205,20 +1226,9 @@ def dash(request):
 
     elif context['duser'].position == 0 or AHOD.objects.filter(user=context['duser']).exists() or context['duser'].position2 == 1:
         # HOD or AHOD or Assistant Head of Department
-        context['allratings'] = IndividualStaffRating.objects.all()
-        # If HOD, use HOD logic
+        # If HOD, use HOD logic (removed staff ratings and recent logs display)
         if context['duser'].position == 0:
             hod = HOD.objects.get(user=context['duser'])
-            staff_list = [i for i in hod.staffs.all()]
-            ratings = map_feedback(staff_list)
-            context['ratings'] = ratings
-            temp = IndividualStaffRating.objects.all()
-            rating_logs = []
-            for i in temp:
-                if i.staff.department == context['duser'].department:
-                    rating_logs.append(i)
-            context['my_rating'] = ratings.get(context['duser'].name, None)
-            context['rating_log'] = rating_logs[:len(ratings)]
             try:
                 hod_staff = Staff.objects.get(user=context['duser'].user)
                 context['bonafides'] = BONAFIDE.objects.filter(
@@ -1453,12 +1463,26 @@ def gatepass(request):
         obj = GATEPASS(user=context['duser'], sub=sub, start=start, end=end)
         obj.save()
 
-        # Notify mentor, advisor, HOD
+        # Notify mentor, advisor, HOD. Add safe fallbacks if some relations are missing.
         student = context['duser']
-        staff_list = [student.mentor, student.advisor, student.hod]
-        for staff in staff_list:
+        staff_candidates = []
+        # Prefer explicit mentor/advisor/hod if present
+        for s, r in ((student.mentor, 'mentor'), (student.advisor, 'advisor'), (student.hod, 'hod')):
+            if s and s not in staff_candidates:
+                staff_candidates.append((s, r))
+        # Fallback: if hod missing on student, try department.hod
+        try:
+            if not student.hod and student.department and student.department.hod:
+                # department.hod is a Staff instance
+                dept_hod = student.department.hod
+                if (dept_hod, 'hod') not in staff_candidates:
+                    staff_candidates.append((dept_hod, 'hod'))
+        except Exception:
+            # ignore fallback errors
+            pass
+
+        for staff, role in staff_candidates:
             if staff:
-                role = 'hod' if hasattr(staff, 'position') and staff.position == 0 else None
                 Notification.objects.create(
                     staff=staff,
                     role=role,
@@ -1496,10 +1520,9 @@ def staff_leave_view(request):
 def staff_gatepass_view(request):
     context = set_config(request)
 
-    context['aods'] = [i for i in GATEPASS.objects.all(
-    ) if i.user.advisor.id == context['duser'].id]
-    context['mods'] = [i for i in GATEPASS.objects.all(
-    ) if i.user.mentor.id == context['duser'].id]
+    # Guard against students without advisor/mentor set
+    context['aods'] = [i for i in GATEPASS.objects.all() if getattr(i.user, 'advisor', None) and i.user.advisor.id == context['duser'].id]
+    context['mods'] = [i for i in GATEPASS.objects.all() if getattr(i.user, 'mentor', None) and i.user.mentor.id == context['duser'].id]
 
     return render(request, 'staff/gatepasss.html', context)
 
@@ -1530,9 +1553,8 @@ def hod_leave_view(request):
 def hod_gatepass_view(request):
     context = set_config(request)
 
-    context['mods'] = [i for i in GATEPASS.objects.all() if i.user.mentor.id == context['duser'].id]
-    context['hods'] = [i for i in GATEPASS.objects.all() if i.user.hod.id ==
-                       context['duser'].id or i.user.mentor.id != context['duser'].id]
+    context['mods'] = [i for i in GATEPASS.objects.all() if getattr(i.user, 'mentor', None) and i.user.mentor.id == context['duser'].id]
+    context['hods'] = [i for i in GATEPASS.objects.all() if (getattr(i.user, 'hod', None) and i.user.hod.id == context['duser'].id) or (getattr(i.user, 'mentor', None) and i.user.mentor.id != context['duser'].id)]
     print(context)
     return render(request, 'hod/gatepasss.html', context)
 
@@ -2082,7 +2104,7 @@ def staff_action_bonafide(request, id):
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
                 student=bonafide.user,
-                message=f"Your Bonafide request was {action_status} by HOD"
+                message=f"Your Bonafide request was {status} by HOD"
             )
             bonafide.save()
             return redirect("hod_bonafide_view")

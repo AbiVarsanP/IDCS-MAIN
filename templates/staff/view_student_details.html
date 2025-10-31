@@ -142,7 +142,7 @@
           <!-- Personal details continue in the same row grid -->
           <div class="col-md-4">
             <div class="card p-3">
-              <div class="fw-bold">Father's Name</div>
+              <div class="fw-bold">Fathers Name</div>
               {% if is_advisor %}
                 <input type="text" name="father_name" class="form-control" id="fatherField" value="{{ student.father_name|default_if_none:'' }}" disabled>
               {% else %}

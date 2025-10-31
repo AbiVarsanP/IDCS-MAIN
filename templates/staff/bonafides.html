@@ -47,8 +47,8 @@
         }
         .od-header, .od-row {
             display: grid;
-            /* seven columns: ID, NAME, SUBJECT, SUBMITTED AT, STATUS, VIEW, ACTION */
-            grid-template-columns: 8% 28% 16% 12% 14% 10% 12%;
+            /* six columns: ID, NAME, SUBJECT, STATUS, VIEW, ACTION (Submitted At moved to modal) */
+            grid-template-columns: 8% 32% 20% 16% 12% 12%;
             align-items: center;
             gap: 8px;
             padding: 12px 16px;
@@ -93,6 +93,11 @@
             .od-row > div[data-label="VIEW"], .od-row > div[data-label="ACTION"] { display:flex; gap:8px; flex-wrap:wrap; }
             .status-grid { display:flex; flex-direction:column; gap:6px; }
         }
+
+        /* Modal header and modal content to match OD page styling */
+        .od-modal-header { background: #1976d2; color: #fff; font-weight: 600; }
+        .od-modal-header .modal-title { margin: 0; font-size: 1rem; }
+        .modal-content { border-radius: 8px; overflow: hidden; }
     </style>
 
     <div class="row">
@@ -105,7 +110,6 @@
                         <div>ID</div>
                         <div>NAME</div>
                         <div>SUBJECT</div>
-                        <div>SUBMITTED AT</div>
                         <div>STATUS</div>
                         <div>VIEW</div>
                         <div>ACTION</div>
@@ -117,7 +121,6 @@
                                 <div class="od-id" data-label="ID">#BF{{ b.id }}</div>
                                 <div class="od-title" data-label="NAME" title="{{ b.user.name }}">{{ b.user.name }}</div>
                                 <div data-label="SUBJECT">{{ b.sub }}</div>
-                                <div data-label="SUBMITTED AT">{{ b.created|date:"d M Y H:i" }}</div>
                                 <div data-label="STATUS">
                                     <div class="status-grid">
                                         <div class="status-label">Mentor:</div>
@@ -140,15 +143,45 @@
                                     <div>
                                         {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
                                             <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
-                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                                <div style="display:flex; align-items:center; gap:8px;">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                        <div class="dropdown-menu">
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Approved">Approve</button>
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Rejected">Reject</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="sts" value="" class="action-input">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                                </div>
                                             </form>
                                         {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
                                             <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
-                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                                <div style="display:flex; align-items:center; gap:8px;">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                        <div class="dropdown-menu">
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Approved">Approve</button>
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Rejected">Reject</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="sts" value="" class="action-input">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                                </div>
                                             </form>
                                         {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
                                             <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
-                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                                <div style="display:flex; align-items:center; gap:8px;">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                        <div class="dropdown-menu">
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Approved">Approve</button>
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Rejected">Reject</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="sts" value="" class="action-input">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                                </div>
                                             </form>
                                         {% else %}
                                             <div class="od-actions">
@@ -167,36 +200,120 @@
                             {% if b.body %}
                                 <!-- Reason Modal -->
                                 <div class="modal fade" id="reasonModalMentee{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabelMentee{{ b.id }}" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                                         <div class="modal-content">
-                                            <div class="modal-header">
+                                            <div class="modal-header od-modal-header">
                                                 <h5 class="modal-title" id="reasonModalLabelMentee{{ b.id }}">Details for Bonafide #{{ b.id }}</h5>
                                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <table class="table table-bordered table-striped mb-0">
-                                                    <tbody>
-                                                        {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
-                                                        {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
-                                                        {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
-                                                        {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
-                                                        {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
-                                                        {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
-                                                        {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
-                                                        {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
-                                                        {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
-                                                        {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
-                                                        {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
-                                                        {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
-                                                        {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
-                                                        {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
-                                                        {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
-                                                        {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
-                                                        {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
-                                                    </tbody>
-                                                </table>
+                                                                <div class="d-flex justify-content-center" style="padding:0.5rem;">
+                                                                    <div class="card" style="width:100%; max-width:900px; border:0; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
+                                                                        <div class="card-body" style="padding:1rem 1.25rem; font-family:inherit; color:inherit;">
+                                                                            <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+                                                                                <div style="flex:1 1 320px; min-width:220px;">
+                                                                                    <div class="app-details" style="font-size:0.95rem;">
+                                                                                        {% if b.fathers_name %}<div class="app-row"><strong>Fathers Name:</strong> <span>{{ b.fathers_name }}</span></div>{% endif %}
+                                                                                        {% if b.branch %}<div class="app-row"><strong>Branch:</strong> <span>{{ b.branch }}</span></div>{% endif %}
+                                                                                        {% if b.year %}<div class="app-row"><strong>Year:</strong> <span>{{ b.year }}</span></div>{% endif %}
+                                                                                        {% if b.community %}<div class="app-row"><strong>Community:</strong> <span>{{ b.community }}</span></div>{% endif %}
+                                                                                        {% if b.scholar_type %}<div class="app-row"><strong>Scholar Type:</strong> <span>{{ b.scholar_type }}</span></div>{% endif %}
+                                                                                        {% if b.college_bus %}<div class="app-row"><strong>College Bus:</strong> <span>{{ b.college_bus }}</span></div>{% endif %}
+                                                                                        {% if b.boarding_point %}<div class="app-row"><strong>Boarding Point:</strong> <span>{{ b.boarding_point }}</span></div>{% endif %}
+                                                                                        {% if b.bus_type %}<div class="app-row"><strong>Bus Type:</strong> <span>{{ b.bus_type }}</span></div>{% endif %}
+                                                                                        {% if b.bus_fare %}<div class="app-row"><strong>Bus Fare:</strong> <span>{{ b.bus_fare }}</span></div>{% endif %}
+                                                                                        {% if b.first_graduate %}<div class="app-row"><strong>First Graduate:</strong> <span>{{ b.first_graduate }}</span></div>{% endif %}
+                                                                                        {% if b.gov_mgmt %}<div class="app-row"><strong>Gov/Management:</strong> <span>{{ b.gov_mgmt }}</span></div>{% endif %}
+                                                                                        {% if b.date %}<div class="app-row"><strong>Date:</strong> <span>{{ b.date }}</span></div>{% endif %}
+                                                                                        {% if b.created %}<div class="app-row"><strong>Submitted At:</strong> <span>{{ b.created|date:"d M Y H:i" }}</span></div>{% endif %}
+                                                                                        {% if b.sub %}<div class="app-row"><strong>Purpose:</strong> <span>{{ b.sub }}</span></div>{% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div style="flex:1 1 320px; min-width:220px;">
+                                                                                    {% if b.body %}
+                                                                                    <h6 style="margin-top:0; font-weight:600;">Application Body</h6>
+                                                                                    <div class="application-body" data-body="{{ b.body|escapejs }}">
+                                                                                        {{ b.body|linebreaksbr }}
+                                                                                    </div>
+                                                                                    <script>
+                                                                                    (function(){
+                                                                                        try{
+                                                                                            var script = document.currentScript;
+                                                                                            var el = script && script.previousElementSibling;
+                                                                                            if(!el || !el.classList || !el.classList.contains('application-body')) return;
+                                                                                            var raw = el.getAttribute('data-body') || '';
+                                                                                            // If pipe-separated KV pairs present, parse into rows and normalize
+                                                                                            if(raw.indexOf('|') !== -1 && raw.indexOf(':') !== -1){
+                                                                                                var parts = raw.split('|').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+                                                                                                if(parts.length){
+                                                                                                    var container = document.createElement('div');
+                                                                                                    container.className = 'app-details';
+                                                                                                    parts.forEach(function(p){
+                                                                                                        var kv = p.split(':');
+                                                                                                        if(kv.length>=2){
+                                                                                                                                                            var label = kv.shift().trim();
+                                                                                                                                                            label = label.replace(/'/g,'');
+                                                                                                                                                            var value = kv.join(':').trim();
+                                                                                                                                                            var lkey = label.toLowerCase();
+                                                                                                                                                            if(lkey.indexOf('branch') !== -1){
+                                                                                                                                                                // normalize spacing around & to 'AI&DS' style
+                                                                                                                                                                value = value.replace(/\s*&\s*/g,'&');
+                                                                                                                                                            }
+                                                                                                                                                            if(value && value[0] && value[0] === value[0].toLowerCase()){
+                                                                                                                                                                value = value.charAt(0).toUpperCase() + value.slice(1);
+                                                                                                                                                            }
+                                                                                                            var row = document.createElement('div'); row.className = 'app-row';
+                                                                                                            var strong = document.createElement('strong'); strong.textContent = label + ': ';
+                                                                                                            var span = document.createElement('span'); span.textContent = value;
+                                                                                                            row.appendChild(strong); row.appendChild(span); container.appendChild(row);
+                                                                                                        } else {
+                                                                                                            var row = document.createElement('div'); row.className = 'app-row'; row.textContent = p; container.appendChild(row);
+                                                                                                        }
+                                                                                                    });
+                                                                                                    el.innerHTML = '';
+                                                                                                    el.appendChild(container);
+                                                                                                }
+                                                                                            } else {
+                                                                                                // fallback: show newline-separated lines as list
+                                                                                                var text = raw.replace(/\r\n/g,'\n');
+                                                                                                var lines = text.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+                                                                                                if(lines.length){
+                                                                                                    var ol = document.createElement('ol');
+                                                                                                    ol.style.margin = '0'; ol.style.paddingLeft = '1.25rem';
+                                                                                                    lines.forEach(function(line){ var li = document.createElement('li'); li.textContent = line; ol.appendChild(li); });
+                                                                                                    el.innerHTML = '';
+                                                                                                    el.appendChild(ol);
+                                                                                                }
+                                                                                            }
+                                                                                        }catch(e){ /* fail safe - leave original content */ }
+                                                                                    })();
+                                                                                    </script>
+                                                                                    {% endif %}
+                                                                                    {% if b.ahod_reason %}
+                                                                                    <h6 style="margin-top:0.5rem; font-weight:600;">AHOD Reason</h6>
+                                                                                    <p>{{ b.ahod_reason }}</p>
+                                                                                    {% endif %}
+                                                                                    {% if b.Hstatus %}
+                                                                                    <h6 style="margin-top:0.5rem; font-weight:600;">Status</h6>
+                                                                                    <p>{{ b.Hstatus }}</p>
+                                                                                    {% endif %}
+                                                                                </div>
+                                                                            </div>
+                                                                            {% if b.proof %}
+                                                                            <hr />
+                                                                            <div style="display:flex; justify-content:center; padding-top:0.5rem;">
+                                                                                {% if ".pdf" in b.proof.url|lower %}
+                                                                                    <iframe src="{{ b.proof.url }}" style="width:100%; height:60vh; border:none;"></iframe>
+                                                                                {% else %}
+                                                                                    <img src="{{ b.proof.url }}" alt="Proof" style="max-width:100%; max-height:60vh; object-fit:contain;" />
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -222,7 +339,6 @@
                         <div>ID</div>
                         <div>NAME</div>
                         <div>SUBJECT</div>
-                        <div>SUBMITTED AT</div>
                         <div>STATUS</div>
                         <div>VIEW</div>
                         <div>ACTION</div>
@@ -234,7 +350,7 @@
                                 <div class="od-id" data-label="ID">#BF{{ b.id }}</div>
                                 <div class="od-title" data-label="NAME" title="{{ b.user.name }}">{{ b.user.name }}</div>
                                 <div data-label="SUBJECT">{{ b.sub }}</div>
-                                <div data-label="SUBMITTED AT">{{ b.created|date:"d M Y H:i" }}</div>
+                                {# Submitted At moved to modal card only #}
                                 <div data-label="STATUS">
                                     <div class="status-grid">
                                         <div class="status-label">Mentor:</div>
@@ -257,15 +373,45 @@
                                     <div>
                                         {% if b.Mstatus == 'Pending' and user.username == b.user.mentor.user.username %}
                                             <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
-                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                                <div style="display:flex; align-items:center; gap:8px;">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                        <div class="dropdown-menu">
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Approved">Approve</button>
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Rejected">Reject</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="sts" value="" class="action-input">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                                </div>
                                             </form>
                                         {% elif b.Astatus == 'Pending' and user.username == b.user.advisor.user.username %}
                                             <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
-                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                                <div style="display:flex; align-items:center; gap:8px;">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                        <div class="dropdown-menu">
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Approved">Approve</button>
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Rejected">Reject</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="sts" value="" class="action-input">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                                </div>
                                             </form>
                                         {% elif b.Hstatus == 'Pending' and user.username == b.user.hod.user.username %}
                                             <form method="post" action="{% url 'staff_action_bonafide' b.id %}">{% csrf_token %}
-                                                <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                                <div style="display:flex; align-items:center; gap:8px;">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                        <div class="dropdown-menu">
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Approved">Approve</button>
+                                                            <button class="dropdown-item set-sts" type="button" data-value="Rejected">Reject</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="sts" value="" class="action-input">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                                </div>
                                             </form>
                                         {% else %}
                                             <div class="od-actions">
@@ -284,36 +430,115 @@
                             {% if b.body %}
                                 <!-- Reason Modal -->
                                 <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                                         <div class="modal-content">
-                                            <div class="modal-header">
+                                            <div class="modal-header od-modal-header">
                                                 <h5 class="modal-title" id="reasonModalLabel{{ b.id }}">Details for Bonafide #{{ b.id }}</h5>
                                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <table class="table table-bordered table-striped mb-0">
-                                                    <tbody>
-                                                        {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
-                                                        {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
-                                                        {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
-                                                        {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
-                                                        {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
-                                                        {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
-                                                        {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
-                                                        {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
-                                                        {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
-                                                        {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
-                                                        {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
-                                                        {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
-                                                        {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
-                                                        {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
-                                                        {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
-                                                        {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
-                                                        {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
-                                                    </tbody>
-                                                </table>
+                                                <div class="d-flex justify-content-center" style="padding:0.5rem;">
+                                                    <div class="card" style="width:100%; max-width:900px; border:0; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
+                                                        <div class="card-body" style="padding:1rem 1.25rem; font-family:inherit; color:inherit;">
+                                                            <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+                                                                <div style="flex:1 1 320px; min-width:220px;">
+                                                                    <div class="app-details" style="font-size:0.95rem;">
+                                                                        {% if b.fathers_name %}<div class="app-row"><strong>Fathers Name:</strong> <span>{{ b.fathers_name }}</span></div>{% endif %}
+                                                                        {% if b.branch %}<div class="app-row"><strong>Branch:</strong> <span>{{ b.branch }}</span></div>{% endif %}
+                                                                        {% if b.year %}<div class="app-row"><strong>Year:</strong> <span>{{ b.year }}</span></div>{% endif %}
+                                                                        {% if b.community %}<div class="app-row"><strong>Community:</strong> <span>{{ b.community }}</span></div>{% endif %}
+                                                                        {% if b.scholar_type %}<div class="app-row"><strong>Scholar Type:</strong> <span>{{ b.scholar_type }}</span></div>{% endif %}
+                                                                        {% if b.college_bus %}<div class="app-row"><strong>College Bus:</strong> <span>{{ b.college_bus }}</span></div>{% endif %}
+                                                                        {% if b.boarding_point %}<div class="app-row"><strong>Boarding Point:</strong> <span>{{ b.boarding_point }}</span></div>{% endif %}
+                                                                        {% if b.bus_type %}<div class="app-row"><strong>Bus Type:</strong> <span>{{ b.bus_type }}</span></div>{% endif %}
+                                                                        {% if b.bus_fare %}<div class="app-row"><strong>Bus Fare:</strong> <span>{{ b.bus_fare }}</span></div>{% endif %}
+                                                                        {% if b.first_graduate %}<div class="app-row"><strong>First Graduate:</strong> <span>{{ b.first_graduate }}</span></div>{% endif %}
+                                                                        {% if b.gov_mgmt %}<div class="app-row"><strong>Gov/Management:</strong> <span>{{ b.gov_mgmt }}</span></div>{% endif %}
+                                                                        {% if b.date %}<div class="app-row"><strong>Date:</strong> <span>{{ b.date }}</span></div>{% endif %}
+                                                              {% if b.created %}<div class="app-row"><strong>Submitted At:</strong> <span>{{ b.created|date:"d M Y H:i" }}</span></div>{% endif %}
+                                                              {% if b.sub %}<div class="app-row"><strong>Purpose:</strong> <span>{{ b.sub }}</span></div>{% endif %}
+                                                                    </div>
+                                                                </div>
+                                                                <div style="flex:1 1 320px; min-width:220px;">
+                                                                    {% if b.body %}
+                                                                    <h6 style="margin-top:0; font-weight:600;">Application Body</h6>
+                                                                    <div class="application-body" data-body="{{ b.body|escapejs }}">
+                                                                        {{ b.body|linebreaksbr }}
+                                                                    </div>
+                                                                    <script>
+                                                                    (function(){
+                                                                        try{
+                                                                            var script = document.currentScript;
+                                                                            var el = script && script.previousElementSibling;
+                                                                            if(!el || !el.classList || !el.classList.contains('application-body')) return;
+                                                                            var raw = el.getAttribute('data-body') || '';
+                                                                            if(raw.indexOf('|') !== -1 && raw.indexOf(':') !== -1){
+                                                                                var parts = raw.split('|').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+                                                                                if(parts.length){
+                                                                                    var container = document.createElement('div');
+                                                                                    container.className = 'app-details';
+                                                                                    parts.forEach(function(p){
+                                                                                        var kv = p.split(':');
+                                                                                        if(kv.length>=2){
+                                                                                            var label = kv.shift().trim();
+                                                                                            label = label.replace(/'/g,'');
+                                                                                            var value = kv.join(':').trim();
+                                                                                            var lkey = label.toLowerCase();
+                                                                                            if(lkey.indexOf('branch') !== -1){
+                                                                                                value = value.replace(/\s*&\s*/g,'&');
+                                                                                            }
+                                                                                            if(value && value[0] && value[0] === value[0].toLowerCase()){
+                                                                                                value = value.charAt(0).toUpperCase() + value.slice(1);
+                                                                                            }
+                                                                                            var row = document.createElement('div'); row.className = 'app-row';
+                                                                                            var strong = document.createElement('strong'); strong.textContent = label + ': ';
+                                                                                            var span = document.createElement('span'); span.textContent = value;
+                                                                                            row.appendChild(strong); row.appendChild(span); container.appendChild(row);
+                                                                                        } else { var row = document.createElement('div'); row.className = 'app-row'; row.textContent = p; container.appendChild(row); }
+                                                                                    });
+                                                                                    el.innerHTML = '';
+                                                                                    el.appendChild(container);
+                                                                                }
+                                                                            } else {
+                                                                                var text = raw.replace(/\r\n/g,'\n');
+                                                                                var lines = text.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+                                                                                if(lines.length){
+                                                                                    var ol = document.createElement('ol');
+                                                                                    ol.style.margin = '0'; ol.style.paddingLeft = '1.25rem';
+                                                                                    lines.forEach(function(line){ var li = document.createElement('li'); li.textContent = line; ol.appendChild(li); });
+                                                                                    el.innerHTML = '';
+                                                                                    el.appendChild(ol);
+                                                                                }
+                                                                            }
+                                                                        }catch(e){ /* fail safe - leave original content */ }
+                                                                    })();
+                                                                    </script>
+                                                                    {% endif %}
+                                                                    {% if b.ahod_reason %}
+                                                                    <h6 style="margin-top:0.5rem; font-weight:600;">AHOD Reason</h6>
+                                                                    <p>{{ b.ahod_reason }}</p>
+                                                                    {% endif %}
+                                                                    {% if b.Hstatus %}
+                                                                    <h6 style="margin-top:0.5rem; font-weight:600;">Status</h6>
+                                                                    <p>{{ b.Hstatus }}</p>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            {% if b.proof %}
+                                                            <hr />
+                                                            <div style="display:flex; justify-content:center; padding-top:0.5rem;">
+                                                                {% if ".pdf" in b.proof.url|lower %}
+                                                                    <iframe src="{{ b.proof.url }}" style="width:100%; height:60vh; border:none;"></iframe>
+                                                                {% else %}
+                                                                    <img src="{{ b.proof.url }}" alt="Proof" style="max-width:100%; max-height:60vh; object-fit:contain;" />
+                                                                {% endif %}
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -331,3 +556,55 @@
     </div>
 
 {% endblock %}
+
+<script>
+// Enable/disable submit buttons and ensure action is selected before submit
+document.addEventListener('DOMContentLoaded', function(){
+    // Disable submit by default for forms that use .action-input
+    document.querySelectorAll('form').forEach(function(form){
+        if(form.querySelector && form.querySelector('.action-input')){
+            var submit = form.querySelector('button[type="submit"]');
+            if(submit) submit.disabled = true;
+        }
+    });
+
+    // Click handler for dropdown items to set hidden input and enable submit
+    document.addEventListener('click', function(e){
+        var btn = e.target.closest && e.target.closest('.set-sts');
+        if(!btn) return;
+        var form = btn.closest('form');
+        if(!form) return;
+        var input = form.querySelector('.action-input');
+        if(input) input.value = btn.getAttribute('data-value') || '';
+        // enable submit button
+        var submit = form.querySelector('button[type="submit"]');
+        if(submit) submit.disabled = false;
+        // change the dropdown label to selected value for visual feedback
+        var group = btn.closest('.btn-group');
+        if(group){
+            var toggle = group.querySelector('.dropdown-toggle');
+            if(toggle) toggle.textContent = btn.textContent.trim();
+        }
+    });
+
+    // Submit guard: ensure action-input has a value
+    document.addEventListener('submit', function(e){
+        var form = e.target;
+        if(!(form && form.querySelector)) return;
+        var input = form.querySelector('.action-input');
+        if(!input) return; // not one of our action forms
+        if(!input.value || input.value.trim() === ''){
+            e.preventDefault();
+            // simple inline user feedback
+            var orig = form.querySelector('.btn-group .dropdown-toggle');
+            if(orig){
+                orig.classList.add('btn-warning');
+                setTimeout(function(){ orig.classList.remove('btn-warning'); }, 1500);
+            }
+            alert('Please select Approve or Reject from the Action dropdown before submitting.');
+            return false;
+        }
+        // allow submit
+    }, true);
+});
+</script>

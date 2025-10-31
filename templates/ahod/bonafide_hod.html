@@ -30,7 +30,8 @@
         }
         .od-header, .od-row {
             display: grid;
-            grid-template-columns: 8% 28% 20% 16% 14% 14%;
+            /* remove Submitted At column; show timestamp in modal instead */
+            grid-template-columns: 8% 28% 20% 18% 16% 10%;
             align-items: center;
             gap: 8px;
             padding: 12px 16px;
@@ -82,7 +83,6 @@
                         <div>ID</div>
                         <div>Student</div>
                         <div>Subject</div>
-                        <div>Submitted At</div>
                         <div>Status</div>
                         <div>Action</div>
                     </div>
@@ -91,7 +91,7 @@
                             <div class="od-id" data-label="ID">#BF{{ b.id }}</div>
                             <div class="od-title" data-label="Student">{{ b.user.name }}</div>
                             <div data-label="Subject">{{ b.sub }}</div>
-                            <div data-label="Submitted At">{{ b.created|date:'Y-m-d H:i' }}</div>
+                            {# Submitted At moved to modal card only #}
                             <div data-label="Status">
                                 <div class="status-grid">
                                     <div class="status-label">Mentor:</div>
@@ -126,8 +126,17 @@
                                         <form method="post" action="{% url 'ahod_bonafide_hod' %}">{% csrf_token %}
                                             <input type="hidden" name="bonafide_id" value="{{ b.id }}">
                                             <div class="form-group mb-1"><textarea name="reason" class="form-control" placeholder="Reason for AHOD action (required)" required>{{ b.ahod_reason }}</textarea></div>
-                                            <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
-                                            <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                    <div class="dropdown-menu">
+                                                        <button class="dropdown-item set-sts" type="button" data-value="approve">Approve</button>
+                                                        <button class="dropdown-item set-sts" type="button" data-value="reject">Reject</button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" name="action" value="" class="action-input">
+                                                <button type="submit" class="btn btn-primary btn-sm" disabled>Submit</button>
+                                            </div>
                                         </form>
                                     {% elif b.Hstatus == 'Approved by AHOD' %}
                                         <span class="badge badge-Approved">Approved</span>
@@ -147,27 +156,77 @@
                                     <div class="modal-content">
                                         <div class="modal-header"><h5 class="modal-title">Details for Bonafide #{{ b.id }}</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
                                         <div class="modal-body">
-                                            <table class="table table-bordered table-striped mb-0">
-                                                <tbody>
-                                                    {% if b.fathers_name %}<tr><th>Father's Name</th><td>{{ b.fathers_name }}</td></tr>{% endif %}
-                                                    {% if b.branch %}<tr><th>Branch</th><td>{{ b.branch }}</td></tr>{% endif %}
-                                                    {% if b.year %}<tr><th>Year</th><td>{{ b.year }}</td></tr>{% endif %}
-                                                    {% if b.community %}<tr><th>Community</th><td>{{ b.community }}</td></tr>{% endif %}
-                                                    {% if b.scholar_type %}<tr><th>Scholar Type</th><td>{{ b.scholar_type }}</td></tr>{% endif %}
-                                                    {% if b.college_bus %}<tr><th>College Bus</th><td>{{ b.college_bus }}</td></tr>{% endif %}
-                                                    {% if b.boarding_point %}<tr><th>Boarding Point</th><td>{{ b.boarding_point }}</td></tr>{% endif %}
-                                                    {% if b.bus_type %}<tr><th>Bus Type</th><td>{{ b.bus_type }}</td></tr>{% endif %}
-                                                    {% if b.bus_fare %}<tr><th>Bus Fare</th><td>{{ b.bus_fare }}</td></tr>{% endif %}
-                                                    {% if b.first_graduate %}<tr><th>First Graduate</th><td>{{ b.first_graduate }}</td></tr>{% endif %}
-                                                    {% if b.gov_mgmt %}<tr><th>Gov/Management</th><td>{{ b.gov_mgmt }}</td></tr>{% endif %}
-                                                    {% if b.date %}<tr><th>Date</th><td>{{ b.date }}</td></tr>{% endif %}
-                                                    {% if b.sub %}<tr><th>Purpose (Subject)</th><td>{{ b.sub }}</td></tr>{% endif %}
-                                                    {% if b.body %}<tr><th>Application Body</th><td>{{ b.body }}</td></tr>{% endif %}
-                                                    {% if b.ahod_reason %}<tr><th>AHOD Reason</th><td>{{ b.ahod_reason }}</td></tr>{% endif %}
-                                                    {% if b.Hstatus %}<tr><th>Status</th><td>{{ b.Hstatus }}</td></tr>{% endif %}
-                                                    {% if b.proof %}<tr><th>Uploaded File</th><td><a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></td></tr>{% endif %}
-                                                </tbody>
-                                            </table>
+                                            <div class="app-details" style="font-size:0.95rem;">
+                                                {% if b.fathers_name %}<div class="app-row"><strong>Fathers Name:</strong> <span>{{ b.fathers_name }}</span></div>{% endif %}
+                                                {% if b.branch %}<div class="app-row"><strong>Branch:</strong> <span>{{ b.branch }}</span></div>{% endif %}
+                                                {% if b.year %}<div class="app-row"><strong>Year:</strong> <span>{{ b.year }}</span></div>{% endif %}
+                                                {% if b.community %}<div class="app-row"><strong>Community:</strong> <span>{{ b.community }}</span></div>{% endif %}
+                                                {% if b.scholar_type %}<div class="app-row"><strong>Scholar Type:</strong> <span>{{ b.scholar_type }}</span></div>{% endif %}
+                                                {% if b.college_bus %}<div class="app-row"><strong>College Bus:</strong> <span>{{ b.college_bus }}</span></div>{% endif %}
+                                                {% if b.boarding_point %}<div class="app-row"><strong>Boarding Point:</strong> <span>{{ b.boarding_point }}</span></div>{% endif %}
+                                                {% if b.bus_type %}<div class="app-row"><strong>Bus Type:</strong> <span>{{ b.bus_type }}</span></div>{% endif %}
+                                                {% if b.bus_fare %}<div class="app-row"><strong>Bus Fare:</strong> <span>{{ b.bus_fare }}</span></div>{% endif %}
+                                                {% if b.first_graduate %}<div class="app-row"><strong>First Graduate:</strong> <span>{{ b.first_graduate }}</span></div>{% endif %}
+                                                {% if b.gov_mgmt %}<div class="app-row"><strong>Gov/Management:</strong> <span>{{ b.gov_mgmt }}</span></div>{% endif %}
+                                                {% if b.date %}<div class="app-row"><strong>Date:</strong> <span>{{ b.date }}</span></div>{% endif %}
+                                                {% if b.created %}<div class="app-row"><strong>Submitted At:</strong> <span>{{ b.created|date:'Y-m-d H:i' }}</span></div>{% endif %}
+                                                {% if b.sub %}<div class="app-row"><strong>Purpose (Subject):</strong> <span>{{ b.sub }}</span></div>{% endif %}
+                                                {% if b.body %}
+                                                    <div class="app-row"><strong>Application Body:</strong>
+                                                        <div class="application-body" data-body="{{ b.body|escapejs }}">{{ b.body|linebreaksbr }}</div>
+                                                    </div>
+                                                {% endif %}
+                                                {% if b.ahod_reason %}<div class="app-row"><strong>AHOD Reason:</strong> <span>{{ b.ahod_reason }}</span></div>{% endif %}
+                                                {% if b.Hstatus %}<div class="app-row"><strong>Status:</strong> <span>{{ b.Hstatus }}</span></div>{% endif %}
+                                                {% if b.proof %}<div class="app-row"><strong>Uploaded File:</strong> <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></div>{% endif %}
+                                            </div>
+                                            <script>
+                                            (function(){
+                                                try{
+                                                    var el = document.querySelector && document.querySelector('#reasonModal{{ b.id }} .application-body');
+                                                    if(!el) return;
+                                                    var raw = el.getAttribute('data-body') || '';
+                                                    if(raw.indexOf('|') !== -1 && raw.indexOf(':') !== -1){
+                                                        var parts = raw.split('|').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+                                                        if(parts.length){
+                                                            var container = document.createElement('div');
+                                                            container.className = 'app-details';
+                                                            parts.forEach(function(p){
+                                                                var kv = p.split(':');
+                                                                if(kv.length>=2){
+                                                                        var label = kv.shift().trim();
+                                                                        label = label.replace(/'/g,'');
+                                                                        var value = kv.join(':').trim();
+                                                                        var lkey = label.toLowerCase();
+                                                                        if(lkey.indexOf('branch') !== -1){
+                                                                            value = value.replace(/\s*&\s*/g,'&');
+                                                                        }
+                                                                        if(value && value[0] && value[0] === value[0].toLowerCase()){
+                                                                            value = value.charAt(0).toUpperCase() + value.slice(1);
+                                                                        }
+                                                                        var row = document.createElement('div');
+                                                                        row.className = 'app-row';
+                                                                        var strong = document.createElement('strong');
+                                                                        strong.textContent = label + ': ';
+                                                                        var span = document.createElement('span');
+                                                                        span.textContent = value;
+                                                                        row.appendChild(strong);
+                                                                        row.appendChild(span);
+                                                                        container.appendChild(row);
+                                                                    } else {
+                                                                        var row = document.createElement('div');
+                                                                        row.className = 'app-row';
+                                                                        row.textContent = p;
+                                                                        container.appendChild(row);
+                                                                    }
+                                                            });
+                                                            el.innerHTML = '';
+                                                            el.appendChild(container);
+                                                        }
+                                                    }
+                                                }catch(e){ }
+                                            })();
+                                            </script>
                                         </div>
                                     </div>
                                 </div>
@@ -179,3 +238,45 @@
         </div>
     </div>
 {% endblock %}
+
+<script>
+// Shared submit-guard for forms that use .action-input (HOD/AHOD)
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('form').forEach(function(form){
+        if(form.querySelector && form.querySelector('.action-input')){
+            var submit = form.querySelector('button[type="submit"]');
+            if(submit) submit.disabled = true;
+        }
+    });
+
+    document.addEventListener('click', function(e){
+        var btn = e.target.closest && e.target.closest('.set-sts');
+        if(!btn) return;
+        var form = btn.closest('form');
+        if(!form) return;
+        var input = form.querySelector('.action-input');
+        if(input) input.value = btn.getAttribute('data-value') || '';
+        var submit = form.querySelector('button[type="submit"]');
+        if(submit) submit.disabled = false;
+        var group = btn.closest('.btn-group');
+        if(group){
+            var toggle = group.querySelector('.dropdown-toggle');
+            if(toggle) toggle.textContent = btn.textContent.trim();
+        }
+    });
+
+    document.addEventListener('submit', function(e){
+        var form = e.target;
+        if(!(form && form.querySelector)) return;
+        var input = form.querySelector('.action-input');
+        if(!input) return;
+        if(!input.value || input.value.trim() === ''){
+            e.preventDefault();
+            var orig = form.querySelector('.btn-group .dropdown-toggle');
+            if(orig){ orig.classList.add('btn-warning'); setTimeout(function(){ orig.classList.remove('btn-warning'); }, 1500); }
+            alert('Please select an action before submitting.');
+            return false;
+        }
+    }, true);
+});
+</script>

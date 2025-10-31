@@ -944,12 +944,6 @@ def ahod_dash(request):
             'error': 'AHOD record not found for your account. Please contact admin.',
             'duser': context.get('duser'),
         })
-    # Get department code for AHOD
-    ahod_dept = ahod.user.department
-    # Get all students in the same department as AHOD
-    students = Student.objects.filter(department=ahod_dept)
-    context['all_od'] = OD.objects.filter(user__in=students).distinct()
-    context['all_leave'] = LEAVE.objects.filter(user__in=students).distinct()
     # Fetch last 5 notifications for the AHOD
     from .models import Notification
     context['recent_notifications'] = Notification.objects.filter(staff=ahod.user, role__iexact='ahod').order_by('-created_at')[:5]

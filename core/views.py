@@ -1118,6 +1118,61 @@ def student_profile(request):
     from .models import AHOD, HOD
     context = set_config(request)
     student = context.get('duser')
+    # Allow the logged-in student to edit their own profile (name, dob, mobile, address)
+    can_edit = False
+    try:
+        if student and hasattr(student, 'user') and student.user == request.user:
+            can_edit = True
+    except Exception:
+        can_edit = False
+    context['can_edit'] = can_edit
+
+    # Handle POST (save edits)
+    if request.method == 'POST' and can_edit:
+        # Extract fields from POST
+        new_name = request.POST.get('name')
+        new_dob = request.POST.get('dob')
+        new_mobile = request.POST.get('mobile')
+        new_address = request.POST.get('address')
+        changed = False
+        # Update fields where provided
+        if new_name is not None and new_name.strip() != '' and new_name.strip() != (student.name or '').strip():
+            student.name = new_name.strip()
+            changed = True
+        if new_dob:
+            # Expecting YYYY-MM-DD; let Django parse when assigning (Field will cast)
+            try:
+                from datetime import datetime
+                dob_parsed = datetime.strptime(new_dob, '%Y-%m-%d').date()
+                if student.dob != dob_parsed:
+                    student.dob = dob_parsed
+                    changed = True
+            except Exception:
+                # ignore parse errors — could add messages but keep silent for now
+                pass
+        if new_mobile is not None and new_mobile.strip() != '':
+            # store numeric mobile if possible
+            try:
+                mobile_val = int(new_mobile)
+                if student.mobile != mobile_val:
+                    student.mobile = mobile_val
+                    changed = True
+            except Exception:
+                # if not integer, store raw string fallback to avoid data loss
+                try:
+                    student.mobile = int(''.join(filter(str.isdigit, new_mobile)))
+                    changed = True
+                except Exception:
+                    pass
+        if new_address is not None and new_address.strip() != '' and new_address.strip() != (student.address or '').strip():
+            student.address = new_address.strip()
+            changed = True
+
+        if changed:
+            student.save()
+            from django.contrib import messages
+            messages.success(request, 'Profile updated successfully.')
+        return redirect('student_profile')
     dept_ahod = None
     dept_hod = None
     # Prefer direct relation if set
@@ -1138,6 +1193,9 @@ def student_profile(request):
                 pass
     context['dept_ahod'] = dept_ahod
     context['dept_hod'] = dept_hod
+    # If user requested edit mode via ?edit=1 and they can edit, enable editing UI
+    editing = request.GET.get('edit') == '1' and can_edit
+    context['editing'] = editing
     return render(request, 'common/profile.html', context)
 
 
@@ -2082,7 +2140,7 @@ def staff_action_bonafide(request, id):
                 bonafide.Hstatus = STATUS[2][0]
             Notification.objects.create(
                 student=bonafide.user,
-                message=f"Your Bonafide request was {action_status} by HOD"
+                message=f"Your Bonafide request was {status} by HOD"
             )
             bonafide.save()
             return redirect("hod_bonafide_view")

@@ -109,6 +109,7 @@
         <img src="/static/default_profile.png" class="profile-img" alt="Default Profile">
     {% endif %}
     <h2>{{ duser.name }}</h2>
+   
     <div class="role">
         {% if duser.position is defined %}
             Student
@@ -119,10 +120,19 @@
     </div>
 </div>
 
+
 <!-- Details (table/grid style) -->
 <div class="profile-container">
-    <div class="info-card"><div class="info-label">Name</div><div class="info-value">{{ duser.name }}</div></div>
-    <div class="info-card"><div class="info-label">Email</div><div class="info-value">{{ duser.user.email }}</div></div>
+    
+    {% if editing and can_edit %}
+        <form method="post" action="" style="display:contents;">
+            {% csrf_token %}
+            <div class="info-card"><div class="info-label">Name</div><div class="info-value"><input type="text" name="name" value="{{ duser.name }}" class="form-control" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;"/></div></div>
+            <div class="info-card"><div class="info-label">Email</div><div class="info-value">{{ duser.user.email }}</div></div>
+    {% else %}
+        <div class="info-card"><div class="info-label">Name</div><div class="info-value">{{ duser.name }}</div></div>
+        <div class="info-card"><div class="info-label">Email</div><div class="info-value">{{ duser.user.email }}</div></div>
+    {% endif %}
     <div class="info-card"><div class="info-label">Department</div><div class="info-value">{{ duser.get_department_display|default:duser.department }}</div></div>
     {% if duser.get_year_display %}
     <div class="info-card"><div class="info-label">Year</div><div class="info-value">{{ duser.get_year_display }}</div></div>
@@ -131,9 +141,15 @@
     {% if duser.get_semester_display %}
     <div class="info-card"><div class="info-label">Semester</div><div class="info-value">{{ duser.get_semester_display }}</div></div>
     {% endif %}
-    <div class="info-card"><div class="info-label">Date of Birth</div><div class="info-value">{{ duser.dob }}</div></div>
-    <div class="info-card"><div class="info-label">Mobile</div><div class="info-value">{{ duser.mobile }}</div></div>
-    <div class="info-card address-box"><div class="info-label">Address</div><div class="info-value">{{ duser.address }}</div></div>
+    {% if editing and can_edit %}
+        <div class="info-card"><div class="info-label">Date of Birth</div><div class="info-value"><input type="date" name="dob" value="{{ duser.dob }}" class="form-control" style="padding:8px;border-radius:6px;border:1px solid #ddd;"/></div></div>
+        <div class="info-card"><div class="info-label">Mobile</div><div class="info-value"><input type="text" name="mobile" value="{{ duser.mobile }}" class="form-control" style="padding:8px;border-radius:6px;border:1px solid #ddd;"/></div></div>
+        <div class="info-card address-box"><div class="info-label">Address</div><div class="info-value"><textarea name="address" class="form-control" style="width:100%;min-height:80px;padding:8px;border-radius:6px;border:1px solid #ddd;">{{ duser.address }}</textarea></div></div>
+    {% else %}
+        <div class="info-card"><div class="info-label">Date of Birth</div><div class="info-value">{{ duser.dob }}</div></div>
+        <div class="info-card"><div class="info-label">Mobile</div><div class="info-value">{{ duser.mobile }}</div></div>
+        <div class="info-card address-box"><div class="info-label">Address</div><div class="info-value">{{ duser.address }}</div></div>
+    {% endif %}
 
     {% if duser.get_section_display %}
     <div class="info-card"><div class="info-label">Section</div><div class="info-value">{{ duser.get_section_display }}</div></div>
@@ -158,7 +174,18 @@
     {% endif %}
 
     <div class="info-card">
-        <a href="{% url 'forgot_password' %}" class="btn-primary">Change Password</a>
+        {% if editing and can_edit %}
+            <button type="submit" class="btn-primary">Save</button>
+        {% else %}
+            <a href="{% url 'forgot_password' %}" class="btn-primary">Change Password</a>
+        {% endif %}
+        {% if editing and can_edit %}</form>{% endif %}
+        {# Edit button inside profile container on the right side (visible to owner when not editing) #}
+    {% if can_edit and not editing %}
+        
+            <a href="{% url 'student_profile' %}?edit=1" class="btn-primary" style="background:#1976d2;">Edit Profile</a>
+        
+    {% endif %}
     </div>
 </div>
 {% endblock %}

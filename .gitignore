@@ -3,5 +3,35 @@ __pycache__/
 *.pyo
 *.pyd
 
-
+# Environment and secrets
 .env
+*.env
+.env.local
+.env.production
+
+# Database
+db.sqlite3
+*.db
+
+# Static and media files
+staticfiles/
+media/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.bak
+*.sql

@@ -2,6 +2,8 @@
 {% load dict_extras %}
 
 
+{% block mobile_header %}{% endblock %}
+
 {% block root %}
 <style>
     /* Timetable adapted to OD/leaves responsive card style */
@@ -56,7 +58,12 @@
     <button type="button" id="edit-btn" class="btn btn-secondary mb-2" onclick="toggleEdit()">Edit</button>
     <button type="submit" id="save-btn" class="btn btn-primary mb-2" style="display:none;">Save</button>
     <div class="od-table">
-        <div class="od-table-header"><span class="header-title">Update Class Timetable</span></div>
+        <div class="od-table-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="header-title">Update Class Timetable</span>
+            <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="color:white;">
+                <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+            </a>
+        </div>
         <hr class="od-divider">
         <table class="table table-bordered text-center">
         <thead>

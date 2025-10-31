@@ -1,6 +1,8 @@
 
 {% extends 'base.html' %}
 
+{% block mobile_header %}{% endblock %}
+
 {% block content %}
 <div class="container-fluid mt-2">
     <h3>Student Details</h3>
@@ -8,8 +10,13 @@
         <input type="text" id="search-input" class="form-control" placeholder="Search by Roll No or Name">
     </div>
 
-    <div class="od-table">
-        <div class="od-table-header"><span class="header-title">Students</span></div>
+        <div class="od-table">
+        <div class="od-table-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="header-title">Students</span>
+            <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="color:white;">
+                <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+            </a>
+        </div>
         <hr class="od-divider">
         <style>
             .od-table { width:100%; margin-top:8px; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.06); border-radius:8px; overflow-x:auto; }

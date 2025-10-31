@@ -720,6 +720,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="animated fadeIn">
                 {% if request.user.is_staff %}
                 <!-- Mobile Header -->
+                {% block mobile_header %}
                 <div class="d-block d-md-none mb-3">
                     <div class="bg-primary p-3 d-flex justify-content-between align-items-center">
                         <h4 class="text-white m-0">{% block mobile_title %}Dashboard{% endblock %}</h4>
@@ -728,6 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </a>
                     </div>
                 </div>
+                {% endblock %}
                 {% endif %}
 
                 {% block content %}

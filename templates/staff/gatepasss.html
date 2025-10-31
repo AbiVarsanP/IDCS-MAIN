@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block mobile_title %}Gatepass Application{% endblock %}
+{% block mobile_header %}{% endblock %}
 
 {% block root %}
 
@@ -165,7 +165,12 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="od-table">
-                <div class="od-table-header"><span class="header-title">Mentees Gatepass</span></div>
+                <div class="od-table-header" style="position:relative;display:flex;justify-content:space-between;align-items:center;">
+                    <span class="header-title">Mentees Gatepass</span>
+                    <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:white;">
+                        <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+                    </a>
+                </div>
                 <div class="od-header">
                     <div>ID</div>
                     <div>NAME</div>

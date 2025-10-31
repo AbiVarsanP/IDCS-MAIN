@@ -177,6 +177,21 @@
                 </a>
             </div>
             <div class="card-body">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div>
+                        <form id="day-select-form" method="get" action="">
+                            <select id="day-select" name="day" onchange="document.getElementById('day-select-form').submit()" style="padding:6px 8px; border-radius:4px;">
+                                
+                                {% for d in days %}
+                                    <option value="{{ d }}" {% if selected_day == d %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div>
+                        <!-- optional space for controls / export in future -->
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -188,7 +203,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for day in days %}
+                            {% for day in days_to_show %}
                             <tr>
                                 <td data-label="Day"><b>{{ day }}</b></td>
                                 {% for p in periods %}

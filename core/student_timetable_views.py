@@ -4,6 +4,7 @@ from .helpers import set_config
 from .models import Staff
 from .timetable_models import StaffTimeTable
 from .models import SemesterSubject
+from datetime import datetime
 
 @login_required
 def student_timetable(request):
@@ -36,6 +37,24 @@ def student_timetable(request):
     context['periods'] = periods
     context['table'] = table
     context['staff'] = staff
+    # Handle day selection via GET parameter
+    # Accepts 'All' or one of the days; default is today's weekday if available
+    day_param = request.GET.get('day')
+    # determine default day as current weekday name (Monday..Friday)
+    today_name = datetime.now().strftime('%A')
+    if day_param:
+        selected_day = day_param if day_param == 'All' or day_param in days else None
+    else:
+        # default to today if weekday in our list, else 'All'
+        selected_day = today_name if today_name in days else 'All'
+
+    if selected_day == 'All' or not selected_day:
+        days_to_show = days
+    else:
+        days_to_show = [selected_day]
+
+    context['selected_day'] = selected_day
+    context['days_to_show'] = days_to_show
     # Debug info
     context['debug_user'] = str(request.user)
     context['debug_duser'] = str(context.get('duser'))

@@ -146,7 +146,15 @@ import qrcode
 def home(request):
     # Provide recent published notices with images for the homepage hero carousel
     from .models import Notice
-    notices = Notice.objects.filter(published=True).exclude(image__isnull=True).exclude(image__exact='').order_by('-publish_date', '-created')[:12]
+    # Temporary guard: if migrations haven't been applied or the table is missing
+    # return an empty queryset instead of raising a 500. Long-term fix: run
+    # `manage.py migrate` (or use a proper Postgres DB in production).
+    from django.db.utils import OperationalError
+    try:
+        notices = Notice.objects.filter(published=True).exclude(image__isnull=True).exclude(image__exact='').order_by('-publish_date', '-created')[:12]
+    except OperationalError:
+        # Database tables not ready (e.g. during first deploy). Show no notices.
+        notices = Notice.objects.none()
     return render(request, 'home.html', {'notices': notices})
 
 def is_hod(user):

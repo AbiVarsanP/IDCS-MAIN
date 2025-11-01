@@ -127,3 +127,71 @@ Check `DEPLOYMENT.md` for:
 - Troubleshooting common issues
 - Security best practices
 - Monitoring and maintenance tips
+
+## 🔁 Render (render.com) — recommended quick checklist
+
+If you're deploying to Render, follow these steps to ensure migrations run and the service uses a persistent Postgres database.
+
+1. Provision a Postgres database on Render (or use Supabase) and copy the DATABASE_URL connection string.
+
+2. In your Render Web Service settings, add the following environment variables:
+	- DATABASE_URL=<your_postgres_database_url>
+	- SECRET_KEY=<a-strong-secret-generated-by-django>
+	- DEBUG=False
+	- ALLOWED_HOSTS=<your-domain.com> (or set in settings via env)
+
+3. Set the Start Command for the Render Web Service to run migrations, collect static files, and start Gunicorn. Use this exact Start Command:
+
+```bash
+bash -lc "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"
+```
+
+This makes sure database tables (including `core_notice`) are created before the app serves traffic.
+
+4. (Optional) Run a one-off shell on Render and verify migrations manually:
+
+```bash
+python manage.py migrate
+python manage.py showmigrations
+```
+
+5. Redeploy the service. If you used `DEBUG=False` and a valid `SECRET_KEY`, Django's production security settings will be active.
+
+Notes:
+- Do not use SQLite on Render for production — use Postgres.
+- Keep your `SECRET_KEY` and DB credentials secret. Use Render's Secrets/Environment variables UI.
+- After a successful deploy, remove the temporary guard in `core/views.py` that catches missing tables (we added it to prevent a 500 during initial migration).
+
+## ⚠️ Deploying with SQLite on Render (NOT recommended) — if you must
+
+If you intend to deploy using the bundled `db.sqlite3`, you can make it work, but be aware of the limitations:
+
+- Render's filesystem is ephemeral. Any writes to `db.sqlite3` will be lost on deploy or instance restart. Backups are your responsibility.
+- SQLite does not support concurrent writes from multiple processes/instances. Use a single-instance service and avoid scaling horizontally.
+- Using SQLite in production can lead to corruption under load. Prefer Postgres for anything beyond testing or very low-traffic sites.
+
+Steps to deploy with SQLite on Render (quick):
+
+1. Do NOT set `DATABASE_URL` in Render environment variables (leave it unset so the app falls back to SQLite as configured in `backend/settings.py`).
+
+2. Add the required environment variables in Render:
+	- SECRET_KEY=<generate-and-paste-secret>
+	- DEBUG=False (or leave True for testing, but False for production)
+	- ALLOWED_HOSTS=<your-domain.com>
+
+3. Use this Start Command for the Web Service (this runs migrations against the local sqlite file, collects static, then starts Gunicorn):
+
+```bash
+bash -lc "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"
+```
+
+4. (Optional) If you prefer to initialize the DB manually once, open a Render Shell/one-off command and run:
+
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+5. After deployment, monitor the instance and create backups of `db.sqlite3` regularly if you care about persistence. You can download the file via the Render shell and store it in external storage.
+
+Reminder: This SQLite route is useful for quick demos or staging, but for a resilient production site you should migrate to Postgres and follow the main Render checklist above.

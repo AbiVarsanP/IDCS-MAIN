@@ -13,7 +13,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-)m^_rzn5fu!@w^69!ixov$sy@6ia+dr!i+*@l092gaj)l%*(h@')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Read DEBUG from environment so production can set DEBUG=False while
+# development keeps DEBUG=True by default. Use python-decouple's `config`
+# which is already imported in this settings file.
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 

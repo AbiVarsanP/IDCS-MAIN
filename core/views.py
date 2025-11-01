@@ -154,7 +154,10 @@ def home(request):
         notices = Notice.objects.filter(published=True).exclude(image__isnull=True).exclude(image__exact='').order_by('-publish_date', '-created')[:12]
     except OperationalError:
         # Database tables not ready (e.g. during first deploy). Show no notices.
-        notices = Notice.objects.none()
+        # Use a plain list instead of an empty QuerySet so template boolean
+        # checks (``{% if notices %}``) won't trigger a DB query and raise
+        # OperationalError when the table is missing.
+        notices = []
     return render(request, 'home.html', {'notices': notices})
 
 def is_hod(user):

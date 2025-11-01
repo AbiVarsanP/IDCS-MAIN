@@ -162,6 +162,10 @@ Notes:
 - Keep your `SECRET_KEY` and DB credentials secret. Use Render's Secrets/Environment variables UI.
 - After a successful deploy, remove the temporary guard in `core/views.py` that catches missing tables (we added it to prevent a 500 during initial migration).
 
+Optional: AUTO_MIGRATE environment variable
+
+If you don't want to modify the Start Command, you can enable automatic migrations at WSGI startup by setting the environment variable `AUTO_MIGRATE=true`. The application will attempt to run `manage.py migrate` during WSGI initialisation. This is convenient but you should still prefer running migrations explicitly during deploy.
+
 ## ⚠️ Deploying with SQLite on Render (NOT recommended) — if you must
 
 If you intend to deploy using the bundled `db.sqlite3`, you can make it work, but be aware of the limitations:

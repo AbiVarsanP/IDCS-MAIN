@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimalist Elegant Resume</title>
+  <style>
+    body {
+      font-family: 'Garamond', serif;
+      background: #fff;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    .resume-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 40px 32px;
+      background: #fff;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      border-radius: 12px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 0.2em;
+    }
+    .header .contact-info {
+      font-size: 1.05rem;
+      color: #444;
+      margin-bottom: 0.5em;
+    }
+    .section {
+      margin-bottom: 32px;
+    }
+    .section-title {
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 4px;
+      margin-bottom: 18px;
+      color: #222;
+    }
+    .skills-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px 18px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .skills-list li {
+      font-size: 1rem;
+      margin-bottom: 0;
+    }
+    .section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .section ul li {
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+    .section p {
+      font-size: 1.08rem;
+      margin-bottom: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <div class="resume-container">
+    <div class="header">
+      <h1>{{ resume.name }}</h1>
+      <div class="contact-info">
+        <span>{{ resume.email }}</span> | <span>{{ resume.phone }}</span>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Professional Summary</div>
+      <p>{{ resume.bio }}</p>
+    </div>
+    <div class="section">
+      <div class="section-title">Skills</div>
+      <ul class="skills-list">
+        {% for skill in skills %}
+        <li>{{ skill.name }}</li>
+        {% empty %}
+        <li>No skills listed.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="section">
+      <div class="section-title">Education</div>
+      <ul>
+        {% for edu in education %}
+        <li><strong>{{ edu.degree }}</strong> at {{ edu.institution }} <span class="text-muted">({{ edu.start_year }} - {{ edu.end_year }})</span></li>
+        {% empty %}
+        <li>No education listed.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="section">
+      <div class="section-title">Projects</div>
+      <ul>
+        {% for pro in projects %}
+        <li><strong>{{ pro.name }}</strong>{% if pro.link %} - <a href="{{ pro.link }}" target="_blank">[Link]</a>{% endif %}<br>{{ pro.description }}</li>
+        {% empty %}
+        <li>No projects listed.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="section">
+      <div class="section-title">Languages</div>
+      <ul>
+        {% for lang in languages %}
+        <li>{{ lang.name }} ({{ lang.proficiency }})</li>
+        {% empty %}
+        <li>No languages listed.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="section">
+      <div class="section-title">Declaration</div>
+      <p>{{ resume.declaration_text }}</p>
+      {% if resume.declaration_signature %}
+      <div><img src="{{ resume.declaration_signature.url }}" alt="Signature" style="max-width:180px;max-height:80px;"></div>
+      {% endif %}
+      <div><strong>Place:</strong> {{ resume.declaration_place }} &nbsp; <strong>Date:</strong> {{ resume.declaration_date }}</div>
+    </div>
+  </div>
+</body>
+</html>

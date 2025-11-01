@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Corporate Resume</title>
+  <style>
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: #fff;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    .top-border {
+      width: 100%;
+      height: 12px;
+      background: #333;
+      margin-bottom: 0;
+    }
+    .resume-container {
+      display: flex;
+      max-width: 1000px;
+      margin: 0 auto 40px auto;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+      border-top: 0;
+    }
+    .main-content {
+      width: 65%;
+      padding: 48px 40px 40px 40px;
+      background: #fff;
+    }
+    .main-content h1 {
+      font-size: 2.3rem;
+      color: #222;
+      font-weight: 800;
+      margin-bottom: 0.2em;
+      letter-spacing: 1px;
+    }
+    .main-content h2 {
+      font-size: 1.1rem;
+      color: #333;
+      font-weight: 700;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    .main-content .section {
+      margin-bottom: 32px;
+    }
+    .main-content .section h3 {
+      color: #007bff;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 4px;
+    }
+    .main-content .section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .main-content .section ul li {
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    .sidebar {
+      width: 35%;
+      background: #f8f9fa;
+      padding: 48px 28px 40px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      border-left: 2px solid #e0e0e0;
+    }
+    .sidebar-section {
+      width: 100%;
+      margin-bottom: 32px;
+    }
+    .sidebar-section h3 {
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 4px;
+    }
+    .sidebar-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar-section ul li {
+      margin-bottom: 8px;
+      font-size: 0.98rem;
+    }
+    .contact-info {
+      font-size: 0.98rem;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-border"></div>
+  <div class="resume-container">
+    <div class="main-content">
+      <h1>{{ resume.name }}</h1>
+      <h2>{{ resume.role }}</h2>
+      <div class="section">
+        <h3>Profile Summary</h3>
+        <p>{{ resume.bio }}</p>
+      </div>
+      <div class="section">
+        <h3>Work Experience / Projects</h3>
+        <ul>
+          {% for pro in projects %}
+          <li><strong>{{ pro.name }}</strong>{% if pro.link %} - <a href="{{ pro.link }}" target="_blank">[Link]</a>{% endif %}<br>{{ pro.description }}</li>
+          {% empty %}
+          <li>No projects listed.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="section">
+        <h2>Declaration</h2>
+        <p>{{ resume.declaration_text }}</p>
+        {% if resume.declaration_signature %}
+        <div><img src="{{ resume.declaration_signature.url }}" alt="Signature" style="max-width:180px;max-height:80px;"></div>
+        {% endif %}
+        <div><strong>Place:</strong> {{ resume.declaration_place }} &nbsp; <strong>Date:</strong> {{ resume.declaration_date }}</div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h3>Contact</h3>
+        <div class="contact-info"><strong>Email:</strong> {{ resume.email }}</div>
+        <div class="contact-info"><strong>Phone:</strong> {{ resume.phone }}</div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Education</h3>
+        <ul>
+          {% for edu in education %}
+          <li><strong>{{ edu.degree }}</strong> at {{ edu.institution }} <span class="text-muted">({{ edu.start_year }} - {{ edu.end_year }})</span></li>
+          {% empty %}
+          <li>No education listed.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="sidebar-section">
+        <h3>Skills</h3>
+        <ul>
+          {% for skill in skills %}
+          <li>{{ skill.name }}</li>
+          {% empty %}
+          <li>No skills listed.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -7,50 +7,88 @@
     {% csrf_token %}
     <button type="button" id="edit-btn" class="btn btn-secondary mb-2" onclick="toggleEdit()">Edit</button>
     <button type="submit" id="save-btn" class="btn btn-primary mb-2" style="display:none;">Save</button>
-    <table class="table table-bordered text-center">
-        <thead>
-            <tr>
-                <th>Day / Period</th>
-                {% for p in periods %}
-                    <th>{{ p }}</th>
+
+    <style>
+        /* Reuse od-table styles consistent with gatepass/bonafide */
+        .od-table { width:100%; margin-top:12px; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.06); border-radius:8px; overflow-x:auto; padding:0; }
+        .od-table-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#1976d2; color:#fff; font-weight:600; border-top-left-radius:8px; border-top-right-radius:8px; }
+        .od-divider { margin:0; border:0; height:2px; background:linear-gradient(to right,#e0e7ff,#e0e0e0); }
+        .od-table table { width:100%; border-collapse:collapse; table-layout: fixed; margin:0; }
+        .od-table thead th { background:#f5f7fa; color:#2c3e50; font-weight:600; padding:10px; text-align:center; position:sticky; top:0; z-index:3; border-bottom:1px solid #e6eef6; }
+        .od-table tbody tr { transition:background 0.12s ease; }
+        .od-table tbody tr:nth-child(even) { background:#fbfdff; }
+        .od-table tbody tr:hover { background:#f1f5f9; }
+        .od-table td, .od-table th { padding:10px; border:1px solid #e8f0f6; vertical-align:middle; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; text-align:center; }
+        .od-table .day-cell { font-weight:700; color:#0f172a; text-align:center; }
+        @media (max-width:768px) {
+            .od-table { padding:8px; }
+            .od-table table { display:block; width:100%; }
+            .od-table thead { display:none; }
+            .od-table tbody { display:block; width:100%; padding:0; margin:0; }
+            .od-table tbody tr { display:block; width:100%; border:1px solid #e6eef6; margin:0 0 6px 0; border-radius:6px; padding:6px; background:#fff; box-sizing:border-box; }
+            .od-table td { display:block; padding:6px 0; border:none; border-bottom:1px solid #f1f5f9; white-space:normal; box-sizing:border-box; font-size:0.92rem; }
+            .od-table td::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:4px; font-size:0.85rem; }
+            .od-table td:last-child { border-bottom:none; }
+            .od-table td.period-cell { display:flex; flex-direction:row; align-items:center; gap:8px; padding:6px 0; }
+            .od-table td.period-cell::before { display:inline-block; margin:0; min-width:48px; font-size:0.85rem; }
+            .od-table select.form-control, .od-table .form-control { width:100%; margin:0; padding:6px 8px; height:auto; font-size:0.92rem; }
+            .od-table .day-cell { padding-top:2px; padding-bottom:4px; font-size:0.95rem; }
+        }
+    </style>
+
+    <div class="od-table">
+        <div class="od-table-header"><span class="header-title">HOD Timetable</span></div>
+        <hr class="od-divider">
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr>
+                    <th>Day / Period</th>
+                    {% for p in periods %}
+                        <th>{{ p }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in days %}
+                <tr>
+                    <td data-label="DAY" class="day-cell"><b>{{ day }}</b></td>
+                    {% for p in periods %}
+                        {% with key=day|add:"_"|add:p|stringformat:"s" %}
+                            <td data-label="{{ p }}" class="period-cell">
+                                <select name="{{ key }}" class="form-control timetable-input" disabled>
+                                    <option value="">-- Select Subject --</option>
+                                    {% for subject in assigned_subjects %}
+                                        <option value="{{ subject.name }}" {% if my_table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                    {% endfor %}
+                                    <option value="others">Others</option>
+                                </select>
+                                <input type="text" name="custom_{{ key }}" class="form-control timetable-input" placeholder="Listing other department subjects..." style="display:none;" disabled>
+                            </td>
+                            <script>
+                            document.addEventListener('DOMContentLoaded', function(){
+                                var sel = document.querySelector('[name="{{ key }}"]');
+                                if(sel){
+                                    sel.addEventListener('change', function() {
+                                        const customInput = document.querySelector('[name="custom_{{ key }}"]');
+                                        if (this.value === 'others') {
+                                            customInput.style.display = '';
+                                            customInput.disabled = false;
+                                            customInput.placeholder = "Listing other department subjects...";
+                                        } else {
+                                            customInput.style.display = 'none';
+                                            customInput.disabled = true;
+                                        }
+                                    });
+                                }
+                            });
+                            </script>
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for day in days %}
-            <tr>
-                <td><b>{{ day }}</b></td>
-                {% for p in periods %}
-                    {% with key=day|add:"_"|add:p|stringformat:"s" %}
-                        <td>
-                            <select name="{{ key }}" class="form-control timetable-input" disabled>
-                                <option value="">-- Select Subject --</option>
-                                {% for subject in assigned_subjects %}
-                                    <option value="{{ subject.name }}" {% if my_table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
-                                {% endfor %}
-                                <option value="others">Others</option>
-                            </select>
-                            <input type="text" name="custom_{{ key }}" class="form-control timetable-input" placeholder="Listing other department subjects..." style="display:none;" disabled>
-                        </td>
-                        <script>
-                        document.querySelector('[name="{{ key }}"]').addEventListener('change', function() {
-                            const customInput = document.querySelector('[name="custom_{{ key }}"]');
-                            if (this.value === 'others') {
-                                customInput.style.display = '';
-                                customInput.disabled = false;
-                                customInput.placeholder = "Listing other department subjects...";
-                            } else {
-                                customInput.style.display = 'none';
-                                customInput.disabled = true;
-                            }
-                        });
-                        </script>
-                    {% endwith %}
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </form>
 <script>
 function toggleEdit() {
@@ -59,10 +97,12 @@ function toggleEdit() {
     const saveBtn = document.getElementById('save-btn');
     if (editBtn.innerText === 'Edit') {
         inputs.forEach(i => i.removeAttribute('readonly'));
+        inputs.forEach(i => i.disabled = false);
         editBtn.innerText = 'Cancel';
         saveBtn.style.display = '';
     } else {
         inputs.forEach(i => i.setAttribute('readonly', true));
+        inputs.forEach(i => i.disabled = true);
         editBtn.innerText = 'Edit';
         saveBtn.style.display = 'none';
     }

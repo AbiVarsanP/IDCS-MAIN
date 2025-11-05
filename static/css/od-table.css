@@ -1,0 +1,48 @@
+/* Shared od-table styles for gatepass/bonafide and HOD pages */
+.od-table { width:100%; border-collapse:collapse; margin-top:12px; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.06); border-radius:8px; overflow:hidden; }
+.od-table-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#1976d2; color:#fff; font-weight:600; border-top-left-radius:8px; border-top-right-radius:8px; }
+.od-divider { margin:0; border:0; height:2px; background:linear-gradient(to right,#e0e7ff,#e0e0e0); }
+.od-header, .od-row { display:grid; gap:10px; align-items:center; padding:12px 16px; border-bottom:1px solid #e6eef6; }
+/* default grid layout and a few common variants */
+.od-header.grid-5cols, .od-row.grid-5cols { grid-template-columns: 30% 25% 15% 15% 15%; }
+.od-header.grid-4cols, .od-row.grid-4cols { grid-template-columns: 32% 18% 30% 20%; }
+.od-header.grid-4cols-alt, .od-row.grid-4cols-alt { grid-template-columns: 6% 64% 20% 10%; }
+.od-header { background:#f5f7fa; color:#2c3e50; font-weight:700; text-transform:uppercase; font-size:0.85rem; }
+.od-row:nth-child(even) { background:#fbfdff; }
+.od-row.table-warning { background:#fff7e6; }
+.od-title { font-weight:600; color:#334155; }
+.od-message { color:#2b3440; }
+
+@media (max-width:768px) {
+    .od-header, .od-row { grid-template-columns:1fr; }
+    .od-header > div { display:none; }
+    .od-row { border:1px solid #e6eef6; margin-bottom:12px; border-radius:8px; padding:10px; }
+    .od-row > div { display:block; padding:6px 0; }
+    .od-row > div::before { content: attr(data-label); display:block; font-weight:600; color:#444; margin-bottom:6px; }
+}
+
+/* OD button style used across OD/Bonafide/Gatepass tables */
+.btn-od {
+    background-color: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.18s ease;
+}
+.btn-od:hover, .btn-od:focus {
+    background-color: #125ea3;
+    color: #fff;
+    outline: none;
+}
+.btn-od.dropdown-toggle::after {
+    margin-left: 8px;
+}
+
+/* Action button layout used on OD pages */
+.od-actions { display:flex; gap:8px; justify-content:center; align-items:center; }
+@media (max-width:768px) {
+    /* Stack buttons vertically on small screens to match /ods/check */
+    .od-actions { flex-direction:column; align-items:stretch; }
+    .od-actions form { width:100%; }
+    .od-actions .btn { width:100%; }
+}

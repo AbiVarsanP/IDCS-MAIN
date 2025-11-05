@@ -7,6 +7,7 @@
     <div class="mb-3">
         <a href="{% url 'hod_profile' %}" class="btn btn-secondary">Back to Profile</a>
     </div>
+
     <link rel="stylesheet" href="{% static 'css/od-table.css' %}?v=3">
 
     {% if staff_members and staff_members.count > 0 %}
@@ -42,5 +43,6 @@
     {% else %}
     <div class="alert alert-info mt-4">No staff found in this department.</div>
     {% endif %}
+
 </div>
 {% endblock %}

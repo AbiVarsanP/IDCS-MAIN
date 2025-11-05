@@ -1,8 +1,8 @@
 {% extends 'hod/hod_base.html' %}
 {% block content %}
 <div class="card shadow">
-    <div class="card-header">
-        <h4 class="mb-0">Sports OD Approval Requests</h4>
+    <div class="card-header" style="background:#1976d2;color:#fff;border-bottom:1px solid rgba(0,0,0,0.08);">
+        <h4 class="mb-0" style="color:inherit;">Sports OD Approval Requests</h4>
     </div>
     <div class="card-body">
         {% if players_by_event %}
@@ -19,48 +19,59 @@
                             View Reason
                         </button>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Roll Number</th>
-                                    <th>Name</th>
-                                    <th>Year</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for player in players %}
-                                <tr>
-                                    <td>{{ player.student.roll }}</td>
-                                    <td>{{ player.student.name }}</td>
-                                    <td>{{ player.student.year }}</td>
-                                    <td>
-                                        {% if player.status == 'Approved' %}
-                                            <span class="badge badge-success">Approved</span>
-                                        {% elif player.status == 'Rejected' %}
-                                            <span class="badge badge-danger">Rejected</span>
-                                        {% else %}
-                                            <span class="badge badge-warning">Pending</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if player.status == 'Pending' %}
-                                        <form method="POST" action="{% url 'hod_sports_od_action' player.id %}" class="form-inline">
-                                            {% csrf_token %}
-                                            <input type="text" name="hod_remark" class="form-control form-control-sm mr-2" placeholder="Reason (optional)">
-                                            <button type="submit" name="action" value="Approved" class="btn btn-success btn-sm mr-1">Approve</button>
-                                            <button type="submit" name="action" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
-                                        </form>
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <style>
+                        /* od-table style for sports OD players list */
+                        .od-table { width:100%; border-collapse:collapse; margin-top:8px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-radius:8px; overflow:hidden; }
+                        .od-header, .od-row { display:grid; grid-template-columns:20% 40% 12% 14% 14%; gap:8px; align-items:center; padding:10px 14px; border-bottom:1px solid #e6eef6; }
+                        .od-header { background:#f5f7fa; color:#2c3e50; font-weight:700; text-transform:uppercase; font-size:0.85rem; }
+                        .od-row:nth-child(even) { background:#fbfdff; }
+                        @media (max-width:768px) {
+                            .od-header, .od-row { grid-template-columns:1fr; }
+                            .od-header > div { display:none; }
+                            .od-row { border:1px solid #e6eef6; margin-bottom:12px; border-radius:8px; padding:10px; }
+                            .od-row > div { display:block; padding:6px 0; }
+                            .od-row > div::before { content: attr(data-label); display:block; font-weight:600; color:#444; margin-bottom:6px; }
+                        }
+                    </style>
+                    <div class="od-table">
+                        <div class="od-header">
+                            <div>Roll Number</div>
+                            <div>Name</div>
+                            <div>Year</div>
+                            <div>Status</div>
+                            <div>Action</div>
+                        </div>
+                        {% for player in players %}
+                        <div class="od-row">
+                            <div data-label="Roll Number">{{ player.student.roll }}</div>
+                            <div data-label="Name">{{ player.student.name }}</div>
+                            <div data-label="Year">{{ player.student.year }}</div>
+                            <div data-label="Status">
+                                {% if player.status == 'Approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif player.status == 'Rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </div>
+                            <div data-label="Action">
+                                {% if player.status == 'Pending' %}
+                                    <form method="POST" action="{% url 'hod_sports_od_action' player.id %}" class="form-inline">
+                                        {% csrf_token %}
+                                        <input type="text" name="hod_remark" class="form-control form-control-sm mr-2" placeholder="Reason (optional)">
+                                        <button type="submit" name="action" value="Approved" class="btn btn-success btn-sm mr-1">Approve</button>
+                                        <button type="submit" name="action" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if not players %}
+                            <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No players found.</div></div>
+                        {% endif %}
                     </div>
                 </div>
 

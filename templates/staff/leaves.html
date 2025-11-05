@@ -141,16 +141,37 @@
                             <div class="od-actions" data-label="ACTION">
                                 <div data-label="ACTION">
                                     {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
-                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
-                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                            {% csrf_token %}
+                                            <div class="input-group">
+                                                <select name="sts" class="form-control">
+                                                    <option value="Approved">Approve</option>
+                                                    <option value="Rejected">Reject</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-success">submit</button>
+                                            </div>
                                         </form>
                                     {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
-                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
-                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                            {% csrf_token %}
+                                            <div class="input-group">
+                                                <select name="sts" class="form-control">
+                                                    <option value="Approved">Approve</option>
+                                                    <option value="Rejected">Reject</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-success">submit</button>
+                                            </div>
                                         </form>
                                     {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
-                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">{% csrf_token %}
-                                            <div class="od-actions"><button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button><button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button></div>
+                                        <form method="post" action="{% url 'staff_action_leave' i.id %}">
+                                            {% csrf_token %}
+                                            <div class="input-group">
+                                                <select name="sts" class="form-control">
+                                                    <option value="Approved">Approve</option>
+                                                    <option value="Rejected">Reject</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-success">submit</button>
+                                            </div>
                                         </form>
                                     {% else %}
                                         <div class="od-actions">
@@ -218,13 +239,14 @@
                             <div class="od-actions" data-label="ACTION">
                                 <div data-label="ACTION">
                                     {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
-                                        <button class="btn btn-danger" disabled>Rejected</button>
+                                        <button class="btn btn-outline-danger" disabled>Rejected</button>
                                     {% elif i.Mstatus == "Approved" %}
                                         {% if i.Astatus == "Approved" %}
                                             <button class="btn btn-success ">{{i.Astatus}}</button>
                                         {% else %}
-                                            <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
-                                                <div class="od-actions">
+                                            <form action="{% url 'staff_action_leave' i.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <div class="input-group">
                                                     <select name="sts" class="form-control">
                                                         <option value="Approved">Approve</option>
                                                         <option value="Rejected">Reject</option>
@@ -235,8 +257,9 @@
                                             </form>
                                         {% endif %}
                                     {% else %}
-                                        <form action="{% url 'staff_action_leave' i.id %}" method="POST">{% csrf_token %}
-                                            <div class="od-actions">
+                                        <form action="{% url 'staff_action_leave' i.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <div class="input-group">
                                                 <select name="sts" class="form-control">
                                                     <option value="Approved">Approve</option>
                                                     <option value="Rejected">Reject</option>
